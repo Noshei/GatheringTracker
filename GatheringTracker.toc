@@ -3,6 +3,8 @@
 ## Notes: Addon for tracking gathered items, supports solo players and multiboxers
 ## Author: Noshei
 ## Version: 0.1
+## SavedVariables: GatheringTrackerDB
 
-
+embeds.xml
 GatheringTracker.lua
+GatherableItems.lua
