@@ -7,4 +7,5 @@
 
 embeds.xml
 GatheringTracker.lua
-GatherableItems.lua
+Constants.lua
+Config.lua

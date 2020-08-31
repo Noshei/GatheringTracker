@@ -13,6 +13,6 @@ function GatheringTracker:OnDisable()
 
 end
 
-local frame = AceGUI:Create("Frame")
-frame:SetTitle("Gathering Tracker")
-frame:SetStatusText("This is a blank window")
+--local frame = AceGUI:Create("Frame")
+--frame:SetTitle("Gathering Tracker")
+--frame:SetStatusText("This is a blank window")
