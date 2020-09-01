@@ -4,13 +4,14 @@ local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 
-local GTDB
-
 local defaults = {
     profile = {
         General = {
+            enable = true,
+            unlock = false,
             xPos = 200,
-            yPos = 150,
+            yPos = -150,
+            relativePoint = "TOPLEFT",
             iconWidth = 27,
             iconHeight = 27,
             textColor = {1, 1, 1, 1},
@@ -21,6 +22,7 @@ local defaults = {
             totalFont = 19,
             groupType = false,
             stacksOnIcon = false,
+            shareSettings = false,
             includeBank = false,
             tsmPrice = 1,
             ignoreAmount = 0,
@@ -28,38 +30,41 @@ local defaults = {
         },
         Filters = {
         },
+        CustomFilters = "",
     },
 }
 
 local generalOptions = {
     type = "group",
     args = {
+        enable = {
+            type = "toggle",
+            name = "Enabled",
+            desc = "Uncheck to disable the addon, this will effectively turn off the addon.",
+            width = 1.77,
+            get = function() return GT.db.profile.General.enable end,
+            set = function(_, key) 
+                GT.db.profile.General.enable = key
+                if key and not GT.Enabled then
+                    GT:OnEnable()
+                elseif not key and GT.Enabled then
+                    GT:OnDisable()
+                end
+            end,
+            order = 1
+        },
+        unlock = {
+            type = "toggle",
+            name = "Unlock Frame",
+            width = 1.77,
+            get = function() return GT.db.profile.General.unlock end,
+            set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
+            order = 2
+        },
         header1 = {
             type = "header",
-            name = "Size and Position",
+            name = "Icon Size",
             order = 100
-        },
-        xPos = {
-            type = "range",
-            name = "X Offset",
-            min = 0,
-            max = math.floor(GetScreenWidth()),
-            step = 1,
-            width = 1.77,
-            get = function() return GTDB.profile.General.xPos or 1 end,
-            set = function(_, key) GTDB.profile.General.xPos = key end,
-            order = 101
-        },
-        yPos = {
-            type = "range",
-            name = "Y Offset",
-            min = 0,
-            max = math.floor(GetScreenHeight()),
-            step = 1,
-            width = 1.77,
-            get = function() return GTDB.profile.General.yPos or 1 end,
-            set = function(_, key) GTDB.profile.General.yPos = key end,
-            order = 102
         },
         iconWidth = {
             type = "range",
@@ -68,8 +73,8 @@ local generalOptions = {
             max = 100,
             step = 1,
             width = 1.77,
-            get = function() return GTDB.profile.General.iconWidth or 1 end,
-            set = function(_, key) GTDB.profile.General.iconWidth = key end,
+            get = function() return GT.db.profile.General.iconWidth or 1 end,
+            set = function(_, key) GT.db.profile.General.iconWidth = key end,
             order = 103
         },
         iconHeight = {
@@ -79,8 +84,8 @@ local generalOptions = {
             max = 100,
             step = 1,
             width = 1.77,
-            get = function() return GTDB.profile.General.iconHeight or 1 end,
-            set = function(_, key) GTDB.profile.General.iconHeight = key end,
+            get = function() return GT.db.profile.General.iconHeight or 1 end,
+            set = function(_, key) GT.db.profile.General.iconHeight = key end,
             order = 104
         },
         header2 = {
@@ -92,8 +97,8 @@ local generalOptions = {
             type = "color",
             name = "Text Color",
             hasAlpha = true,
-            get = function() local c = GTDB.profile.General.textColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
-            set = function(_,r,g,b,a) GTDB.profile.General.textColor = {r,g,b,a} end,
+            get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
+            set = function(_,r,g,b,a) GT.db.profile.General.textColor = {r,g,b,a} end,
             order = 111
         },
         textSize = {
@@ -103,8 +108,8 @@ local generalOptions = {
             max = 70,
             step = 1,
             width = 1.25,
-            get = function() return GTDB.profile.General.textSize or 1 end,
-            set = function(_, key) GTDB.profile.General.textSize = key end,
+            get = function() return GT.db.profile.General.textSize or 1 end,
+            set = function(_, key) GT.db.profile.General.textSize = key end,
             order = 112
         },
         textFont = {
@@ -113,16 +118,16 @@ local generalOptions = {
             width = 1.25,
             itemControl = "DDI-Font",
             values = media:List("font"),
-            get = function() return GTDB.profile.General.textFont end,
-            set = function(_, key) GTDB.profile.General.textFont = key end,
+            get = function() return GT.db.profile.General.textFont end,
+            set = function(_, key) GT.db.profile.General.textFont = key end,
             order = 113
         },
         totalColor = {
             type = "color",
             name = "Total Color",
             hasAlpha = true,
-            get = function() local c = GTDB.profile.General.totalColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
-            set = function(_,r,g,b,a) GTDB.profile.General.totalColor = {r,g,b,a} end,
+            get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
+            set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} end,
             order = 114
         },
         totalSize = {
@@ -132,8 +137,8 @@ local generalOptions = {
             max = 70,
             step = 1,
             width = 1.25,
-            get = function() return GTDB.profile.General.totalSize or 1 end,
-            set = function(_, key) GTDB.profile.General.totalSize = key end,
+            get = function() return GT.db.profile.General.totalSize or 1 end,
+            set = function(_, key) GT.db.profile.General.totalSize = key end,
             order = 115
         },
         totalFont = {
@@ -142,8 +147,8 @@ local generalOptions = {
             width = 1.25,
             itemControl = "DDI-Font",
             values = media:List("font"),
-            get = function() return GTDB.profile.General.totalFont end,
-            set = function(_, key) GTDB.profile.General.totalFont = key end,
+            get = function() return GT.db.profile.General.totalFont end,
+            set = function(_, key) GT.db.profile.General.totalFont = key end,
             order = 116
         },
         header3 = {
@@ -153,31 +158,48 @@ local generalOptions = {
         },
         groupType = {
             type = "toggle",
-            name = "Display Group Information",
-            desc  = "Select this if you are a multiboxer",
+            name = "Group Mode",
+            desc  = "Select this if you want to share information with your group and display the groups information.",
             width = 1.77,
-            get = function() return GTDB.profile.General.groupType end,
-            set = function(_, key) GTDB.profile.General.groupType = key end,
+            get = function() return GT.db.profile.General.groupType end,
+            set = function(_, key) 
+                GT.db.profile.General.groupType = key
+                if key then
+                    GT.groupMode = "RAID"
+                else
+                    GT.groupMode = "WHISPER"
+                end
+            end,
             order = 121
         },
         stacksOnIcon = {
             type = "toggle",
             name = "Display Stack Count over Icon",
-            desc  = "When selected the stack count will be displayed over the icon.  This is only available when Group is disabled.",
+            desc  = "When selected the stack count will be displayed over the icon.  This is only available when Group Mode is disabled.",
             width = 1.77,
-            disabled = function() return GTDB.profile.General.groupType end,
-            get = function() return GTDB.profile.General.stacksOnIcon end,
-            set = function(_, key) GTDB.profile.General.stacksOnIcon = key end,
+            disabled = function() return GT.db.profile.General.groupType end,
+            get = function() return GT.db.profile.General.stacksOnIcon end,
+            set = function(_, key) GT.db.profile.General.stacksOnIcon = key end,
             order = 122
+        },
+        shareSettings = {
+            type = "toggle",
+            name = "Share Settings with Group",
+            desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.",
+            width = 1.77,
+            disabled = function() return not GT.db.profile.General.groupType end,
+            get = function() return GT.db.profile.General.shareSettings end,
+            set = function(_, key) GT.db.profile.General.shareSettings = key end,
+            order = 123
         },
         includeBank = {
             type = "toggle",
             name = "Include Bank",
             desc = "If selected displayed values will include items in your bank",
             width = 1.77,
-            get = function() return GTDB.profile.General.includeBank end,
-            set = function(_, key) GTDB.profile.General.includeBank = key end,
-            order = 123
+            get = function() return GT.db.profile.General.includeBank end,
+            set = function(_, key) GT.db.profile.General.includeBank = key end,
+            order = 124
         },
         tsmPrice = {
             type = "select",
@@ -185,9 +207,9 @@ local generalOptions = {
             desc = "Select the desired TSM price source, or none to disable price information",
             width = 1.77,
             values = {[0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical"},
-            get = function() return GTDB.profile.General.tsmPrice end,
-            set = function(_, key) GTDB.profile.General.tsmPrice = key end,
-            order = 124
+            get = function() return GT.db.profile.General.tsmPrice end,
+            set = function(_, key) GT.db.profile.General.tsmPrice = key end,
+            order = 125
         },
         ignoreAmount = {
             type = "range",
@@ -197,18 +219,18 @@ local generalOptions = {
             max = 100,
             step = 1,
             width = 1.77,
-            get = function() return GTDB.profile.General.ignoreAmount or 1 end,
-            set = function(_, key) GTDB.profile.General.ignoreAmount = key end,
-            order = 125
+            get = function() return GT.db.profile.General.ignoreAmount or 1 end,
+            set = function(_, key) GT.db.profile.General.ignoreAmount = key end,
+            order = 126
         },
         perItemPrice = {
             type = "toggle",
             name = "Display Per Item Price",
             desc = "If selected the price for 1 of each item will be displayed",
             width = 1.77,
-            get = function() return GTDB.profile.General.perItemPrice end,
-            set = function(_, key) GTDB.profile.General.perItemPrice = key end,
-            order = 126
+            get = function() return GT.db.profile.General.perItemPrice end,
+            set = function(_, key) GT.db.profile.General.perItemPrice = key end,
+            order = 127
         },
     }
 }
@@ -228,7 +250,25 @@ local filterOptions = {
             type = "group",
             name = "Custom",
             order = -1,
-            args = {}
+            args = {
+                heading = {
+                    type = "description",
+                    name = "Use this field to add additional items (by ID only) to be tracked.  One ID per line!",
+                    width = "full",
+                    order = 0
+                },
+                customInput = {
+                    type = "input",
+                    name = "Custom Input",
+                    multiline = true,
+                    width = "full",
+                    usage = "Please only enter item ID's (aka numbers)",
+                    validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
+                    get = function() return GT.db.profile.CustomFilters end,
+                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() end,
+                    order = 1
+                },
+            }
         }
     }
 }
@@ -249,27 +289,36 @@ for expansion, expansionData in pairs(GT.ItemData) do
             args = {}
         }
         for _, itemData in ipairs(categoryData) do
-            filterOptions.args[expansion].args[category].args[itemData.name] = {
-                type = "toggle",
-                name = itemData.name,
-                get = function() return GTDB.profile.Filters[itemData.id] end,
-                set = function(_, key) if key then GTDB.profile.Filters[itemData.id] = key else GTDB.profile.Filters[itemData.id] = nil end end,
-                order = itemData.order
-            }
+            if itemData.id == -1 then
+                filterOptions.args[expansion].args[category].args[expansion.." "..itemData.name] = {
+                    type = "header",
+                    name = itemData.name,
+                    order = itemData.order
+                }
+            else
+                filterOptions.args[expansion].args[category].args[itemData.name] = {
+                    type = "toggle",
+                    name = itemData.name,
+                    get = function() return GT.db.profile.Filters[itemData.id] end,
+                    set = function(_, key) if key then GT.db.profile.Filters[itemData.id] = key else GT.db.profile.Filters[itemData.id] = nil end GT:RebuildIDTables() end,
+                    order = itemData.order
+                }
+            end
         end
     end
 end
 
 function Config:OnInitialize()
-    self.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", defaults, true)
-    GTDB = self.db
+    GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", defaults, true)
+    if GT.db.profile.General.unlock then
+        GT.db.profile.General.unlock = false
+    end
 
     AceConfigRegistry:RegisterOptionsTable("Gathering Tracker", generalOptions)
     local options = AceConfigDialog:AddToBlizOptions("Gathering Tracker", "Gathering Tracker")
 
     AceConfigRegistry:RegisterOptionsTable("GT/Filter", filterOptions)
     AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", "Gathering Tracker")
-
 
     local function openOptions()
 		InterfaceOptionsFrame_OpenToCategory("Gathering Tracker")
@@ -278,4 +327,13 @@ function Config:OnInitialize()
     SLASH_GatheringTracker1 = "/gatheringtracker"
     SLASH_GatheringTracker2 = "/gt"
     SlashCmdList.GatheringTracker = openOptions
+
+    if GT.db.profile.General.groupType then
+        GT.groupMode = "RAID"
+    else
+        GT.groupMode = "WHISPER"
+    end
+    
+    GT:RebuildIDTables()
+    GT:CreateBaseFrame()
 end

@@ -58,7 +58,7 @@ local ItemData = {
             {id = 13465, name = "Mountain Silversage", order = 27},
             {id = 13466, name = "Sorrowmoss", order = 28},
             {id = 13467, name = "Icecap", order = 29},
-            {id = 13468, name = "Black Lotus", order = 30}
+            {id = 13468, name = "Black Lotus", order = 30},
         },
         Ore = {
             {id = 2770, name = "Copper Ore", order = 1},
@@ -69,7 +69,7 @@ local ItemData = {
             {id = 3858, name = "Mithril Ore", order = 6},
             {id = 7911, name = "Truesilver Ore", order = 7},
             {id = 10620, name = "Thorium Ore", order = 8},
-            {id = 11370, name = "Dark Iron Ore", order = 9}
+            {id = 11370, name = "Dark Iron Ore", order = 9},            
         },
         Cloth = {
             {id = 2589, name = "Linen Cloth", order = 1},
@@ -78,10 +78,11 @@ local ItemData = {
             {id = 4338, name = "Mageweave Cloth", order = 4},
             {id = 14047, name = "Runecloth", order = 5},
             {id = 14256, name = "Felcloth", order = 6},
-            {id = 3182, name = "Spider's Silk", order = 7},
-            {id = 4337, name = "Thick Spider's Silk", order = 8},
-            {id = 10285, name = "Shadow Silk", order = 9},
-            {id = 14227, name = "Ironweb Spider Silk", order = 10}
+            {id = -1, name = "Silk", order = 7},
+            {id = 3182, name = "Spider's Silk", order = 8},
+            {id = 4337, name = "Thick Spider's Silk", order = 9},
+            {id = 10285, name = "Shadow Silk", order = 10},
+            {id = 14227, name = "Ironweb Spider Silk", order = 11},                    
         },
         Leather = {
             {id = 2318, name = "Light Leather", order = 1},
@@ -94,10 +95,11 @@ local ItemData = {
             {id = 4235, name = "Heavy Hide", order = 8},
             {id = 8169, name = "Thick Hide", order = 9},
             {id = 8171, name = "Rugged Hide", order = 10},
-            {id = 8165, name = "Worn Dragonscale", order = 11},
-            {id = 15416, name = "Black Dragonscale", order = 12},
-            {id = 8154, name = "Scorpid Scale", order = 13},
-            {id = 15410, name = "Scale of Onyxia", order = 14}
+            {id = -1, name = "Scales", order = 11},
+            {id = 8165, name = "Worn Dragonscale", order = 12},
+            {id = 15416, name = "Black Dragonscale", order = 13},
+            {id = 8154, name = "Scorpid Scale", order = 14},
+            {id = 15410, name = "Scale of Onyxia", order = 15},            
         },
         Meat = {
             {id = 3173, name = "Bear Meat", order = 1},
@@ -122,7 +124,7 @@ local ItemData = {
             {id = 12202, name = "Tiger Meat", order = 20},
             {id = 3712, name = "Turtle Meat", order = 21},
             {id = 12205, name = "White Spider Meat", order = 22},
-            {id = 7974, name = "Zesty Clam Meat", order = 23}
+            {id = 7974, name = "Zesty Clam Meat", order = 23},            
         },
         Fish = {
             {id = 6303, name = "Raw Slitherskin Mackerel", order = 1},
@@ -143,7 +145,7 @@ local ItemData = {
             {id = 13758, name = "Raw Redgill", order = 16},
             {id = 13756, name = "Raw Summer Bass", order = 17},
             {id = 13889, name = "Raw Whitescale Salmon", order = 18},
-            {id = 124669, name = "Darkmoon Daggermaw", order = 19}
+            {id = 124669, name = "Darkmoon Daggermaw", order = 19},            
         },
         Elemental = {
             {id = 7081, name = "Breath of Wind", order = 1},
@@ -161,13 +163,35 @@ local ItemData = {
             {id = 7077, name = "Heart of Fire", order = 13},
             {id = 10286, name = "Heart of the Wild", order = 14},
             {id = 7972, name = "Ichor of Undeath", order = 15},
-            {id = 12803, name = "Living Essence", order = 16}
+            {id = 12803, name = "Living Essence", order = 16},            
         },
         Gem = {
-        
+            {id = 774, name = "Malachite", order = 1},
+            {id = 818, name = "Tigerseye", order = 2},
+            {id = 1206, name = "Moss Agate", order = 3},
+            {id = 1210, name = "Shadowgem", order = 4},
+            {id = 1529, name = "Jade", order = 5},
+            {id = 1705, name = "Lesser Moonstone", order = 6},
+            {id = 3864, name = "Citrine", order = 7},
+            {id = 7910, name = "Star Ruby", order = 8},
+            {id = 7909, name = "Aquamarine", order = 9},
+            {id = 12799, name = "Large Opal", order = 10},
+            {id = 12361, name = "Blue Sapphire", order = 11},
+            {id = 12364, name = "Huge Emerald", order = 12},
+            {id = 12363, name = "Arcane Crystal", order = 13},
+            {id = 12800, name = "Azerothian Diamond", order = 14},
+            {id = 11754, name = "Black Diamond", order = 15},
+            {id = 18335, name = "Pristine Black Diamond", order = 16},            
         },
         Enchanting = {
-        
+            {id = 10940, name = "Strange Dust", order = 1},
+            {id = 16204, name = "Light Illusion Dust", order = 2},
+            {id = 156930, name = "Rich Illusion Dust", order = 3},
+            {id = 10938, name = "Lesser Magic Essence", order = 4},
+            {id = 16202, name = "Lesser Eternal Essence", order = 5},
+            {id = 16203, name = "Greater Eternal Essence", order = 6},
+            {id = 14343, name = "Small Brilliant Shard", order = 7},
+            {id = 14344, name = "Large Brilliant Shard", order = 8},            
         }
     },
     BC = {
@@ -180,25 +204,26 @@ local ItemData = {
             {id = 22791, name = "Netherbloom", order = 6},
             {id = 22792, name = "Nightmare Vine", order = 7},
             {id = 22793, name = "Mana Thistle", order = 8},
-            {id = 22794, name = "Fel Lotus", order = 9}
+            {id = 22794, name = "Fel Lotus", order = 9},            
         },
         Ore = {
             {id = 23425, name = "Adamantite Ore", order = 1},
             {id = 23427, name = "Eternium Ore", order = 2},
             {id = 23424, name = "Fel Iron Ore", order = 2},
-            {id = 23426, name = "Khorium Ore", order = 4}
+            {id = 23426, name = "Khorium Ore", order = 4},            
         },
         Cloth = {
             {id = 21877, name = "Netherweave Cloth", order = 1},
-            {id = 21881, name = "Netherweb Spider Silk", order = 2}
+            {id = 21881, name = "Netherweb Spider Silk", order = 2},            
         },
         Leather = {
             {id = 21887, name = "Knothide Leather", order = 1},
             {id = 25707, name = "Fel Hide", order = 2},
-            {id = 29539, name = "Cobra Scales", order = 3},
-            {id = 25700, name = "Fel Scales", order = 4},
-            {id = 29547, name = "Wind Scales", order = 5},
-            {id = 29548, name = "Nether Dragonscales", order = 6}
+            {id = -1, name = "Scales", order = 3},
+            {id = 29539, name = "Cobra Scales", order = 4},
+            {id = 25700, name = "Fel Scales", order = 5},
+            {id = 29547, name = "Wind Scales", order = 6},
+            {id = 29548, name = "Nether Dragonscales", order = 7},            
         },
         Meat = {
             {id = 27669, name = "Bat Flesh", order = 1},
@@ -214,7 +239,7 @@ local ItemData = {
             {id = 27674, name = "Ravager Flesh", order = 11},
             {id = 31671, name = "Serpent Flesh", order = 12},
             {id = 27682, name = "Talbuk Venison", order = 13},
-            {id = 27681, name = "Warped Flesh", order = 14}
+            {id = 27681, name = "Warped Flesh", order = 14},            
         },
         Fish = {
             {id = 27422, name = "Barbed Gill Trout", order = 1},
@@ -226,7 +251,7 @@ local ItemData = {
             {id = 27438, name = "Golden Darter", order = 7},
             {id = 27437, name = "Icefin Bluefish", order = 8},
             {id = 27425, name = "Spotted Feltail", order = 9},
-            {id = 27429, name = "Zangarian Spore fish", order = 10}
+            {id = 27429, name = "Zangarian Spore fish", order = 10},            
         },
         Elemental = {
             {id = 22572, name = "Mote of Air", order = 1},
@@ -242,13 +267,41 @@ local ItemData = {
             {id = 21886, name = "Primal Life", order = 11},
             {id = 22457, name = "Primal Mana", order = 12},
             {id = 22456, name = "Primal Shadow", order = 13},
-            {id = 21885, name = "Primal Water", order = 14}
+            {id = 21885, name = "Primal Water", order = 14},
+            {id = -1, name = "Other", order = 15},
+            {id = 23572, name = "Primal Nether", order = 16},
+            {id = 32428, name = "Heart of Darkness", order = 17},
+            {id = 34664, name = "Sunmote", order = 18},                     
         },
         Gem = {
-        
+            {id = 23077, name = "Blood Garnet", order = 1},
+            {id = 21929, name = "Flame Spessarite", order = 2},
+            {id = 23112, name = "Golden Draenite", order = 3},
+            {id = 23079, name = "Deep Peridot", order = 4},
+            {id = 23117, name = "Azure Moonstone", order = 5},
+            {id = 23107, name = "Shadow Draenite", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 23436, name = "Living Ruby", order = 8},
+            {id = 23439, name = "Noble Topaz", order = 9},
+            {id = 23440, name = "Dawnstone", order = 10},
+            {id = 23437, name = "Talasite", order = 11},
+            {id = 23438, name = "Star of Elune", order = 12},
+            {id = 23441, name = "Nightseye", order = 13},
+            {id = -1, name = "Epic Gems", order = 14},
+            {id = 32227, name = "Crimson Spinel", order = 15},
+            {id = 32231, name = "Pyrestone", order = 16},
+            {id = 32229, name = "Lionseye", order = 17},
+            {id = 32249, name = "Seaspray Emerald", order = 18},
+            {id = 32228, name = "Empyrean Sapphire", order = 19},
+            {id = 32230, name = "Shadowsong Amethyst", order = 20},            
         },
         Enchanting = {
-        
+            {id = 22445, name = "Arcane Dust", order = 1},
+            {id = 22447, name = "Lesser Planar Essence", order = 2},
+            {id = 22446, name = "Greater Planar Essence", order = 3},
+            {id = 22448, name = "Small Prismatic Shard", order = 4},
+            {id = 22449, name = "Large Prismatic Shard", order = 5},
+            {id = 22450, name = "Void Crystal", order = 6},            
         }
     },
     Wrath = {
@@ -261,23 +314,24 @@ local ItemData = {
             {id = 37921, name = "Deadnettle", order = 6},
             {id = 36905, name = "Lichbloom", order = 7},
             {id = 36906, name = "Icethorn", order = 8},
-            {id = 36908, name = "Frost Lotus", order = 9}
+            {id = 36908, name = "Frost Lotus", order = 9},            
         },
         Ore = {
             {id = 36909, name = "Cobalt Ore", order = 1},
             {id = 36912, name = "Saronite Ore", order = 2},
-            {id = 36910, name = "Titanium Ore", order = 3}
+            {id = 36910, name = "Titanium Ore", order = 3},            
         },
         Cloth = {
             {id = 33470, name = "Frostweave Cloth", order = 1},
-            {id = 42253, name = "Iceweb Spider Silk", order = 2}
+            {id = 42253, name = "Iceweb Spider Silk", order = 2},            
         },
         Leather = {
             {id = 33568, name = "Borean Leather", order = 1},
             {id = 44128, name = "Arctic Fur", order = 2},
-            {id = 38557, name = "Icy Dragonscale", order = 3},
-            {id = 38561, name = "Jormungar Scale", order = 4},
-            {id = 38558, name = "Nerubian Chitin", order = 5}
+            {id = -1, name = "Scales", order = 3},
+            {id = 38557, name = "Icy Dragonscale", order = 4},
+            {id = 38561, name = "Jormungar Scale", order = 5},
+            {id = 38558, name = "Nerubian Chitin", order = 6},            
         },
         Meat = {
             {id = 43013, name = "Chilled Meat", order = 1},
@@ -285,7 +339,7 @@ local ItemData = {
             {id = 43012, name = "Rhino Meat", order = 3},
             {id = 43009, name = "Shoveltusk Flank", order = 4},
             {id = 43011, name = "Worg Haunch", order = 5},
-            {id = 43010, name = "Worm Meat", order = 6}
+            {id = 43010, name = "Worm Meat", order = 6},            
         },
         Fish = {
             {id = 41812, name = "Barrelhead Goby", order = 1},
@@ -304,7 +358,7 @@ local ItemData = {
             {id = 43571, name = "Sewer Carp", order = 14},
             {id = 43647, name = "Shimmering Minnow", order = 15},
             {id = 43652, name = "Slippery Eel", order = 16},
-            {id = 53067, name = "Striped Lurker", order = 17}
+            {id = 53067, name = "Striped Lurker", order = 17},            
         },
         Elemental = {
             {id = 37700, name = "Crystallized Air", order = 1},
@@ -318,13 +372,42 @@ local ItemData = {
             {id = 36860, name = "Eternal Fire", order = 9},
             {id = 35625, name = "Eternal Life", order = 10},
             {id = 35627, name = "Eternal Shadow", order = 11},
-            {id = 35622, name = "Eternal Water", order = 12}
+            {id = 35622, name = "Eternal Water", order = 12},
+            {id = -1, name = "Other", order = 13},
+            {id = 43102, name = "Frozen Orb", order = 14},
+            {id = 45087, name = "Runed Orb", order = 15},
+            {id = 47556, name = "Crusader Orb", order = 16},
+            {id = 49908, name = "Primordial Saronite", order = 17},            
         },
         Gem = {
-        
+            {id = 36917, name = "Bloodstone", order = 1},
+            {id = 36929, name = "Huge Citrine", order = 2},
+            {id = 36920, name = "Sun Crystal", order = 3},
+            {id = 36932, name = "Dark Jade", order = 4},
+            {id = 36923, name = "Chalcedony", order = 5},
+            {id = 36926, name = "Shadow Crystal", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 36918, name = "Scarlet Ruby", order = 8},
+            {id = 36930, name = "Monarch Topaz", order = 9},
+            {id = 36921, name = "Autumns Glow", order = 10},
+            {id = 36933, name = "Forest Emerald", order = 11},
+            {id = 36924, name = "Sky Sapphire", order = 12},
+            {id = 36927, name = "Twilight Opal", order = 13},
+            {id = -1, name = "Epic Gems", order = 14},
+            {id = 36919, name = "Cardinal Ruby", order = 15},
+            {id = 36931, name = "Ametrine", order = 16},
+            {id = 36922, name = "Kings Amber", order = 17},
+            {id = 36934, name = "Eye of Zul", order = 18},
+            {id = 36925, name = "Majestic Zircon", order = 19},
+            {id = 36928, name = "Dreadstone", order = 20},            
         },
         Enchanting = {
-        
+            {id = 34054, name = "Infinite Dust", order = 1},
+            {id = 34056, name = "Lesser Cosmic Essence", order = 2},
+            {id = 34055, name = "Greater Cosmic Essence", order = 3},
+            {id = 34053, name = "Small Dream Shard", order = 4},
+            {id = 34052, name = "Dream Shard", order = 5},
+            {id = 34057, name = "Abyss Crystal", order = 6},            
         }
     },
     Cata = {
@@ -334,20 +417,21 @@ local ItemData = {
             {id = 52984, name = "Stormvine", order = 3},
             {id = 52986, name = "Heartblossom", order = 4},
             {id = 52988, name = "Whiptail", order = 5},
-            {id = 52987, name = "Twilight Jasmine", order = 6}
+            {id = 52987, name = "Twilight Jasmine", order = 6},            
         },
         Ore = {
             {id = 53038, name = "Obsidium Ore", order = 1},
             {id = 52185, name = "Elementium Ore", order = 2},
-            {id = 52183, name = "Pyrite Ore", order = 3}
+            {id = 52183, name = "Pyrite Ore", order = 3},            
         },
         Cloth = {
-            {id = 53010, name = "Embersilk Cloth", order = 1}
+            {id = 53010, name = "Embersilk Cloth", order = 1},
         },
         Leather = {
             {id = 52976, name = "Savage Leather", order = 1},
-            {id = 52979, name = "Blackened Dragonscale", order = 2},
-            {id = 52982, name = "Deepsea Scale", order = 3}
+            {id = -1, name = "Scales", order = 2},
+            {id = 52979, name = "Blackened Dragonscale", order = 3},
+            {id = 52982, name = "Deepsea Scale", order = 4},            
         },
         Meat = {
             {id = 62784, name = "Crocolisk Tail", order = 1},
@@ -356,7 +440,7 @@ local ItemData = {
             {id = 62781, name = "Giant Turtle Tongue", order = 4},
             {id = 62780, name = "Snake Eye", order = 5},
             {id = 67229, name = "Stag Flank", order = 6},
-            {id = 62778, name = "Toughened Flesh", order = 7}
+            {id = 62778, name = "Toughened Flesh", order = 7},            
         },
         Fish = {
             {id = 53065, name = "Albino Cavefish", order = 1},
@@ -370,20 +454,48 @@ local ItemData = {
             {id = 53063, name = "Mountain Trout", order = 9},
             {id = 53069, name = "Murglesnout", order = 10},
             {id = 53062, name = "Sharptooth", order = 11},
-            {id = 53067, name = "Striped Lurker", order = 12}
+            {id = 53067, name = "Striped Lurker", order = 12},            
         },
         Elemental = {
             {id = 52328, name = "Volatile Air", order = 1},
             {id = 52327, name = "Volatile Earth", order = 2},
             {id = 52325, name = "Volatile Fire", order = 3},
             {id = 52329, name = "Volatile Life", order = 4},
-            {id = 52326, name = "Volatile Water", order = 5}
+            {id = 52326, name = "Volatile Water", order = 5},
+            {id = -1, name = "Other", order = 6},
+            {id = 52078, name = "Chaos Orb", order = 7},
+            {id = 69237, name = "Living Ember", order = 8},
+            {id = 71998, name = "Essence of Destruction", order = 9},            
         },
         Gem = {
-        
+            {id = 52177, name = "Carnelian", order = 1},
+            {id = 52181, name = "Hessonite", order = 2},
+            {id = 52179, name = "Alicite", order = 3},
+            {id = 52182, name = "Jasper", order = 4},
+            {id = 52178, name = "Zephyrite", order = 5},
+            {id = 52180, name = "Nightstone", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 52190, name = "Inferno Ruby", order = 8},
+            {id = 52193, name = "Ember Topaz", order = 9},
+            {id = 52195, name = "Amberjewel", order = 10},
+            {id = 52192, name = "Dream Emerald", order = 11},
+            {id = 52191, name = "Ocean Sapphire", order = 12},
+            {id = 52194, name = "Demonseye", order = 13},
+            {id = -1, name = "Epic Gems", order = 14},
+            {id = 71805, name = "Queens Garnet", order = 13},
+            {id = 71808, name = "Lava Coral", order = 14},
+            {id = 71806, name = "Lightstone", order = 15},
+            {id = 71810, name = "Elven Peridot", order = 16},
+            {id = 71807, name = "Deepholm Iolite", order = 17},
+            {id = 71809, name = "Shadow Spinel", order = 18},            
         },
         Enchanting = {
-        
+            {id = 52555, name = "Hypnotic Dust", order = 1},
+            {id = 52718, name = "Lesser Celestial Essence", order = 2},
+            {id = 52719, name = "Greater Celestial Essence", order = 3},
+            {id = 52720, name = "Small Heavenly Shard", order = 4},
+            {id = 52721, name = "Heavenly Shard", order = 5},
+            {id = 52722, name = "Maelstrom Crystal", order = 6},            
         }
     },
     MoP = {
@@ -393,21 +505,22 @@ local ItemData = {
             {id = 72235, name = "Silkweed", order = 3},
             {id = 79010, name = "Snow Lily", order = 4},
             {id = 79011, name = "Fool's Cap", order = 5},
-            {id = 72238, name = "Golden Lotus", order = 6}
+            {id = 72238, name = "Golden Lotus", order = 6},            
         },
         Ore = {
             {id = 72092, name = "Ghost Iron Ore", order = 1},
             {id = 72093, name = "Kyparite", order = 2},
             {id = 72094, name = "Black Trillium Ore", order = 3},
-            {id = 72103, name = "White Trillium Ore", order = 4}
+            {id = 72103, name = "White Trillium Ore", order = 4},            
         },
         Cloth = {
-            {id = 72988, name = "Windwool Cloth", order = 1}
+            {id = 72988, name = "Windwool Cloth", order = 1},
         },
         Leather = {
             {id = 72162, name = "Sha-Touched Leather", order = 1},
             {id = 72120, name = "Exotic Leather", order = 2},
-            {id = 79101, name = "Prismatic Scale", order = 3}
+            {id = -1, name = "Scales", order = 3},
+            {id = 79101, name = "Prismatic Scale", order = 4},            
         },
         Meat = {
             {id = 74834, name = "Mushan Ribs", order = 1},
@@ -415,7 +528,7 @@ local ItemData = {
             {id = 75014, name = "Raw Crocolisk Belly", order = 3},
             {id = 74833, name = "Raw Tiger Steak", order = 4},
             {id = 74837, name = "Raw Turtle Meat", order = 5},
-            {id = 85506, name = "Viseclaw Meat", order = 6}
+            {id = 85506, name = "Viseclaw Meat", order = 6},            
         },
         Fish = {
             {id = 74859, name = "Emperor Salmon", order = 1},
@@ -426,17 +539,41 @@ local ItemData = {
             {id = 74865, name = "Krasarang Paddlefish", order = 6},
             {id = 74860, name = "Redbelly Mandarin", order = 7},
             {id = 74864, name = "Reef Octopus", order = 8},
-            {id = 74861, name = "Tiger Gourami", order = 9}
+            {id = 74861, name = "Tiger Gourami", order = 9},            
         },
         Elemental = {
             {id = 89112, name = "Mote of Harmony", order = 1},
-            {id = 76061, name = "Spirit of Harmony", order = 2}
+            {id = 76061, name = "Spirit of Harmony", order = 2},
+            {id = -1, name = "Other", order = 3},
+            {id = 80433, name = "Blood Spirit", order = 4},
+            {id = 94289, name = "Haunting Spirit", order = 5},
+            {id = 102218, name = "Spirit of War", order = 6},            
         },
         Gem = {
-        
+            {id = 90407, name = "Pandarian Garnet", order = 1},
+            {id = 76734, name = "Tiger Opal", order = 2},
+            {id = 76136, name = "Sunstone", order = 3},
+            {id = 76130, name = "Alexandrite", order = 4},
+            {id = 76134, name = "Lapis Lazuli", order = 5},
+            {id = 76137, name = "Roguestone", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 76133, name = "Primordial Ruby", order = 8},
+            {id = 76135, name = "Vermilion Onyx", order = 9},
+            {id = 76131, name = "Suns Radiance", order = 10},
+            {id = 76140, name = "Wild Jade", order = 11},
+            {id = 76142, name = "Rivers Heart", order = 12},
+            {id = 76139, name = "Imperial Amethyst", order = 13},
+            {id = -1, name = "Other", order = 14},
+            {id = 76138, name = "Sparkling Shard", order = 15},
+            {id = 76141, name = "Serpents Eye", order = 16},            
         },
         Enchanting = {
-        
+            {id = 74249, name = "Spirit Dust", order = 1},
+            {id = 74250, name = "Mysterious Essence", order = 2},
+            {id = 74252, name = "Small Ethereal Shard", order = 3},
+            {id = 74247, name = "Ethereal Shard", order = 4},
+            {id = 105718, name = "Sha Crystal Fragment", order = 5},
+            {id = 74248, name = "Sha Crystal", order = 6},            
         }
     },
     WoD = {
@@ -446,24 +583,24 @@ local ItemData = {
             {id = 109125, name = "Fireweed", order = 3},
             {id = 109126, name = "Gorgrond Flytrap", order = 4},
             {id = 109129, name = "Talador Orchid", order = 5},
-            {id = 109128, name = "Nagrand Arrowbloom", order = 6}
+            {id = 109128, name = "Nagrand Arrowbloom", order = 6},            
         },
         Ore = {
             {id = 109118, name = "Blackrock Ore", order = 1},
-            {id = 109119, name = "True Iron Ore", order = 2}
+            {id = 109119, name = "True Iron Ore", order = 2},            
         },
         Cloth = {
-            {id = 111557, name = "Sumptuous Fur", order = 1}
+            {id = 111557, name = "Sumptuous Fur", order = 1},
         },
         Leather = {
-            {id = 110609, name = "Raw Beast Hide", order = 1}
+            {id = 110609, name = "Raw Beast Hide", order = 1},
         },
         Meat = {
             {id = 109136, name = "Raw Boar Meat", order = 1},
             {id = 109131, name = "Raw Clefthoof Meat", order = 2},
             {id = 109134, name = "Raw Elekk Meat", order = 3},
             {id = 109135, name = "Raw Riverbeast Meat", order = 4},
-            {id = 109132, name = "Raw Talbuk Meat", order = 5}
+            {id = 109132, name = "Raw Talbuk Meat", order = 5},            
         },
         Fish = {
             {id = 111664, name = "Abyssal Gulper Eel", order = 1},
@@ -474,16 +611,26 @@ local ItemData = {
             {id = 111666, name = "Fire Ammonite", order = 6},
             {id = 111669, name = "Jawless Skulker", order = 7},
             {id = 118565, name = "Savage Piranha", order = 8},
-            {id = 111665, name = "Sea Scorpion", order = 9}
+            {id = 111665, name = "Sea Scorpion", order = 9},            
         },
         Elemental = {
-        
+            {id = 113264, name = "Sorcerous Air", order = 1},
+            {id = 113263, name = "Sorcerous Earth", order = 2},
+            {id = 113261, name = "Sorcerous Fire", order = 3},
+            {id = 113262, name = "Sorcerous Water", order = 4},
+            {id = -1, name = "Other", order = 5},
+            {id = 120945, name = "Primal Spirit", order = 6},
+            {id = 118472, name = "Savage Blood", order = 7},            
         },
         Gem = {
-        
+            {id = 115524, name = "Taladite Crystal", order = 1},
         },
         Enchanting = {
-        
+            {id = 109693, name = "Draenic Dust", order = 1},
+            {id = 115502, name = "Small Luminous Shard", order = 2},
+            {id = 111245, name = "Luminous Shard", order = 3},
+            {id = 115504, name = "Fractured Temporal Crystal", order = 4},
+            {id = 113588, name = "Temporal Crystal", order = 5},            
         }
     },
     Legion = {
@@ -494,28 +641,29 @@ local ItemData = {
             {id = 124104, name = "Fjarnskaggl", order = 4},
             {id = 124103, name = "Foxflower", order = 5},
             {id = 124105, name = "Starlight Rose", order = 6},
-            {id = 124106, name = "Felwort", order = 7}
+            {id = 124106, name = "Felwort", order = 7},            
         },
         Ore = {
             {id = 123919, name = "Felslate", order = 1},
             {id = 123918, name = "Leystone Ore", order = 2},
-            {id = 151564, name = "Empyrium", order = 3}
+            {id = 151564, name = "Empyrium", order = 3},            
         },
         Cloth = {
             {id = 151567, name = "Lightweave Cloth", order = 1},
-            {id = 124437, name = "Shal'dorei Silk", order = 2}
+            {id = 124437, name = "Shal'dorei Silk", order = 2},            
         },
         Leather = {
             {id = 124113, name = "Stonehide Leather", order = 1},
             {id = 151566, name = "Fiendish Leather", order = 2},
-            {id = 124115, name = "Stormscale", order = 3}
+            {id = -1, name = "Scales", order = 3},
+            {id = 124115, name = "Stormscale", order = 4},            
         },
         Meat = {
             {id = 124119, name = "Big Gamy Ribs", order = 1},
             {id = 124118, name = "Fatty Bearsteak", order = 2},
             {id = 124117, name = "Lean Shank", order = 3},
             {id = 124120, name = "Leyblood", order = 4},
-            {id = 124121, name = "Wildfowl Egg", order = 5}
+            {id = 124121, name = "Wildfowl Egg", order = 5},            
         },
         Fish = {
             {id = 124112, name = "Black Barracuda", order = 1},
@@ -524,16 +672,41 @@ local ItemData = {
             {id = 124108, name = "Mossgill Perch", order = 4},
             {id = 124111, name = "Runescale Koi", order = 5},
             {id = 133607, name = "Silver Mackerel", order = 6},
-            {id = 124110, name = "Stormray", order = 7}
+            {id = 124110, name = "Stormray", order = 7},            
         },
         Elemental = {
-        
+            {id = 124124, name = "Blood of Sargeras", order = 1},
+            {id = 124444, name = "Infernal Brimstone", order = 2},
+            {id = 151568, name = "Primal Sargerite", order = 3},            
         },
         Gem = {
-        
+            {id = 130172, name = "Sangrite", order = 1},
+            {id = 130173, name = "Deep Amber", order = 2},
+            {id = 130174, name = "Azsunite", order = 3},
+            {id = 130175, name = "Chaotic Spinel", order = 4},
+            {id = 130176, name = "Skystone", order = 5},
+            {id = 130177, name = "Queens Opal", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 130178, name = "Furystone", order = 8},
+            {id = 130179, name = "Eye of Prophecy", order = 9},
+            {id = 130180, name = "Dawnlight", order = 10},
+            {id = 130181, name = "Pandemonite", order = 11},
+            {id = 130182, name = "Maelstrom Sapphire", order = 12},
+            {id = 130183, name = "Shadowruby", order = 13},
+            {id = -1, name = "Epic Gems", order = 14},
+            {id = 151721, name = "Hesselian", order = 15},
+            {id = 151720, name = "Chemirine", order = 16},
+            {id = 151719, name = "Lightsphene", order = 17},
+            {id = 151722, name = "Florid Malachite", order = 18},
+            {id = 151579, name = "Labradorite", order = 19},
+            {id = 151718, name = "Argulite", order = 20},
+            {id = -1, name = "Other", order = 21},
+            {id = 129100, name = "Gem Chip", order = 19},            
         },
         Enchanting = {
-        
+            {id = 124440, name = "Arkhana", order = 1},
+            {id = 124441, name = "Leylight Shard", order = 2},
+            {id = 124442, name = "Chaos Crystal", order = 3},            
         }
     },
     BFA = {
@@ -546,29 +719,31 @@ local ItemData = {
             {id = 152508, name = "Winter's Kiss", order = 6},
             {id = 152510, name = "Anchor Weed", order = 7},
             {id = 168487, name = "Zin'anthid", order = 8},
-            {id = 168822, name = "Thin Jelly", order = 9},
-            {id = 168825, name = "Rich Jelly", order = 10},
-            {id = 168828, name = "Royal Jelly", order = 11}
+            {id = -1, name = "Jelly", order = 9},
+            {id = 168822, name = "Thin Jelly", order = 10},
+            {id = 168825, name = "Rich Jelly", order = 11},
+            {id = 168828, name = "Royal Jelly", order = 12},            
         },
         Ore = {
             {id = 152512, name = "Monelite Ore", order = 1},
             {id = 152579, name = "Storm Silver Ore", order = 2},
             {id = 152513, name = "Platinum Ore", order = 3},
-            {id = 168185, name = "Osmenite Ore", order = 4}
+            {id = 168185, name = "Osmenite Ore", order = 4},            
         },
         Cloth = {
             {id = 152576, name = "Tidespray Linen", order = 1},
             {id = 152577, name = "Deep Sea Satin", order = 2},
-            {id = 167738, name = "Gilded Seaweave", order = 3}
+            {id = 167738, name = "Gilded Seaweave", order = 3},            
         },
         Leather = {
             {id = 152541, name = "Coarse Leather", order = 1},
             {id = 154722, name = "Tempest Hide", order = 2},
             {id = 168649, name = "Dredged Leather", order = 3},
-            {id = 153050, name = "Shimmerscale", order = 4},
-            {id = 154164, name = "Blood-Stained Bone", order = 5},
-            {id = 168650, name = "Cragscale", order = 6},
-            {id = 153051, name = "Mistscale", order = 7}
+            {id = -1, name = "Scales", order = 4},
+            {id = 153050, name = "Shimmerscale", order = 5},
+            {id = 154164, name = "Blood-Stained Bone", order = 6},
+            {id = 168650, name = "Cragscale", order = 7},
+            {id = 153051, name = "Mistscale", order = 8},            
         },
         Meat = {
             {id = 152631, name = "Briny Flesh", order = 1},
@@ -577,7 +752,7 @@ local ItemData = {
             {id = 168645, name = "Moist Fillet", order = 4},
             {id = 174353, name = "Questionable Meat", order = 5},
             {id = 168303, name = "Rubbery Flank", order = 6},
-            {id = 154899, name = "Thick Paleo Steak", order = 7}
+            {id = 154899, name = "Thick Paleo Steak", order = 7},            
         },
         Fish = {
             {id = 174328, name = "Aberrant Voidfin", order = 1},
@@ -591,16 +766,44 @@ local ItemData = {
             {id = 152543, name = "Sand Shifter", order = 9},
             {id = 152544, name = "Slimy Mackerel", order = 10},
             {id = 152548, name = "Tiragarde Perch", order = 11},
-            {id = 168302, name = "Viper Fish", order = 12}
+            {id = 168302, name = "Viper Fish", order = 12},            
         },
         Elemental = {
-        
+            {id = 152668, name = "Expulsom", order = 1},
+            {id = 162460, name = "Hydrocore", order = 2},
+            {id = 162461, name = "Sanguicell", order = 3},
+            {id = 165948, name = "Tidalcore", order = 4},
+            {id = 165703, name = "Breath of Bwonsamdi", order = 5},            
         },
         Gem = {
-        
+            {id = 153701, name = "Rubellite", order = 1},
+            {id = 153703, name = "Solstone", order = 2},
+            {id = 153700, name = "Golden Beryl", order = 3},
+            {id = 153704, name = "Viridium", order = 4},
+            {id = 153705, name = "Kyanite", order = 5},
+            {id = 153702, name = "Kubiline", order = 6},
+            {id = -1, name = "Rare Gems", order = 7},
+            {id = 154121, name = "Scarlet Diamond", order = 8},
+            {id = 154123, name = "Amberblaze", order = 9},
+            {id = 154120, name = "Owlseye", order = 10},
+            {id = 154124, name = "Laribole", order = 11},
+            {id = 154125, name = "Royal Quartz", order = 12},
+            {id = 154122, name = "Tidal Amethyst", order = 13},
+            {id = -1, name = "Epic Gems", order = 14},
+            {id = 168193, name = "Azsharine", order = 15},
+            {id = 168190, name = "Lava Lazuli", order = 16},
+            {id = 168192, name = "Sand Spinel", order = 17},
+            {id = 168188, name = "Sage Agate", order = 18},
+            {id = 154125, name = "Royal Quartz", order = 19},
+            {id = 154122, name = "Tidal Amethyst", order = 20},
+            {id = -1, name = "Other", order = 21},
+            {id = 153706, name = "Krakens Eye", order = 22},
+            {id = 168635, name = "Leviathans Eye", order = 23},            
         },
         Enchanting = {
-        
+            {id = 152875, name = "Gloom Dust", order = 1},
+            {id = 152876, name = "Umbra Shard", order = 2},
+            {id = 152877, name = "Veiled Crystal", order = 3},            
         }
     },
     SL = {
@@ -610,7 +813,7 @@ local ItemData = {
             {id = 168586, name = "Rising Glory", order = 3},
             {id = 170554, name = "Vigils Torch", order = 4},
             {id = 168583, name = "Widowbloom", order = 5},
-            {id = 171315, name = "Nightshade", order = 6}
+            {id = 171315, name = "Nightshade", order = 6},            
         },
         Ore = {
             {id = 171828, name = "Laestrite Ore", order = 1},
@@ -619,12 +822,13 @@ local ItemData = {
             {id = 171832, name = "Sinvyr Ore", order = 4},
             {id = 171829, name = "Solenium Ore", order = 5},
             {id = 171833, name = "Elethium Ore", order = 6},
-            {id = 171840, name = "Porous Stone", order = 7},
-            {id = 171841, name = "Shaded Stone", order = 8}
+            {id = -1, name = "Stone", order = 7},
+            {id = 171840, name = "Porous Stone", order = 8},
+            {id = 171841, name = "Shaded Stone", order = 9},            
         },
         Cloth = {
             {id = 173202, name = "Shrouded Cloth", order = 1},
-            {id = 173204, name = "Lightless Silk", order = 2}
+            {id = 173204, name = "Lightless Silk", order = 2},            
         },
         Leather = {
             {id = 172089, name = "Desolate Leather", order = 1},
@@ -635,17 +839,18 @@ local ItemData = {
             {id = 172333, name = "Purified Leather", order = 6},
             {id = 172331, name = "Sinful Leather", order = 7},
             {id = 172330, name = "Unseelie Leather", order = 8},
-            {id = 172090, name = "Sorrowscale Fragment", order = 9},
-            {id = 177281, name = "Dnt Reuse Me Mtmm", order = 10},
-            {id = 172092, name = "Pallid Bone", order = 11},
-            {id = 177279, name = "Gaunt Sinew", order = 12}
+            {id = -1, name = "Scales", order = 9},
+            {id = 172090, name = "Sorrowscale Fragment", order = 10},
+            {id = 177281, name = "Dnt Reuse Me Mtmm", order = 11},
+            {id = 172092, name = "Pallid Bone", order = 12},
+            {id = 177279, name = "Gaunt Sinew", order = 13},            
         },
         Meat = {
             {id = 172052, name = "Aethereal Meat", order = 1},
             {id = 172055, name = "Phantasmal Haunch", order = 2},
             {id = 172054, name = "Seraphic Wing", order = 3},
             {id = 179315, name = "Shadowy Shank", order = 4},
-            {id = 172053, name = "Tenebrous Ribs", order = 5}
+            {id = 172053, name = "Tenebrous Ribs", order = 5},            
         },
         Fish = {
             {id = 173033, name = "Iridescent Amberjack", order = 1},
@@ -653,16 +858,20 @@ local ItemData = {
             {id = 173035, name = "Pocked Bonefish", order = 3},
             {id = 173034, name = "Silvergill Pike", order = 4},
             {id = 173036, name = "Spinefin Piranha", order = 5},
-            {id = 173037, name = "Elysian Thade", order = 6}
+            {id = 173037, name = "Elysian Thade", order = 6},            
         },
         Elemental = {
         
         },
         Gem = {
-        
+            {id = 173109, name = "Angerseye", order = 1},
+            {id = 173108, name = "Oriblase", order = 2},
+            {id = 173110, name = "Umbryl", order = 3},            
         },
         Enchanting = {
-        
+            {id = 172230, name = "Soul Dust", order = 1},
+            {id = 172231, name = "Sacred Shard", order = 2},
+            {id = 172232, name = "Eternal Crystal", order = 3},            
         }
     },
 }
