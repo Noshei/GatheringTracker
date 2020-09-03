@@ -368,7 +368,6 @@ end
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
-    GT.ElvUI = IsAddOnLoaded("ElvUI")
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", defaults, true)
     if GT.db.profile.General.unlock then
