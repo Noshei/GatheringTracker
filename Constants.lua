@@ -701,7 +701,7 @@ local ItemData = {
             {id = 151579, name = "Labradorite", order = 19},
             {id = 151718, name = "Argulite", order = 20},
             {id = -1, name = "Other", order = 21},
-            {id = 129100, name = "Gem Chip", order = 19},            
+            {id = 129100, name = "Gem Chip", order = 22},            
         },
         Enchanting = {
             {id = 124440, name = "Arkhana", order = 1},

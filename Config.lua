@@ -4,6 +4,11 @@ local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 
+GT.media = media
+
+--register font with LSM
+media:Register("font", "Fira Mono Medium", "Interface\\Addons\\GatheringTracker\\Media\\Fonts\\FiraMono-Medium.ttf", media.LOCALE_BIT_western + media.LOCALE_BIT_ruRU)
+
 local defaults = {
     profile = {
         General = {
@@ -14,12 +19,12 @@ local defaults = {
             relativePoint = "TOPLEFT",
             iconWidth = 27,
             iconHeight = 27,
-            textColor = {1, 1, 1, 1},
+            textColor = {1, 1, 1},
             textSize = 20,
-            textFont = 19,
-            totalColor = {0.098, 1, 0.078, 1},
+            textFont = "Fira Mono Medium",
+            totalColor = {0.098, 1, 0.078},
             totalSize = 20,
-            totalFont = 19,
+            totalFont = "Fira Mono Medium",
             groupType = false,
             stacksOnIcon = false,
             shareSettings = false,
@@ -27,6 +32,7 @@ local defaults = {
             tsmPrice = 1,
             ignoreAmount = 0,
             perItemPrice = false,
+            debugOption = false,
         },
         Filters = {
         },
@@ -47,8 +53,10 @@ local generalOptions = {
                 GT.db.profile.General.enable = key
                 if key and not GT.Enabled then
                     GT:OnEnable()
+                    GT:ResetDisplay(true)
                 elseif not key and GT.Enabled then
                     GT:OnDisable()
+                    GT:ResetDisplay(true)
                 end
             end,
             order = 1
@@ -74,7 +82,7 @@ local generalOptions = {
             step = 1,
             width = 1.77,
             get = function() return GT.db.profile.General.iconWidth or 1 end,
-            set = function(_, key) GT.db.profile.General.iconWidth = key end,
+            set = function(_, key) GT.db.profile.General.iconWidth = key GT:ResetDisplay(true) end,
             order = 103
         },
         iconHeight = {
@@ -85,7 +93,7 @@ local generalOptions = {
             step = 1,
             width = 1.77,
             get = function() return GT.db.profile.General.iconHeight or 1 end,
-            set = function(_, key) GT.db.profile.General.iconHeight = key end,
+            set = function(_, key) GT.db.profile.General.iconHeight = key GT:ResetDisplay(true) end,
             order = 104
         },
         header2 = {
@@ -96,9 +104,9 @@ local generalOptions = {
         textColor = {
             type = "color",
             name = "Text Color",
-            hasAlpha = true,
-            get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
-            set = function(_,r,g,b,a) GT.db.profile.General.textColor = {r,g,b,a} end,
+            hasAlpha = false,
+            get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3] or 1,1,1 end,
+            set = function(_,r,g,b) GT.db.profile.General.textColor = {r,g,b} GT:ResetDisplay(true) end,
             order = 111
         },
         textSize = {
@@ -109,25 +117,25 @@ local generalOptions = {
             step = 1,
             width = 1.25,
             get = function() return GT.db.profile.General.textSize or 1 end,
-            set = function(_, key) GT.db.profile.General.textSize = key end,
+            set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true) end,
             order = 112
         },
         textFont = {
             type = "select",
             name = "Text Font",
             width = 1.25,
-            itemControl = "DDI-Font",
-            values = media:List("font"),
+            dialogControl = 'LSM30_Font',
+            values = media:HashTable("font"),
             get = function() return GT.db.profile.General.textFont end,
-            set = function(_, key) GT.db.profile.General.textFont = key end,
+            set = function(_, key) GT.db.profile.General.textFont = key GT:ResetDisplay(true) end,
             order = 113
         },
         totalColor = {
             type = "color",
             name = "Total Color",
-            hasAlpha = true,
-            get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3], c[4] or 1,1,1,1 end,
-            set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} end,
+            hasAlpha = false,
+            get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3] or 1,1,1 end,
+            set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} GT:ResetDisplay(true) end,
             order = 114
         },
         totalSize = {
@@ -138,17 +146,17 @@ local generalOptions = {
             step = 1,
             width = 1.25,
             get = function() return GT.db.profile.General.totalSize or 1 end,
-            set = function(_, key) GT.db.profile.General.totalSize = key end,
+            set = function(_, key) GT.db.profile.General.totalSize = key GT:ResetDisplay(true) end,
             order = 115
         },
         totalFont = {
             type = "select",
             name = "Total Font",
             width = 1.25,
-            itemControl = "DDI-Font",
-            values = media:List("font"),
+            dialogControl = 'LSM30_Font',
+            values = media:HashTable("font"),
             get = function() return GT.db.profile.General.totalFont end,
-            set = function(_, key) GT.db.profile.General.totalFont = key end,
+            set = function(_, key) GT.db.profile.General.totalFont = key GT:ResetDisplay(true) end,
             order = 116
         },
         header3 = {
@@ -168,47 +176,68 @@ local generalOptions = {
                     GT.groupMode = "RAID"
                 else
                     GT.groupMode = "WHISPER"
+                    GT.db.profile.General.shareSettings = false
+                end
+                if key and not IsInGroup() then
+                    GT:ResetDisplay(false)
+                elseif key and IsInGroup() then
+                    GT:InventoryUpdate()
+                    GT:ResetDisplay(true)
+                elseif not key and IsInGroup() then
+                    GT:ResetDisplay(false)
+                elseif not key and not IsInGroup() then
+                    GT:InventoryUpdate()
+                    GT:ResetDisplay(true)
                 end
             end,
             order = 121
-        },
-        stacksOnIcon = {
-            type = "toggle",
-            name = "Display Stack Count over Icon",
-            desc  = "When selected the stack count will be displayed over the icon.  This is only available when Group Mode is disabled.",
-            width = 1.77,
-            disabled = function() return GT.db.profile.General.groupType end,
-            get = function() return GT.db.profile.General.stacksOnIcon end,
-            set = function(_, key) GT.db.profile.General.stacksOnIcon = key end,
-            order = 122
         },
         shareSettings = {
             type = "toggle",
             name = "Share Settings with Group",
             desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.",
             width = 1.77,
-            disabled = function() return not GT.db.profile.General.groupType end,
             get = function() return GT.db.profile.General.shareSettings end,
             set = function(_, key) GT.db.profile.General.shareSettings = key end,
+            disabled = function() return not GT.db.profile.General.groupType end,
             order = 123
-        },
-        includeBank = {
-            type = "toggle",
-            name = "Include Bank",
-            desc = "If selected displayed values will include items in your bank",
-            width = 1.77,
-            get = function() return GT.db.profile.General.includeBank end,
-            set = function(_, key) GT.db.profile.General.includeBank = key end,
-            order = 124
         },
         tsmPrice = {
             type = "select",
             name = "TSM Price Source",
-            desc = "Select the desired TSM price source, or none to disable price information",
+            desc = "Select the desired TSM price source, or none to disable price information.  TSM is required for this option to be enabled.",
             width = 1.77,
             values = {[0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical"},
             get = function() return GT.db.profile.General.tsmPrice end,
-            set = function(_, key) GT.db.profile.General.tsmPrice = key end,
+            set = function(_, key) 
+                GT.db.profile.General.tsmPrice = key
+                if GT.db.profile.General.tsmPrice == 0 then
+                    GT.db.profile.General.perItemPrice = false
+                end
+                GT:ResetDisplay(true) end,
+            disabled = function() 
+                if not GT.tsmLoaded then
+                    return true
+                else
+                    return false
+                end
+            end,
+            order = 124
+        },
+        perItemPrice = {
+            type = "toggle",
+            name = "Display Per Item Price",
+            desc = "If selected the price for 1 of each item will be displayed",
+            width = 1.77,
+            get = function() return GT.db.profile.General.perItemPrice end,
+            set = function(_, key) GT.db.profile.General.perItemPrice = key GT:ResetDisplay(true) end,
+            disabled = function() 
+                if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                    return true
+                else
+                    return false
+                end
+            end,
             order = 125
         },
         ignoreAmount = {
@@ -220,17 +249,31 @@ local generalOptions = {
             step = 1,
             width = 1.77,
             get = function() return GT.db.profile.General.ignoreAmount or 1 end,
-            set = function(_, key) GT.db.profile.General.ignoreAmount = key end,
+            set = function(_, key) GT.db.profile.General.ignoreAmount = key GT:ResetDisplay(true) end,
             order = 126
         },
-        perItemPrice = {
+        includeBank = {
             type = "toggle",
-            name = "Display Per Item Price",
-            desc = "If selected the price for 1 of each item will be displayed",
+            name = "Include Bank",
+            desc = "If selected displayed values will include items in your bank.",
             width = 1.77,
-            get = function() return GT.db.profile.General.perItemPrice end,
-            set = function(_, key) GT.db.profile.General.perItemPrice = key end,
+            get = function() return GT.db.profile.General.includeBank end,
+            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate() end,
             order = 127
+        },
+        header3 = {
+            type = "header",
+            name = "Debug",
+            order = 10000
+        },
+        debugOption = {
+            type = "toggle",
+            name = "Debug",
+            desc = "This is for debugging the addon, do NOT enable, it is spammy.",
+            width = 1.77,
+            get = function() return GT.db.profile.General.debugOption end,
+            set = function(_, key) GT.db.profile.General.debugOption = key end,
+            order = 10001
         },
     }
 }
@@ -240,22 +283,22 @@ local filterOptions = {
     name = "Filters",
     childGroups = "tab",
     args = {
-        heading = {
+        filtersHeading = {
             type = "description",
             name = "Select all items you wish to display.",
             width = "full",
-            order = 0
+            order = 1
         },
         custom = {
             type = "group",
             name = "Custom",
             order = -1,
             args = {
-                heading = {
+                customHeading = {
                     type = "description",
                     name = "Use this field to add additional items (by ID only) to be tracked.  One ID per line!",
                     width = "full",
-                    order = 0
+                    order = 1
                 },
                 customInput = {
                     type = "input",
@@ -265,8 +308,8 @@ local filterOptions = {
                     usage = "Please only enter item ID's (aka numbers)",
                     validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
-                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() end,
-                    order = 1
+                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() GT:InventoryUpdate() end,
+                    order = 2
                 },
             }
         }
@@ -300,7 +343,15 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     type = "toggle",
                     name = itemData.name,
                     get = function() return GT.db.profile.Filters[itemData.id] end,
-                    set = function(_, key) if key then GT.db.profile.Filters[itemData.id] = key else GT.db.profile.Filters[itemData.id] = nil end GT:RebuildIDTables() end,
+                    set = function(_, key) 
+                        if key then 
+                            GT.db.profile.Filters[itemData.id] = key 
+                        else 
+                            GT.db.profile.Filters[itemData.id] = nil
+                        end
+                        GT:RebuildIDTables()
+                        GT:ResetDisplay(true)
+                    end,
                     order = itemData.order
                 }
             end
@@ -309,9 +360,18 @@ for expansion, expansionData in pairs(GT.ItemData) do
 end
 
 function Config:OnInitialize()
+    --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
+    GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
+
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", defaults, true)
     if GT.db.profile.General.unlock then
         GT.db.profile.General.unlock = false
+    end
+
+    --if TSM is not loaded set tsmPrice Option to none.
+    if not GT.tsmLoaded then
+        GT.db.profile.General.tsmPrice = 0
+        GT.db.profile.General.perItemPrice = false
     end
 
     AceConfigRegistry:RegisterOptionsTable("Gathering Tracker", generalOptions)
