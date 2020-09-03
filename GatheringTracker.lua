@@ -295,7 +295,7 @@ function GT:PrepareForDisplayUpdate()
                     text = text .. "[" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
                 end
                 if GT.db.profile.General.tsmPrice > 0 then
-                    local eprice = TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) / 10000
+                    local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
                     local tprice = total * eprice
                     globalPrice = globalPrice + tprice
                     
