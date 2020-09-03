@@ -108,6 +108,12 @@ function GT:CreateBaseFrame()
     container:SetPoint("TOPLEFT", backdrop, "TOPLEFT")
     container:SetWidth(math.floor(GetScreenWidth()))
     container.frame:SetFrameStrata("BACKGROUND")
+    if GT.ElvUI then
+        if container.frame.SetBackdropBorderColor then
+            container.frame:SetBackdropBorderColor(0,0,0,0)
+            container.frame:SetBackdropColor(0,0,0,0)
+        end
+    end
     
     local baseFrame = {
         frame = frame,
