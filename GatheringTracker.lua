@@ -22,7 +22,7 @@ end
 function GT:OnEnable()
     GT.Enabled = true
     --use this for both initial setup on UI load and when the addon is enabled from the settings
-    print("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 ENABLED|r")
+    ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 ENABLED|r")
     
     --Register events for updating item details
     GT:RegisterEvent("BAG_UPDATE", "InventoryUpdate")
@@ -37,7 +37,7 @@ function GT:OnDisable()
     GT.Enabled = false
     --Use this for disabling the addon from the settings
     --stop event tracking and turn off display
-    print("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cffff0000 DISABLED|r")
+    ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cffff0000 DISABLED|r")
     
     --Unregister events so that we can stop working when disabled
     GT:UnregisterEvent("BAG_UPDATE")
