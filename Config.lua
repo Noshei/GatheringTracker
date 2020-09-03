@@ -349,8 +349,14 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         else 
                             GT.db.profile.Filters[itemData.id] = nil
                         end
+
                         GT:RebuildIDTables()
-                        GT:ResetDisplay(true)
+
+                        if GT.count[tostring(itemData.id)] == nil then
+                            GT:InventoryUpdate()
+                        else
+                            GT:ResetDisplay(true)
+                        end
                     end,
                     order = itemData.order
                 }
@@ -374,14 +380,17 @@ function Config:OnInitialize()
         GT.db.profile.General.perItemPrice = false
     end
 
-    AceConfigRegistry:RegisterOptionsTable("Gathering Tracker", generalOptions)
-    local options = AceConfigDialog:AddToBlizOptions("Gathering Tracker", "Gathering Tracker")
+    AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
+    local options = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
 
     AceConfigRegistry:RegisterOptionsTable("GT/Filter", filterOptions)
-    AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", "Gathering Tracker")
+    AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
+
+    AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
+    AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
 
     local function openOptions()
-		InterfaceOptionsFrame_OpenToCategory("Gathering Tracker")
+		InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
     end
     
     SLASH_GatheringTracker1 = "/gatheringtracker"
