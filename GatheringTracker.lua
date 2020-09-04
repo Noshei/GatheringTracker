@@ -26,6 +26,7 @@ function GT:OnEnable()
     
     --Register events for updating item details
     GT:RegisterEvent("BAG_UPDATE", "InventoryUpdate")
+    GT:RegisterEvent("GROUP_ROSTER_UPDATE")
     GT:RegisterEvent("PLAYER_ENTERING_WORLD")
     
     --Register addon comm's
@@ -41,6 +42,7 @@ function GT:OnDisable()
     
     --Unregister events so that we can stop working when disabled
     GT:UnregisterEvent("BAG_UPDATE")
+    GT:UnregisterEvent("GROUP_ROSTER_UPDATE")
     GT:UnregisterEvent("PLAYER_ENTERING_WORLD")
     
     --Unregister addon comm's
@@ -121,6 +123,12 @@ function GT:PLAYER_ENTERING_WORLD()
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD")
 end
 
+function GT:GROUP_ROSTER_UPDATE()
+    GT:Debug("GROUP_ROSTER_UPDATE")
+    GT:ResetDisplay()
+    GT:InventoryUpdate("GROUP_ROSTER_UPDATE")
+end
+
 function GT:CreateBaseFrame()
     --this creates the basic frame structure that the addon uses.
     --the backdrop is used for positioning through the addon options.
@@ -164,7 +172,8 @@ function GT:CreateBaseFrame()
 end
 
 function GT:FiltersButton()
-    if GT.db.profile.General.filtersButton and GT.Enabled then --show setting button or create it if needed
+    --(GT.db.profile.General.groupType and IsInGroup() and GT.Enabled) or (not GT.db.profile.General.groupType and not IsInGroup() and GT.Enabled)
+    if GT.db.profile.General.filtersButton and GT:GroupCheck() and GT.Enabled then --show setting button or create it if needed
         if GT.baseFrame.button then
             GT:Debug("Show Filters Button")
             GT.baseFrame.button:Show()
@@ -370,16 +379,20 @@ InterfaceOptionsFrame:HookScript("OnHide", function()
     --determine if a full or partial reset is needed after closing the Interface Options
     --false will clear everything and wipe the display
     --true will reset the data and recreate the GUI
-    if GT.db.profile.General.groupType and not IsInGroup() then
-        GT:ResetDisplay(false)
-    elseif GT.db.profile.General.groupType and IsInGroup() then
-        GT:ResetDisplay(true)
-    elseif not GT.db.profile.General.groupType and IsInGroup() then
-        GT:ResetDisplay(false)
-    elseif not GT.db.profile.General.groupType and not IsInGroup() then
-        GT:ResetDisplay(true)
-    end
+    GT:ResetDisplay(GT:GroupCheck())
 end)
+
+function GT:GroupCheck()
+    if GT.db.profile.General.groupType and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
+        return false
+    elseif GT.db.profile.General.groupType and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
+        return true
+    elseif not GT.db.profile.General.groupType and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
+        return false
+    elseif not GT.db.profile.General.groupType and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
+        return true
+    end
+end
 
 function GT:ResetDisplay(display)
     if display == nil then display = true end
@@ -387,8 +400,9 @@ function GT:ResetDisplay(display)
     GT.baseFrame.container:ReleaseChildren()
     GT.Display.list = {}
     GT.Display.frames = {}
+    GT:FiltersButton()
 
-    if GT.db.profile.General.enable and display then
+    if GT.db.profile.General.enable and display and GT:GroupCheck() then
         GT:PrepareForDisplayUpdate()
     end
 end
@@ -598,6 +612,7 @@ end
 
 function GT:InventoryUpdate(event)
     if event ~= nil then
+        GT:Debug("InventoryUpdate", event)
         local total = 0
         local messageText = ""
         
