@@ -314,7 +314,9 @@ function GT:FiltersButton()
         end
     else --disable setting button
         GT:Debug("Hide Filters Button")
-        GT.baseFrame.button:Hide()
+        if GT.baseFrame.button then
+            GT.baseFrame.button:Hide()
+        end
     end
 end
 
