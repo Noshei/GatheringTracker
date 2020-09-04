@@ -861,7 +861,7 @@ local ItemData = {
             {id = 173037, name = "Elysian Thade", order = 6},            
         },
         Elemental = {
-            {id = 888888, name = "Fake Gem", order = 1},
+            {id = 178787, name = "Orboreal Shard", order = 1},
         },
         Gem = {
             {id = 173109, name = "Angerseye", order = 1},
@@ -872,7 +872,7 @@ local ItemData = {
             {id = 172230, name = "Soul Dust", order = 1},
             {id = 172231, name = "Sacred Shard", order = 2},
             {id = 172232, name = "Eternal Crystal", order = 3},            
-        }
+        },
     },
 }
 
