@@ -745,7 +745,9 @@ function GT:ShareSettings(mode)
         if mode == nil then 
             mode = "All" 
         end
+        GT:Debug("Send Settings Mode", mode)
         for category,categoryData in pairs(GT.db.profile) do
+            GT:Debug("Send Settings category", category)
             if mode == "All" or mode == category then
                 local messageText = tostring(category) .. ":"
                 if category == "CustomFilters" then
@@ -764,7 +766,7 @@ function GT:ShareSettings(mode)
                         end
                     end
                 end
-            GT:Debug("Send Settings")
+            GT:Debug("Send Settings", messageText, GT.groupMode)
             GT:SendCommMessage("GT_Config", messageText, GT.groupMode)
             end
         end
@@ -772,10 +774,10 @@ function GT:ShareSettings(mode)
 end
 
 function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
-    GT:Debug("Received message", prefix, message)
+    GT:Debug("Received Config Message", prefix, message, sender)
 
-    if not (sender == UnitName("player")) then  --ignores settings sent from the player
-        GT:Debug("Processing Config Message")
+    if sender ~= GT.Player then  --ignores settings sent from the player
+        GT:Debug("Processing Config Message", GT.Player)
         --determine the category so we can save the settings to the right place
         local category = message:sub(0, string.find(message, ":")-1)
         --remove the category from the settings
@@ -820,8 +822,4 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
         GT:RebuildIDTables()
         GT:InventoryUpdate("Config Update Received")
     end
-end
-
-function GT:SendAddonComm(prefix, message, distribution, target)
-    --Use this for sending addon comms with AceComm
 end

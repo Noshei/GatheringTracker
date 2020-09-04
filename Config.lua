@@ -44,6 +44,11 @@ local defaults = {
 local generalOptions = {
     type = "group",
     args = {
+        header0 = {
+            type = "header",
+            name = "v"..tostring(GT.metaData.version),
+            order = 0
+        },
         enable = {
             type = "toggle",
             name = "Enabled",
@@ -272,7 +277,7 @@ local generalOptions = {
             set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank") end,
             order = 127
         },
-        header3 = {
+        header4 = {
             type = "header",
             name = "Debug",
             order = 10000
@@ -408,6 +413,8 @@ function Config:OnInitialize()
     SLASH_GatheringTracker1 = "/gatheringtracker"
     SLASH_GatheringTracker2 = "/gt"
     SlashCmdList.GatheringTracker = openOptions
+
+    GT.Player = UnitName("player")
 
     GT.Enabled = GT.db.profile.General.enable
 
