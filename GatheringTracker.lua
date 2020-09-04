@@ -26,7 +26,7 @@ function GT:OnEnable()
     
     --Register events for updating item details
     GT:RegisterEvent("BAG_UPDATE", "InventoryUpdate")
-    GT:RegisterEvent("PLAYER_ENTERING_WORLD", "InventoryUpdate")
+    GT:RegisterEvent("PLAYER_ENTERING_WORLD")
     
     --Register addon comm's
     GT:RegisterComm("GT_Data", "DataUpdateReceived")
@@ -81,6 +81,44 @@ function GT:Debug(text, ...)
     if text then
         ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cffff0000" .. date("%X") .. "|r " .. strjoin(" |cff00ff00:|r ", text, tostringall(...)))
     end
+end
+
+local waitTable = {}
+local waitFrame = nil
+
+function GT:wait(delay, func, ...)
+    GT:Debug("Wait Function Called", delay, func)
+    if type(delay) ~= "number" then
+        GT:Debug("Wait Function return false", type(delay), type(func))
+        return false
+    end
+    if not waitFrame then
+        GT:Debug("Wait Function create frame")
+        waitFrame = CreateFrame("Frame", nil, UIParent)
+        waitFrame:SetScript("OnUpdate", function (self, elapse)
+            for i = 1, #waitTable do
+            local waitRecord = tremove(waitTable, i)
+            local d = tremove(waitRecord, 1)
+            local f = tremove(waitRecord, 1)
+            local p = tremove(waitRecord, 1)
+            if d > elapse then
+                tinsert(waitTable, i, {d - elapse, f, p})
+                i = i + 1
+            else
+                --count = count - 1
+                GT:Debug("Wait Function call function",f, unpack(p))
+                GT[f](self,unpack(p))
+            end
+            end
+        end)
+    end
+    tinsert(waitTable, {delay, func, {...}})
+    return true
+end
+
+function GT:PLAYER_ENTERING_WORLD()
+    GT:Debug("PLAYER_ENTERING_WORLD")
+    GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD")
 end
 
 function GT:CreateBaseFrame()
@@ -178,13 +216,13 @@ function GT:FiltersButton()
                                         GT.db.profile.Filters[itemData.id] = true 
                                     end
 
-                                    GT:RebuildIDTables()
-
-                                    if GT.count[tostring(itemData.id)] == nil then
-                                        GT:InventoryUpdate()
-                                    else
-                                        GT:ResetDisplay(true)
+                                    if GT.db.profile.General.shareSettings then
+                                        GT:ShareSettings("Filters")
                                     end
+
+                                    GT:ResetDisplay(false)
+                                    GT:RebuildIDTables()
+                                    GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked")
                                 end,
                             }
                         end
@@ -230,8 +268,13 @@ function GT:FiltersButton()
                                     end
                                 end
                             end
+                            if GT.db.profile.General.shareSettings then
+                                GT:ShareSettings("Filters")
+                            end
+
+                            GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate()
+                            GT:InventoryUpdate(expansion.." "..category.." clicked")
                         end,
                     }
                 end
@@ -247,7 +290,6 @@ function GT:FiltersButton()
 
             menuFrame:SetPoint("CENTER", UIParent, "CENTER")
             menuFrame:Hide()
-            
 
             GT.baseFrame.menu = menuFrame
 
@@ -554,45 +596,57 @@ function GT:RebuildIDTables()
     end
 end
 
-function GT:InventoryUpdate()
-    GT:Debug("Inventory Update")
-    local total = 0
-    local messageText = ""
-    
-    for i, id in ipairs(GT.IDs) do
-        local count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
+function GT:InventoryUpdate(event)
+    if event ~= nil then
+        local total = 0
+        local messageText = ""
         
-        if count > 0 then
-            total = total + count
-            messageText = messageText .. id .. "=" .. count
+        for i, id in ipairs(GT.IDs) do
+            local count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
             
-            local size = #GT.IDs
-            if i < size then
-                messageText = messageText .. " "
+            if count > 0 then
+                total = total + count
+                messageText = messageText .. id .. "=" .. count
+                
+                local size = #GT.IDs
+                if i < size then
+                    messageText = messageText .. " "
+                end
             end
         end
-    end
-    if total > 0 then
-        if GT.groupMode == "WHISPER" then
-            GT:Debug("Sent Solo Message")
-            GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"))
+
+        if GT.db.profile.General.groupType then
+            GT.groupMode = "RAID"
         else
-            GT:Debug("Sent Group Message")
-            GT:SendCommMessage("GT_Data", messageText, GT.groupMode)
+            GT.groupMode = "WHISPER"
         end
-    elseif total == 0 then
-        if GT.groupMode == "WHISPER" then
-            GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"))
-        else
-            GT:SendCommMessage("GT_Data", "reset", GT.groupMode)
+
+        if total > 0 then
+            if GT.groupMode == "WHISPER" then
+                GT:Debug("Sent Solo Message")
+                GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"))
+            else
+                GT:Debug("Sent Group Message")
+                GT:SendCommMessage("GT_Data", messageText, GT.groupMode)
+            end
+        elseif total == 0 then
+            if GT.groupMode == "WHISPER" then
+                GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"))
+            else
+                GT:SendCommMessage("GT_Data", "reset", GT.groupMode)
+            end
         end
+    else
+        local traceback = debugstack()
+        GT:Debug(traceback, event)
     end
 end
 
 function GT:DataUpdateReceived(prefix, message, distribution, sender)
+    GT:Debug("Data Update Received", prefix, message)
     --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
     if (GT.db.profile.General.groupType and IsInGroup() and GT.Enabled) or (not GT.db.profile.General.groupType and not IsInGroup() and GT.Enabled) then
-        GT:Debug("Data Update Received", prefix, message)
+        GT:Debug("Data Update Being Processed")
         GT.Display.length = 0
         --determine sender index or add sender if they dont exist
         local SenderExists = false
@@ -667,31 +721,35 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
     end
 end
 
-function GT:ShareSettings()
+function GT:ShareSettings(mode)
     if GT.Enabled and GT.db.profile.General.shareSettings then
         --loop through the setting categories, create a string, and send that string to the party
         GT:Debug("Prepare to share settings")
+        if mode == nil then 
+            mode = "All" 
+        end
         for category,categoryData in pairs(GT.db.profile) do
-            local messageText = tostring(category) .. ":"
-            if category == "CustomFilters" then
-                messageText = messageText .. categoryData
-            else
-                for setting, value in pairs(categoryData) do
-                    if type(value) == "table" then
-                        local tableText = ""
-                        for _,v in ipairs(value) do
-                            tableText = tableText .. v .. ","
+            if mode == "All" or mode == category then
+                local messageText = tostring(category) .. ":"
+                if category == "CustomFilters" then
+                    messageText = messageText .. categoryData
+                else
+                    for setting, value in pairs(categoryData) do
+                        if type(value) == "table" then
+                            local tableText = ""
+                            for _,v in ipairs(value) do
+                                tableText = tableText .. v .. ","
+                            end
+                            tableText = string.sub(tableText,0, string.len(tableText)-1)
+                            messageText = messageText .. " " .. setting .. "=" .. tableText
+                        else
+                            messageText = messageText .. " " .. setting .. "=" .. tostring(value)
                         end
-                        tableText = string.sub(tableText,0, string.len(tableText)-1)
-                        messageText = messageText .. " " .. setting .. "=" .. tableText
-                    else
-                        messageText = messageText .. " " .. setting .. "=" .. tostring(value)
                     end
                 end
-            end
-
             GT:Debug("Send Settings")
             GT:SendCommMessage("GT_Config", messageText, GT.groupMode)
+            end
         end
     end
 end
@@ -743,7 +801,7 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
         end
         GT:ResetDisplay(false)
         GT:RebuildIDTables()
-        GT:InventoryUpdate()
+        GT:InventoryUpdate("Config Update Received")
     end
 end
 

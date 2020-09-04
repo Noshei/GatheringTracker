@@ -192,12 +192,12 @@ local generalOptions = {
                 if key and not IsInGroup() then
                     GT:ResetDisplay(false)
                 elseif key and IsInGroup() then
-                    GT:InventoryUpdate()
+                    GT:InventoryUpdate("Group Mode 1")
                     GT:ResetDisplay(true)
                 elseif not key and IsInGroup() then
                     GT:ResetDisplay(false)
                 elseif not key and not IsInGroup() then
-                    GT:InventoryUpdate()
+                    GT:InventoryUpdate("Group Mode 2")
                     GT:ResetDisplay(true)
                 end
             end,
@@ -269,7 +269,7 @@ local generalOptions = {
             desc = "If selected displayed values will include items in your bank.",
             width = 1.77,
             get = function() return GT.db.profile.General.includeBank end,
-            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate() end,
+            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank") end,
             order = 127
         },
         header3 = {
@@ -319,7 +319,7 @@ local filterOptions = {
                     usage = "Please only enter item ID's (aka numbers)",
                     validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
-                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() GT:InventoryUpdate() end,
+                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() GT:InventoryUpdate("Custom Filter Changed") end,
                     order = 2
                 },
             }
@@ -364,7 +364,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         GT:RebuildIDTables()
 
                         if GT.count[tostring(itemData.id)] == nil then
-                            GT:InventoryUpdate()
+                            GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." option clicked")
                         else
                             GT:ResetDisplay(true)
                         end
@@ -418,5 +418,5 @@ function Config:OnInitialize()
     end
     
     GT:RebuildIDTables()
-    GT:CreateBaseFrame()
+    GT:CreateBaseFrame("Config:OnInitialize")
 end
