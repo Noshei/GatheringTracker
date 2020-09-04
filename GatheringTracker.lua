@@ -121,6 +121,150 @@ function GT:CreateBaseFrame()
         container = container
     }
     GT.baseFrame = baseFrame
+
+    GT:FiltersButton()
+end
+
+function GT:FiltersButton()
+    if GT.db.profile.General.filtersButton and GT.Enabled then --show setting button or create it if needed
+        if GT.baseFrame.button then
+            GT:Debug("Show Filters Button")
+            GT.baseFrame.button:Show()
+        else
+            GT:Debug("Create Filters Button")
+            local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", GT.baseFrame.frame, "UIPanelButtonTemplate")
+            filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+            filterButton:SetWidth(25)
+            filterButton:SetHeight(25)
+            filterButton:SetText("F")
+            filterButton:EnableMouse(true)
+            filterButton:RegisterForClicks("AnyDown")
+            filterButton:Show()
+
+            local menuFrame = CreateFrame("Frame", "GT_baseFrame_filtersMenu", UIParent, "UIDropDownMenuTemplate")
+
+            filterMenu = {}
+            for expansion, expansionData in pairs(GT.ItemData) do
+                local expansionMenuList = {}
+
+                for category, categoryData in pairs(expansionData) do
+                    local categoryMenuList = {}
+
+                    for _, itemData in ipairs(categoryData) do
+                        local itemDetails = {}
+                        if itemData.id == -1 then
+                            itemDetails = {
+                                text = itemData.name,
+                                notCheckable = 1,
+                                disabled = true,
+                            }
+                        else
+                            itemDetails = {
+                                text = itemData.name,
+                                isNotRadio = true,
+                                keepShownOnClick = true,
+                                checked = function()
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        return true
+                                    else
+                                        return false
+                                    end
+                                end,
+                                func = function()
+                                    GT:Debug("Item Button Clicked", expansion, category, itemData.name)
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        GT.db.profile.Filters[itemData.id] = nil
+                                    else
+                                        GT.db.profile.Filters[itemData.id] = true 
+                                    end
+
+                                    GT:RebuildIDTables()
+
+                                    if GT.count[tostring(itemData.id)] == nil then
+                                        GT:InventoryUpdate()
+                                    else
+                                        GT:ResetDisplay(true)
+                                    end
+                                end,
+                            }
+                        end
+                        categoryMenuList[itemData.order] = itemDetails
+                    end
+
+                    expansionMenuList[GT.categories[category]] = {
+                        text = category,
+                        keepShownOnClick = false,
+                        hasArrow = true,
+                        isNotRadio = true,
+                        menuList = categoryMenuList,
+                        checked = function()
+                            local checked = true
+                            for _, itemData in ipairs(categoryData) do
+                                if itemData.id ~= -1 and checked == true then
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = GT.db.profile.Filters[itemData.id]
+                                    else
+                                        checked = false
+                                    end
+                                end
+                            end
+                            return checked
+                        end,
+                        func = function()
+                            GT:Debug("Category Button Clicked", expansion, category)
+                            local checked = 0
+                            local count = 0
+                            for _, itemData in ipairs(categoryData) do
+                                if itemData.id ~= -1 then
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = checked + 1
+                                    end
+                                    GT.db.profile.Filters[itemData.id] = nil
+                                    count = count + 1
+                                end
+                            end
+                            if checked == 0 or checked < count then
+                                for _, itemData in ipairs(categoryData) do
+                                    if itemData.id ~= -1 then
+                                        GT.db.profile.Filters[itemData.id] = true
+                                    end
+                                end
+                            end
+                            GT:RebuildIDTables()
+                            GT:InventoryUpdate()
+                        end,
+                    }
+                end
+
+                filterMenu[GT.expansions[expansion]] = {
+                    text = expansion,
+                    keepShownOnClick = true,
+                    hasArrow = true,
+                    notCheckable = 1,
+                    menuList = expansionMenuList,
+                }
+            end
+
+            menuFrame:SetPoint("CENTER", UIParent, "CENTER")
+            menuFrame:Hide()
+            
+
+            GT.baseFrame.menu = menuFrame
+
+            filterButton:SetScript("OnClick", 
+                function (self, button, down)
+                    if button == "LeftButton" then
+                        EasyMenu(filterMenu, menuFrame, "cursor", 0 , 0, "MENU");
+                    end
+                end
+            )
+
+            GT.baseFrame.button = filterButton
+        end
+    else --disable setting button
+        GT:Debug("Hide Filters Button")
+        GT.baseFrame.button:Hide()
+    end
 end
 
 function GT:ToggleBaseLock(key)
@@ -128,6 +272,7 @@ function GT:ToggleBaseLock(key)
     --the base frame should only be shown when unlocked so that the user can position it on screen where they want.
     local frame = GT.baseFrame.backdrop
     if key then
+        GT:Debug("Show baseFrame")
         frame:Show()
         frame:SetMovable(true)
         frame:EnableMouse(true)
@@ -158,6 +303,7 @@ function GT:ToggleBaseLock(key)
             end
         end)
     else
+        GT:Debug("Hide baseFrame")
         frame:Hide()
         frame:SetMovable(false)
         frame:EnableMouse(false)

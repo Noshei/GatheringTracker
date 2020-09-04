@@ -861,7 +861,7 @@ local ItemData = {
             {id = 173037, name = "Elysian Thade", order = 6},            
         },
         Elemental = {
-        
+            {id = 888888, name = "Fake Gem", order = 1},
         },
         Gem = {
             {id = 173109, name = "Angerseye", order = 1},

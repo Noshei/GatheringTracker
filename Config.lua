@@ -14,6 +14,7 @@ local defaults = {
         General = {
             enable = true,
             unlock = false,
+            filtersButton = false,
             xPos = 200,
             yPos = -150,
             relativePoint = "TOPLEFT",
@@ -54,9 +55,11 @@ local generalOptions = {
                 if key and not GT.Enabled then
                     GT:OnEnable()
                     GT:ResetDisplay(true)
+                    GT:FiltersButton()
                 elseif not key and GT.Enabled then
                     GT:OnDisable()
                     GT:ResetDisplay(true)
+                    GT:FiltersButton()
                 end
             end,
             order = 1
@@ -68,6 +71,14 @@ local generalOptions = {
             get = function() return GT.db.profile.General.unlock end,
             set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
             order = 2
+        },
+        filtersButton = {
+            type = "toggle",
+            name = "Filters Button",
+            width = 1.77,
+            get = function() return GT.db.profile.General.filtersButton end,
+            set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
+            order = 3
         },
         header1 = {
             type = "header",
@@ -397,6 +408,8 @@ function Config:OnInitialize()
     SLASH_GatheringTracker1 = "/gatheringtracker"
     SLASH_GatheringTracker2 = "/gt"
     SlashCmdList.GatheringTracker = openOptions
+
+    GT.Enabled = GT.db.profile.General.enable
 
     if GT.db.profile.General.groupType then
         GT.groupMode = "RAID"
