@@ -125,6 +125,9 @@ end
 
 function GT:GROUP_ROSTER_UPDATE()
     GT:Debug("GROUP_ROSTER_UPDATE")
+    if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
+        GT:ShareSettings()
+    end
     GT:ResetDisplay()
     GT:InventoryUpdate("GROUP_ROSTER_UPDATE")
 end
@@ -134,7 +137,7 @@ function GT:CreateBaseFrame()
     --the backdrop is used for positioning through the addon options.
     local frame = CreateFrame("Frame", "GT_baseFrame", UIParent)
     
-    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", frame)
+    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", frame, BackdropTemplateMixin and "BackdropTemplate")
     backdrop:SetWidth(300)
     backdrop:SetHeight(300)
     backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
@@ -739,7 +742,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
 end
 
 function GT:ShareSettings(mode)
-    if GT.Enabled and GT.db.profile.General.shareSettings then
+    if GT.Enabled and GT.db.profile.General.shareSettings and GT:GroupCheck() then
         --loop through the setting categories, create a string, and send that string to the party
         GT:Debug("Prepare to share settings")
         if mode == nil then 
@@ -818,6 +821,10 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
                 GT.db.profile[category] = messageText
             end
         end
+        if GT.db.profile.General.xPos ~= GT.db.defaults.profile.General.xPos or GT.db.profile.General.yPos ~= GT.db.defaults.profile.General.yPos then
+            GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
+        end
+        
         GT:ResetDisplay(false)
         GT:RebuildIDTables()
         GT:InventoryUpdate("Config Update Received")

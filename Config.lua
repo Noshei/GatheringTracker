@@ -211,7 +211,7 @@ local generalOptions = {
         shareSettings = {
             type = "toggle",
             name = "Share Settings with Group",
-            desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.",
+            desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.  When a party is formed or changed the party leader will share their settings.",
             width = 1.77,
             get = function() return GT.db.profile.General.shareSettings end,
             set = function(_, key) GT.db.profile.General.shareSettings = key end,
