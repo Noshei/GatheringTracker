@@ -461,14 +461,14 @@ function GT:PrepareForDisplayUpdate()
                 playerTotal = playerTotal + value
             end
         end
-        if string.len(tostring(playerTotal)) + 1 > GT.Display.length  then
-            GT.Display.length  = string.len(tostring(playerTotal)) + 1
+        if string.len(tostring(playerTotal)) + math.ceil((string.len(tostring(playerTotal))/3)) > GT.Display.length  then
+            GT.Display.length  = string.len(tostring(playerTotal)) + math.ceil((string.len(tostring(playerTotal))/3))
         end
         playerTotals[i] = playerTotal
         globalTotal = globalTotal + playerTotal
     end
     for i, t in ipairs(playerTotals) do
-        globalCounts = globalCounts .. string.format("%-" .. GT.Display.length  .. "s", t)
+        globalCounts = globalCounts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (t))))
     end
 
     --call method to determine if we need to reset or can update
@@ -492,7 +492,7 @@ function GT:PrepareForDisplayUpdate()
                 else
                     value = 0
                 end
-                counts = counts .. string.format("%-" .. GT.Display.length  .. "s", value)
+                counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (value))))
                 total = total + value
             end
             
@@ -523,7 +523,7 @@ function GT:PrepareForDisplayUpdate()
 
     
     if globalTotal > 0 then
-        --create the text string for the totals row and create it
+        --create the text string for the totals row and create the widget
         local totalText = globalCounts
         local totalStack
         if GT.db.profile.General.groupType == true then
@@ -536,6 +536,29 @@ function GT:PrepareForDisplayUpdate()
             totalText = totalText.."(" .. GT:AddComas(string.format("%.0f",(globalPrice))) .. "g)"
         end
         GT:UpdateDisplay(9999999999, totalText, 133785)
+    end
+
+    if GT.db.profile.General.displayAlias and GT:GroupCheck() then
+        --create the text string for the alias row and create the widget
+        local nameText = ""
+        for i, playerName in ipairs(GT.sender) do
+            local exists = 0
+            for index, aliases in pairs(GT.db.profile.Aliases) do
+                if aliases.name == playerName then
+                    exists = index
+                end
+            end
+            if exists > 0 then
+                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (GT.Display.length-1))
+                local extrsSpace = string.len(newText)
+                nameText = nameText..newText..string.format("%-"..(GT.Display.length - extrsSpace).."s","")
+            else
+                local newText = string.sub(GT.sender[i], 0, (GT.Display.length-1))
+                local extrsSpace = string.len(newText)
+                nameText = nameText..newText..string.format("%-"..(GT.Display.length - extrsSpace).."s","")
+            end
+        end
+        GT:UpdateDisplay(-1, nameText, 413577)
     end
     --consider adding logic to add header row, and character total earned row.
 end
@@ -576,15 +599,15 @@ function GT:UpdateDisplay(index, name, icon)
             label:SetImage(icon)
             label:SetImageSize(GT.db.profile.General.iconWidth, GT.db.profile.General.iconHeight)
             
-            table.insert(GT.Display.list, index)
+            table.insert(GT.Display.list, index) --adds our index to the list table.  This table is sorted and used to determine display order
             table.sort(GT.Display.list)
             local position = GT:TableFind(GT.Display.list, index)
             local beforeWidget = nil
-            if GT.Display.frames[GT.Display.list[(position+1)]] then
+            if GT.Display.frames[GT.Display.list[(position+1)]] then  --checks if there is a widget after our position
                 beforeWidget = GT.Display.frames[GT.Display.list[(position+1)]]
             end
-            GT.Display.frames[index] = label
-            if beforeWidget then
+            GT.Display.frames[index] = label  --adds label to the frames table so we can keep track of it later on
+            if beforeWidget then  --adds our widget to the container based on if there is another widget after us
                 GT.baseFrame.container:AddChild(GT.Display.frames[index], beforeWidget)
             else
                 GT.baseFrame.container:AddChild(GT.Display.frames[index])
@@ -755,6 +778,10 @@ function GT:ShareSettings(mode)
                 local messageText = tostring(category) .. ":"
                 if category == "CustomFilters" then
                     messageText = messageText .. categoryData
+                elseif category == "Aliases" then
+                    for _, data in ipairs(categoryData) do
+                        messageText = messageText .. " " .. data.name .. "=" .. data.alias
+                    end
                 else
                     for setting, value in pairs(categoryData) do
                         if type(value) == "table" then
@@ -817,6 +844,11 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
             elseif category == "Filters" then
                 for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
                     messageText[tonumber(itemID)] = true
+                end
+                GT.db.profile[category] = messageText
+            elseif category == "Aliases" then
+                for n, a in string.gmatch(str, "(%S-)=(.-)\n") do
+                    table.insert(messageText,{name = n, alias = a})
                 end
                 GT.db.profile[category] = messageText
             end
