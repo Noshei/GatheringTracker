@@ -77,7 +77,7 @@ function GT:CheckIfDisplayResetNeeded(data)
     return true
 end
 
-function GT:Debug(text, ...)
+function GT.Debug(text, ...)
     if not GT.db.profile or not GT.db.profile.General.debugOption then return end
 
     if text then
@@ -89,13 +89,13 @@ local waitTable = {}
 local waitFrame = nil
 
 function GT:wait(delay, func, ...)
-    GT:Debug("Wait Function Called", delay, func)
+    GT.Debug("Wait Function Called", delay, func)
     if type(delay) ~= "number" then
-        GT:Debug("Wait Function return false", type(delay), type(func))
+        GT.Debug("Wait Function return false", type(delay), type(func))
         return false
     end
     if not waitFrame then
-        GT:Debug("Wait Function create frame")
+        GT.Debug("Wait Function create frame")
         waitFrame = CreateFrame("Frame", nil, UIParent)
         waitFrame:SetScript("OnUpdate", function (self, elapse)
             for i = 1, #waitTable do
@@ -108,7 +108,7 @@ function GT:wait(delay, func, ...)
                 i = i + 1
             else
                 --count = count - 1
-                GT:Debug("Wait Function call function",f, unpack(p))
+                GT.Debug("Wait Function call function",f, unpack(p))
                 GT[f](self,unpack(p))
             end
             end
@@ -119,15 +119,29 @@ function GT:wait(delay, func, ...)
 end
 
 function GT:PLAYER_ENTERING_WORLD()
-    GT:Debug("PLAYER_ENTERING_WORLD")
+    GT.Debug("PLAYER_ENTERING_WORLD")
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD")
 end
 
 function GT:GROUP_ROSTER_UPDATE()
-    GT:Debug("GROUP_ROSTER_UPDATE")
+    GT.Debug("GROUP_ROSTER_UPDATE")
+
+    if GT.db.profile.General.groupType then
+        if IsInRaid() then
+            GT.groupMode = "RAID"
+        else
+            GT.groupMode = "PARTY"
+        end
+    else
+        GT.groupMode = "WHISPER"
+    end
+
+    GT.sender = {}
+
     if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
         GT:ShareSettings()
     end
+
     GT:ResetDisplay()
     GT:InventoryUpdate("GROUP_ROSTER_UPDATE")
 end
@@ -178,10 +192,10 @@ function GT:FiltersButton()
     --(GT.db.profile.General.groupType and IsInGroup() and GT.Enabled) or (not GT.db.profile.General.groupType and not IsInGroup() and GT.Enabled)
     if GT.db.profile.General.filtersButton and GT:GroupCheck() and GT.Enabled then --show setting button or create it if needed
         if GT.baseFrame.button then
-            GT:Debug("Show Filters Button")
+            GT.Debug("Show Filters Button")
             GT.baseFrame.button:Show()
         else
-            GT:Debug("Create Filters Button")
+            GT.Debug("Create Filters Button")
             local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", GT.baseFrame.frame, "UIPanelButtonTemplate")
             filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
             filterButton:SetWidth(25)
@@ -221,7 +235,7 @@ function GT:FiltersButton()
                                     end
                                 end,
                                 func = function()
-                                    GT:Debug("Item Button Clicked", expansion, category, itemData.name)
+                                    GT.Debug("Item Button Clicked", expansion, category, itemData.name)
                                     if GT.db.profile.Filters[itemData.id] == true then
                                         GT.db.profile.Filters[itemData.id] = nil
                                     else
@@ -261,7 +275,7 @@ function GT:FiltersButton()
                             return checked
                         end,
                         func = function()
-                            GT:Debug("Category Button Clicked", expansion, category)
+                            GT.Debug("Category Button Clicked", expansion, category)
                             local checked = 0
                             local count = 0
                             for _, itemData in ipairs(categoryData) do
@@ -316,7 +330,7 @@ function GT:FiltersButton()
             GT.baseFrame.button = filterButton
         end
     else --disable setting button
-        GT:Debug("Hide Filters Button")
+        GT.Debug("Hide Filters Button")
         if GT.baseFrame.button then
             GT.baseFrame.button:Hide()
         end
@@ -328,7 +342,7 @@ function GT:ToggleBaseLock(key)
     --the base frame should only be shown when unlocked so that the user can position it on screen where they want.
     local frame = GT.baseFrame.backdrop
     if key then
-        GT:Debug("Show baseFrame")
+        GT.Debug("Show baseFrame")
         frame:Show()
         frame:SetMovable(true)
         frame:EnableMouse(true)
@@ -359,7 +373,7 @@ function GT:ToggleBaseLock(key)
             end
         end)
     else
-        GT:Debug("Hide baseFrame")
+        GT.Debug("Hide baseFrame")
         frame:Hide()
         frame:SetMovable(false)
         frame:EnableMouse(false)
@@ -401,7 +415,7 @@ end
 
 function GT:ResetDisplay(display)
     if display == nil then display = true end
-    GT:Debug("Reset Display")
+    GT.Debug("Reset Display")
     GT.baseFrame.container:ReleaseChildren()
     GT.Display.list = {}
     GT.Display.frames = {}
@@ -413,7 +427,7 @@ function GT:ResetDisplay(display)
 end
 
 function GT:PrepareForDisplayUpdate()
-    GT:Debug("Prepare for Display Update")
+    GT.Debug("Prepare for Display Update")
     local globalPrice = 0
     local globalCounts = ""
     local globalTotal = 0
@@ -461,8 +475,8 @@ function GT:PrepareForDisplayUpdate()
                 playerTotal = playerTotal + value
             end
         end
-        if string.len(tostring(playerTotal)) + math.ceil((string.len(tostring(playerTotal))/3)) > GT.Display.length  then
-            GT.Display.length  = string.len(tostring(playerTotal)) + math.ceil((string.len(tostring(playerTotal))/3))
+        if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3) > GT.Display.length  then
+            GT.Display.length  = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3)
         end
         playerTotals[i] = playerTotal
         globalTotal = globalTotal + playerTotal
@@ -564,7 +578,7 @@ function GT:PrepareForDisplayUpdate()
 end
 
 function GT:UpdateDisplay(index, name, icon)
-    GT:Debug("Update Display", index, name, icon)
+    GT.Debug("Update Display", index, name, icon)
     if not GT.Display.frames[index] then
         if index < 999999999 then
             --create labels for items
@@ -622,8 +636,7 @@ function GT:UpdateDisplay(index, name, icon)
 end
 
 function GT:RebuildIDTables()
-    GT:Debug("Rebuild ID Table")
-    --Not using IDsArray from WA as it will be replaced by the frame structure
+    GT.Debug("Rebuild ID Table")
     GT.IDs = {}
     for key, value in pairs(GT.db.profile.Filters) do
         table.insert(GT.IDs, key)
@@ -640,56 +653,64 @@ end
 
 function GT:InventoryUpdate(event)
     if event ~= nil then
-        GT:Debug("InventoryUpdate", event)
-        local total = 0
-        local messageText = ""
-        
-        for i, id in ipairs(GT.IDs) do
-            local count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
+        GT.Debug("InventoryUpdate", event)
+        if GT:GroupCheck() and GT.Enabled then
+            local total = 0
+            local messageText = ""
             
-            if count > 0 then
-                total = total + count
-                messageText = messageText .. id .. "=" .. count
+            for i, id in ipairs(GT.IDs) do
+                local count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
                 
-                local size = #GT.IDs
-                if i < size then
-                    messageText = messageText .. " "
+                if count > 0 then
+                    total = total + count
+                    messageText = messageText .. id .. "=" .. count
+                    
+                    local size = #GT.IDs
+                    if i < size then
+                        messageText = messageText .. " "
+                    end
                 end
             end
-        end
 
-        if GT.db.profile.General.groupType then
-            GT.groupMode = "RAID"
+            if GT.db.profile.General.groupType and GT.groupMode == "WHISPER" then
+                if IsInRaid() then
+                    GT.groupMode = "RAID"
+                else
+                    GT.groupMode = "PARTY"
+                end
+            else
+                GT.groupMode = "WHISPER"
+            end
+
+            if total > 0 then
+                if GT.groupMode == "WHISPER" then
+                    GT.Debug("Sent Solo Message", messageText, GT.groupMode, UnitName("player"))
+                    GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
+                else
+                    GT.Debug("Sent Group Message", messageText, GT.groupMode)
+                    GT:SendCommMessage("GT_Data", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
+                end
+            elseif total == 0 then
+                if GT.groupMode == "WHISPER" then
+                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), nil, "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
+                else
+                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Reset Message")
+                end
+            end
         else
-            GT.groupMode = "WHISPER"
-        end
-
-        if total > 0 then
-            if GT.groupMode == "WHISPER" then
-                GT:Debug("Sent Solo Message")
-                GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"))
-            else
-                GT:Debug("Sent Group Message")
-                GT:SendCommMessage("GT_Data", messageText, GT.groupMode)
-            end
-        elseif total == 0 then
-            if GT.groupMode == "WHISPER" then
-                GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"))
-            else
-                GT:SendCommMessage("GT_Data", "reset", GT.groupMode)
-            end
+            GT.Debug("Disabled or Group Check Failed, No Message Sent")
         end
     else
         local traceback = debugstack()
-        GT:Debug(traceback, event)
+        GT.Debug(traceback, event)
     end
 end
 
 function GT:DataUpdateReceived(prefix, message, distribution, sender)
-    GT:Debug("Data Update Received", prefix, message)
+    GT.Debug("Data Update Received", prefix, message)
     --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
-    if (GT.db.profile.General.groupType and IsInGroup() and GT.Enabled) or (not GT.db.profile.General.groupType and not IsInGroup() and GT.Enabled) then
-        GT:Debug("Data Update Being Processed")
+    if GT:GroupCheck() and GT.Enabled then
+        GT.Debug("Data Update Being Processed")
         GT.Display.length = 0
         --determine sender index or add sender if they dont exist
         local SenderExists = false
@@ -742,6 +763,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
         end
         GT:PrepareForDisplayUpdate()
     elseif GT.Enabled then  --process reset messages if we are enabled but didn't pass the earlier check to display
+        GT.Debug("Group Check Failed but Enabled, Process reset messages only")
         local SenderExists = false
         local senderIndex
         for i, s in ipairs(GT.sender) do
@@ -767,13 +789,13 @@ end
 function GT:ShareSettings(mode)
     if GT.Enabled and GT.db.profile.General.shareSettings and GT:GroupCheck() then
         --loop through the setting categories, create a string, and send that string to the party
-        GT:Debug("Prepare to share settings")
+        GT.Debug("Prepare to share settings")
         if mode == nil then 
             mode = "All" 
         end
-        GT:Debug("Send Settings Mode", mode)
+        GT.Debug("Send Settings Mode", mode)
         for category,categoryData in pairs(GT.db.profile) do
-            GT:Debug("Send Settings category", category)
+            GT.Debug("Send Settings category", category)
             if mode == "All" or mode == category then
                 local messageText = tostring(category) .. ":"
                 if category == "CustomFilters" then
@@ -796,18 +818,18 @@ function GT:ShareSettings(mode)
                         end
                     end
                 end
-            GT:Debug("Send Settings", messageText, GT.groupMode)
-            GT:SendCommMessage("GT_Config", messageText, GT.groupMode)
+            GT.Debug("Send Settings", messageText, GT.groupMode)
+            GT:SendCommMessage("GT_Config", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Config Message")
             end
         end
     end
 end
 
 function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
-    GT:Debug("Received Config Message", prefix, message, sender)
+    GT.Debug("Received Config Message", prefix, message, sender)
 
     if sender ~= GT.Player then  --ignores settings sent from the player
-        GT:Debug("Processing Config Message", GT.Player)
+        GT.Debug("Processing Config Message", GT.Player)
         --determine the category so we can save the settings to the right place
         local category = message:sub(0, string.find(message, ":")-1)
         --remove the category from the settings
