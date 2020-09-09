@@ -137,6 +137,7 @@ function GT:GROUP_ROSTER_UPDATE()
     end
 
     GT.sender = {}
+    GT.count = {}
 
     if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
         GT:ShareSettings()
@@ -692,7 +693,7 @@ function GT:InventoryUpdate(event)
                 end
             elseif total == 0 then
                 if GT.groupMode == "WHISPER" then
-                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), nil, "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
+                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
                 else
                     GT:SendCommMessage("GT_Data", "reset", GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Reset Message")
                 end
