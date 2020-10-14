@@ -9,7 +9,7 @@ local expansions = {
     ["WoD"] = 6,
     ["Legion"] = 7,
     ["BFA"] = 8,
-    ["SL"] = 9
+    ["SL"] = 9,
 }
 GT.expansions = expansions
 
@@ -23,6 +23,7 @@ local categories = {
     ["Elemental"] = 7,
     ["Gem"] = 8,
     ["Enchanting"] = 9,
+    ["Pigment"] = 10,
 }
 GT.categories = categories
 
@@ -192,7 +193,21 @@ local ItemData = {
             {id = 16203, name = "Greater Eternal Essence", order = 6},
             {id = 14343, name = "Small Brilliant Shard", order = 7},
             {id = 14344, name = "Large Brilliant Shard", order = 8},            
-        }
+        },
+        Pigment = {
+            {id = 39151, name = "Alabaster Pigment", order = 1},
+            {id = 39334, name = "Dusky Pigment", order = 2},
+            {id = 43103, name = "Verdant Pigment", order = 3},
+            {id = 39338, name = "Golden Pigment", order = 4},
+            {id = 39339, name = "Emerald Pigment", order = 5},
+            {id = 39340, name = "Violet Pigment", order = 6},
+            {id = 39341, name = "Silvery Pigment", order = 7},
+            {id = -1, name = "Uncommon Pigment", order = 8},
+            {id = 43104, name = "Burnt Pigment", order = 9},
+            {id = 43105, name = "Indigo Pigment", order = 10},
+            {id = 43106, name = "Ruby Pigment", order = 11},
+            {id = 43107, name = "Sapphire Pigment", order = 12},            
+        },
     },
     BC = {
         Herb = {
@@ -302,7 +317,11 @@ local ItemData = {
             {id = 22448, name = "Small Prismatic Shard", order = 4},
             {id = 22449, name = "Large Prismatic Shard", order = 5},
             {id = 22450, name = "Void Crystal", order = 6},            
-        }
+        },
+        Pigment = {
+            {id = 39342, name = "Nether Pigment", order = 1},
+            {id = 43108, name = "Ebon Pigment", order = 2},            
+        },
     },
     Wrath = {
         Herb = {
@@ -408,7 +427,11 @@ local ItemData = {
             {id = 34053, name = "Small Dream Shard", order = 4},
             {id = 34052, name = "Dream Shard", order = 5},
             {id = 34057, name = "Abyss Crystal", order = 6},            
-        }
+        },
+        Pigment = {
+            {id = 39343, name = "Azure Pigment", order = 1},
+            {id = 43109, name = "Icy Pigment", order = 2},            
+        },
     },
     Cata = {
         Herb = {
@@ -496,7 +519,11 @@ local ItemData = {
             {id = 52720, name = "Small Heavenly Shard", order = 4},
             {id = 52721, name = "Heavenly Shard", order = 5},
             {id = 52722, name = "Maelstrom Crystal", order = 6},            
-        }
+        },
+        Pigment = {
+            {id = 61979, name = "Ashen Pigment", order = 1},
+            {id = 61980, name = "Burning Embers", order = 2},            
+        },
     },
     MoP = {
         Herb = {
@@ -574,7 +601,11 @@ local ItemData = {
             {id = 74247, name = "Ethereal Shard", order = 4},
             {id = 105718, name = "Sha Crystal Fragment", order = 5},
             {id = 74248, name = "Sha Crystal", order = 6},            
-        }
+        },
+        Pigment = {
+            {id = 79251, name = "Shadow Pigment", order = 1},
+            {id = 79253, name = "Misty Pigment", order = 2},            
+        },
     },
     WoD = {
         Herb = {
@@ -631,7 +662,10 @@ local ItemData = {
             {id = 111245, name = "Luminous Shard", order = 3},
             {id = 115504, name = "Fractured Temporal Crystal", order = 4},
             {id = 113588, name = "Temporal Crystal", order = 5},            
-        }
+        },
+        Pigment = {
+            {id = 114931, name = "Cerulean Pigment", order = 1},
+        },
     },
     Legion = {
         Herb = {
@@ -707,7 +741,12 @@ local ItemData = {
             {id = 124440, name = "Arkhana", order = 1},
             {id = 124441, name = "Leylight Shard", order = 2},
             {id = 124442, name = "Chaos Crystal", order = 3},            
-        }
+        },
+        Pigment = {
+            {id = 128304, name = "Yseralline Seed", order = 1},
+            {id = 129032, name = "Roseate Pigment", order = 2},
+            {id = 129034, name = "Sallow Pigment", order = 3},            
+        },
     },
     BFA = {
         Herb = {
@@ -804,7 +843,13 @@ local ItemData = {
             {id = 152875, name = "Gloom Dust", order = 1},
             {id = 152876, name = "Umbra Shard", order = 2},
             {id = 152877, name = "Veiled Crystal", order = 3},            
-        }
+        },
+        Pigment = {
+            {id = 153636, name = "Crimson Pigment", order = 1},
+            {id = 153635, name = "Ultramarine Pigment", order = 2},
+            {id = 168662, name = "Maroon Pigment", order = 3},
+            {id = 153669, name = "Viridescent Pigment", order = 4},            
+        },
     },
     SL = {
         Herb = {
@@ -824,7 +869,10 @@ local ItemData = {
             {id = 171833, name = "Elethium Ore", order = 6},
             {id = -1, name = "Stone", order = 7},
             {id = 171840, name = "Porous Stone", order = 8},
-            {id = 171841, name = "Shaded Stone", order = 9},            
+            {id = 171841, name = "Shaded Stone", order = 9},
+            {id = -1, name = "Other", order = 10},
+            {id = 177061, name = "Twilight Bark", order = 11},
+                   
         },
         Cloth = {
             {id = 173202, name = "Shrouded Cloth", order = 1},
@@ -832,25 +880,24 @@ local ItemData = {
         },
         Leather = {
             {id = 172089, name = "Desolate Leather", order = 1},
-            {id = 172094, name = "Desolate Hide", order = 2},
+            {id = 172094, name = "Callous Hide", order = 2},
             {id = 172096, name = "Heavy Desolate Leather", order = 3},
-            {id = 172097, name = "Heavy Desolate Hide", order = 4},
+            {id = 172097, name = "Heavy Callous Hide", order = 4},
             {id = 172332, name = "Necrotic Leather", order = 5},
             {id = 172333, name = "Purified Leather", order = 6},
             {id = 172331, name = "Sinful Leather", order = 7},
             {id = 172330, name = "Unseelie Leather", order = 8},
             {id = -1, name = "Scales", order = 9},
-            {id = 172090, name = "Sorrowscale Fragment", order = 10},
-            {id = 177281, name = "Dnt Reuse Me Mtmm", order = 11},
-            {id = 172092, name = "Pallid Bone", order = 12},
-            {id = 177279, name = "Gaunt Sinew", order = 13},            
+            {id = 172092, name = "Pallid Bone", order = 10},
+            {id = 177279, name = "Gaunt Sinew", order = 11},                      
         },
         Meat = {
             {id = 172052, name = "Aethereal Meat", order = 1},
-            {id = 172055, name = "Phantasmal Haunch", order = 2},
-            {id = 172054, name = "Seraphic Wing", order = 3},
-            {id = 179315, name = "Shadowy Shank", order = 4},
-            {id = 172053, name = "Tenebrous Ribs", order = 5},            
+            {id = 179314, name = "Creeping Crawler Meat", order = 2},
+            {id = 172055, name = "Phantasmal Haunch", order = 3},
+            {id = 172054, name = "Seraphic Wing", order = 4},
+            {id = 179315, name = "Shadowy Shank", order = 5},
+            {id = 172053, name = "Tenebrous Ribs", order = 6},                     
         },
         Fish = {
             {id = 173033, name = "Iridescent Amberjack", order = 1},
@@ -861,7 +908,10 @@ local ItemData = {
             {id = 173037, name = "Elysian Thade", order = 6},            
         },
         Elemental = {
-            {id = 178787, name = "Orboreal Shard", order = 1},
+            {id = 173170, name = "Essence of Rebirth", order = 1},
+            {id = 173172, name = "Essence of Servitude", order = 2},
+            {id = 173171, name = "Essence of Torment", order = 3},
+            {id = 173173, name = "Essence of Valor", order = 4},            
         },
         Gem = {
             {id = 173109, name = "Angerseye", order = 1},
@@ -872,6 +922,11 @@ local ItemData = {
             {id = 172230, name = "Soul Dust", order = 1},
             {id = 172231, name = "Sacred Shard", order = 2},
             {id = 172232, name = "Eternal Crystal", order = 3},            
+        },
+        Pigment = {
+            {id = 173057, name = "Luminous Pigment", order = 1},
+            {id = 173056, name = "Umbral Pigment", order = 2},
+            {id = 175788, name = "Tranquil Pigment", order = 3},                  
         },
     },
 }

@@ -33,8 +33,9 @@ local defaults = {
             tsmPrice = 1,
             ignoreAmount = 0,
             perItemPrice = false,
-            debugOption = false,
+            debugOption = 0,
             displayAlias = false,
+            characterValue = false,
         },
         Filters = {
         },
@@ -47,11 +48,6 @@ local defaults = {
 local generalOptions = {
     type = "group",
     args = {
-        header0 = {
-            type = "header",
-            name = "v"..tostring(GT.metaData.version),
-            order = 0
-        },
         enable = {
             type = "toggle",
             name = "Enabled",
@@ -60,15 +56,14 @@ local generalOptions = {
             get = function() return GT.db.profile.General.enable end,
             set = function(_, key) 
                 GT.db.profile.General.enable = key
-                if key and not GT.Enabled then
+                GT.Enabled = key
+                if key then
                     GT:OnEnable()
-                    GT:ResetDisplay(true)
-                    GT:FiltersButton()
-                elseif not key and GT.Enabled then
+                elseif not key then
                     GT:OnDisable()
-                    GT:ResetDisplay(true)
-                    GT:FiltersButton()
                 end
+                GT:ResetDisplay(true)
+                --GT:FiltersButton()  --Likely unnecessary
             end,
             order = 1
         },
@@ -105,8 +100,8 @@ local generalOptions = {
                     GT.groupMode = "RAID"
                 else
                     GT.groupMode = "WHISPER"
-                    GT.db.profile.General.shareSettings = false
-                    GT.db.profile.General.displayAlias = false
+                    --GT.db.profile.General.shareSettings = false
+                    --GT.db.profile.General.displayAlias = false
                 end
                 if key and not IsInGroup() then
                     GT:ResetDisplay(false)
@@ -141,6 +136,16 @@ local generalOptions = {
             set = function(_, key) GT.db.profile.General.displayAlias = key end,
             disabled = function() return not GT.db.profile.General.groupType end,
             order = 103
+        },
+        characterValue = {
+            type = "toggle",
+            name = "Display Per Character Gathered Value",
+            desc  = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
+            width = 1.77,
+            get = function() return GT.db.profile.General.characterValue end,
+            set = function(_, key) GT.db.profile.General.characterValue = key end,
+            disabled = function() return not GT.db.profile.General.groupType end,
+            order = 104
         },
         header2 = {
             type = "header",
@@ -302,11 +307,16 @@ local generalOptions = {
             order = 10000
         },
         debugOption = {
-            type = "toggle",
+            type = "select",
             name = "Debug",
             desc = "This is for debugging the addon, do NOT enable, it is spammy.",
             width = 1.77,
-            get = function() return GT.db.profile.General.debugOption end,
+            values = {[0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)"},
+            get = function()
+                if type(GT.db.profile.General.debugOption) == "boolean" then
+                    GT.db.profile.General.debugOption = 0
+                end
+                return GT.db.profile.General.debugOption end,
             set = function(_, key) GT.db.profile.General.debugOption = key end,
             order = 10001
         },
@@ -536,6 +546,11 @@ function Config:OnInitialize()
         GT.db.profile.General.perItemPrice = false
     end
 
+    --Change debug to int instead of bool
+    if type(GT.db.profile.General.debugOption) == "boolean" then
+        GT.db.profile.General.debugOption = 0
+    end
+
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
     local options = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
 
@@ -561,6 +576,9 @@ function Config:OnInitialize()
     GT.Player = UnitName("player")
 
     GT.Enabled = GT.db.profile.General.enable
+    if not GT.Enabled then
+        GT:OnDisable()
+    end
 
     if GT.db.profile.General.groupType then
         GT.groupMode = "RAID"
