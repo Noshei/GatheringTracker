@@ -16,6 +16,8 @@ GT.metaData = {
     notes = GetAddOnMetadata("GatheringTracker", "Notes"),
 }
 
+BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version
+
 function GT:OnInitialize()
 --may not be used as OnEnable is likely to be better so that we can handle enable/disable without requiring a full UI reload.
 end
@@ -84,12 +86,18 @@ function GT.Debug(text, level, ...)
     if not GT.db.profile or GT.db.profile.General.debugOption == 0 then return end
 
     if level == nil then 
-        level = 2 
+        level = 2
     end
 
     if text and level <= GT.db.profile.General.debugOption then
         GT.DebugCount = GT.DebugCount + 1
-        ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cffff0000" .. date("%X") .. "|r |cff00a0a3" .. tostring(GT.DebugCount) .. ": |r " .. strjoin(" |cff00ff00:|r ", text, tostringall(...)))
+        local color = "89FF9A"
+        if level == 2 then
+            color = "FFD270"
+        elseif level == 3 then
+            color = "FF8080"
+        end
+        ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cffff0000" .. date("%X") .. "|r |cff00a0a3" .. tostring(GT.DebugCount) .. ": |r " .. strjoin(" |cff00ff00:|r ", "|cff"..color..text.."|r", tostringall(...)))
     end
 end
 
