@@ -28,7 +28,8 @@ function GT:OnEnable()
         ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 ENABLED|r")
         
         --Register events for updating item details
-        GT:RegisterEvent("BAG_UPDATE", "InventoryUpdate")
+        GT:RegisterEvent("BAG_UPDATE")
+        GT:RegisterEvent("PLAYER_MONEY", "InventoryUpdate")
         GT:RegisterEvent("GROUP_ROSTER_UPDATE")
         GT:RegisterEvent("PLAYER_ENTERING_WORLD")
         
@@ -46,6 +47,7 @@ function GT:OnDisable()
         
         --Unregister events so that we can stop working when disabled
         GT:UnregisterEvent("BAG_UPDATE")
+        GT:UnregisterEvent("PLAYER_MONEY")
         GT:UnregisterEvent("GROUP_ROSTER_UPDATE")
         GT:UnregisterEvent("PLAYER_ENTERING_WORLD")
         
@@ -138,7 +140,7 @@ end
 function GT:PLAYER_ENTERING_WORLD()
     GT.Debug("PLAYER_ENTERING_WORLD", 1)
     if GT.Enabled then
-        GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD")
+        GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", true)
     end
 end
 
@@ -168,7 +170,7 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
             end
 
             GT:ResetDisplay()
-            GT:InventoryUpdate("GROUP_ROSTER_UPDATE")
+            GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
         else
             if #waitTable == 0 then
                 if IsInGroup() then  --If we are no longer in a party, just do the update.
@@ -244,7 +246,7 @@ function GT:FiltersButton()
 
             local menuFrame = CreateFrame("Frame", "GT_baseFrame_filtersMenu", UIParent, "UIDropDownMenuTemplate")
 
-            filterMenu = {}
+            local filterMenu = {}
             for expansion, expansionData in pairs(GT.ItemData) do
                 local expansionMenuList = {}
 
@@ -285,7 +287,7 @@ function GT:FiltersButton()
 
                                     GT:ResetDisplay(false)
                                     GT:RebuildIDTables()
-                                    GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked")
+                                    GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked", true)
                                 end,
                             }
                         end
@@ -337,7 +339,7 @@ function GT:FiltersButton()
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate(expansion.." "..category.." clicked")
+                            GT:InventoryUpdate(expansion.." "..category.." clicked", true)
                         end,
                     }
                 end
@@ -444,7 +446,7 @@ InterfaceOptionsFrame:HookScript("OnHide", function()
 
     --Do an inventory update if we dont have any information
     if #GT.count == 0 then
-        GT:InventoryUpdate("InterfaceOptionsFrame:OnHide")
+        GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", true)
     end
 
     --determine if a full or partial reset is needed after closing the Interface Options
@@ -559,6 +561,12 @@ function GT:PrepareForDisplayUpdate()
                 GT.Display.length = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3)
             end
         end
+        if GT.count["gold"] and GT.count["gold"][i] then
+            local gold = GT.count["gold"][i] .. "g"
+            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3) > GT.Display.length  then
+                GT.Display.length = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3)
+            end
+        end
         playerTotals[i] = playerTotal
         globalTotal = globalTotal + playerTotal
     end
@@ -577,41 +585,58 @@ function GT:PrepareForDisplayUpdate()
 
     for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels
         if GT.count[tostring(id)] then
-            local data = GT.count[tostring(id)]
-            local counts = ""
-            local total = 0
-            for i, v in ipairs(data) do
-                local value = 0
-                if (v-GT.db.profile.General.ignoreAmount) > 0 then
-                    value = v-GT.db.profile.General.ignoreAmount
-                else
-                    value = 0
+            if string.match(tostring(id), "(%a)") then
+                --If the ID includes any letters, we need to handle it differently
+                local data = GT.count[tostring(id)]
+                local counts = ""
+                for i, v in ipairs(data) do
+                    counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (v))) .. ((id == "gold" and "g") or ""))
                 end
-                counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (value))))
-                total = total + value
-            end
-            
-            if total > 0 then
-                local text = counts
-                if GT.db.profile.General.groupType == true then
-                    text = text .. "[" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
-                end
-                if GT.db.profile.General.tsmPrice > 0 then
-                    local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
-                    local tprice = total * eprice
-                    globalPrice = globalPrice + tprice
-                    
-                    if GT.db.profile.General.perItemPrice then
-                        text = text .. "{" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (eprice))) .. "g}")
+                local iconID, order
+                for _, otherData in ipairs(GT.ItemData.Other.Other) do
+                    if otherData.id == id then
+                        iconID = otherData.icon
+                        order = otherData.order * -1
                     end
-                    
-                    text = text .. "(" .. GT:AddComas(string.format("%.0f", (tprice))) .. "g)"
+                end
+                GT:UpdateDisplay(order, counts, iconID)
+            else
+                local data = GT.count[tostring(id)]
+                local counts = ""
+                local total = 0
+                for i, v in ipairs(data) do
+                    local value = 0
+                    if (v-GT.db.profile.General.ignoreAmount) > 0 then
+                        value = v-GT.db.profile.General.ignoreAmount
+                    else
+                        value = 0
+                    end
+                    counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (value))))
+                    total = total + value
                 end
                 
-                local iconID = GetItemIcon(id)
+                if total > 0 then
+                    local text = counts
+                    if GT.db.profile.General.groupType == true then
+                        text = text .. "[" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
+                    end
+                    if GT.db.profile.General.tsmPrice > 0 then
+                        local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
+                        local tprice = total * eprice
+                        globalPrice = globalPrice + tprice
+                        
+                        if GT.db.profile.General.perItemPrice then
+                            text = text .. "{" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (eprice))) .. "g}")
+                        end
+                        
+                        text = text .. "(" .. GT:AddComas(string.format("%.0f", (tprice))) .. "g)"
+                    end
+                    
+                    local iconID = GetItemIcon(id)
 
-                --call method to create frame
-                GT:UpdateDisplay(id, text, iconID)
+                    --call method to create frame
+                    GT:UpdateDisplay(id, text, iconID)
+                end
             end
         end
     end
@@ -646,7 +671,7 @@ function GT:PrepareForDisplayUpdate()
         if valueText == "" then
             valueText = "Setup"
         end
-        GT:UpdateDisplay(9999999999, valueText, 133785)
+        GT:UpdateDisplay(9999999999, valueText, 133784)  --old icon 133785
     end
 
     if GT.db.profile.General.displayAlias and GT:GroupCheck("Group") then
@@ -672,7 +697,7 @@ function GT:PrepareForDisplayUpdate()
         if nameText == "" then
             nameText = "Setup"
         end
-        GT:UpdateDisplay(-1, nameText, 413577)
+        GT:UpdateDisplay(-9999999999, nameText, 413577)
     end
 end
 
@@ -750,58 +775,85 @@ function GT:RebuildIDTables()
     end
 end
 
-function GT:InventoryUpdate(event)
-    if event ~= nil then
-        GT.Debug("InventoryUpdate", 1, event)
-        if GT:GroupCheck() and GT.Enabled then
-            local total = 0
-            local messageText = ""
-            
-            for i, id in ipairs(GT.IDs) do
-                local count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
+function GT:BAG_UPDATE()
+    GT:InventoryUpdate("BAG_UPDATE")
+end
+
+function GT:InventoryUpdate(event, dontWait)
+    GT.Debug("InventoryUpdate", 1, event, dontWait)
+    if dontWait then
+        if event ~= nil then
+            if GT:GroupCheck() and GT.Enabled then
+                local total = 0
+                local messageText = ""
                 
-                if count > 0 then
-                    total = total + count
-                    messageText = messageText .. id .. "=" .. count
-                    
-                    local size = #GT.IDs
-                    if i < size then
-                        messageText = messageText .. " "
+                for i, id in ipairs(GT.IDs) do
+                    local count = 0
+                    if string.match(tostring(id), "(%a)") then
+                        if tostring(id) == "gold" then
+                            count = math.floor((GetMoney()/10000)+0.5)
+                        elseif tostring(id) == "bag" then
+                            for i = 0, 4 do
+                                count = count + GetContainerNumFreeSlots(i)
+                            end
+                        end
+                    else
+                        count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
+                    end
+
+                    if count > 0 then
+                        total = total + count
+                        messageText = messageText .. id .. "=" .. count
+                        
+                        local size = #GT.IDs
+                        if i < size then
+                            messageText = messageText .. " "
+                        end
                     end
                 end
-            end
 
-            if GT.db.profile.General.groupType then
-                if IsInRaid() then
-                    GT.groupMode = "RAID"
+                if GT.db.profile.General.groupType then
+                    if IsInRaid() then
+                        GT.groupMode = "RAID"
+                    else
+                        GT.groupMode = "PARTY"
+                    end
                 else
-                    GT.groupMode = "PARTY"
+                    GT.groupMode = "WHISPER"
+                end
+
+                if total > 0 then
+                    if GT.groupMode == "WHISPER" then
+                        GT.Debug("Sent Solo Message", 2, messageText, GT.groupMode, UnitName("player"))
+                        GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
+                    else
+                        GT.Debug("Sent Group Message", 2, messageText, GT.groupMode)
+                        GT:SendCommMessage("GT_Data", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
+                    end
+                elseif total == 0 then
+                    if GT.groupMode == "WHISPER" then
+                        GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
+                    else
+                        GT:SendCommMessage("GT_Data", "reset", GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Reset Message")
+                    end
                 end
             else
-                GT.groupMode = "WHISPER"
-            end
-
-            if total > 0 then
-                if GT.groupMode == "WHISPER" then
-                    GT.Debug("Sent Solo Message", 2, messageText, GT.groupMode, UnitName("player"))
-                    GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
-                else
-                    GT.Debug("Sent Group Message", 2, messageText, GT.groupMode)
-                    GT:SendCommMessage("GT_Data", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
-                end
-            elseif total == 0 then
-                if GT.groupMode == "WHISPER" then
-                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
-                else
-                    GT:SendCommMessage("GT_Data", "reset", GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Reset Message")
-                end
+                GT.Debug("Disabled or Group Check Failed, No Message Sent", 2)
             end
         else
-            GT.Debug("Disabled or Group Check Failed, No Message Sent", 2)
+            local traceback = debugstack()
+            GT.Debug(traceback, 1, event)
         end
     else
-        local traceback = debugstack()
-        GT.Debug(traceback, 1, event)
+        if #waitTable == 0 then
+            if IsInGroup() then  --If we are no longer in a party, just do the update.
+                GT:wait(1, "InventoryUpdate", "InventoryUpdate", true)
+            else
+                GT:InventoryUpdate("InventoryUpdate", true)
+            end
+        elseif waitTable[1][2] ~= "InventoryUpdate" then
+            GT:wait(1, "InventoryUpdate", "InventoryUpdate", true)
+        end
     end
 end
 
@@ -977,7 +1029,11 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
                 end
             elseif category == "Filters" then
                 for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                    messageText[tonumber(itemID)] = true
+                    if string.match(tostring(itemID), "(%a)") then
+                        messageText[itemID] = true
+                    else
+                        messageText[tonumber(itemID)] = true
+                    end
                 end
                 GT.db.profile[category] = messageText
             elseif category == "Aliases" then

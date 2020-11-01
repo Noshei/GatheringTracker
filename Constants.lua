@@ -10,6 +10,8 @@ local expansions = {
     ["Legion"] = 7,
     ["BFA"] = 8,
     ["SL"] = 9,
+
+    ["Other"] = 10,
 }
 GT.expansions = expansions
 
@@ -24,6 +26,8 @@ local categories = {
     ["Gem"] = 8,
     ["Enchanting"] = 9,
     ["Pigment"] = 10,
+
+    ["Other"] = 1,
 }
 GT.categories = categories
 
@@ -927,6 +931,13 @@ local ItemData = {
             {id = 173057, name = "Luminous Pigment", order = 1},
             {id = 173056, name = "Umbral Pigment", order = 2},
             {id = 175788, name = "Tranquil Pigment", order = 3},                  
+        },
+    },
+
+    Other = {
+        Other = {
+            {id = "gold", name = "Current Gold", order = 1, icon = 370211},
+            {id = "bag", name = "Open Bag Space", order = 2, icon = 975745},
         },
     },
 }

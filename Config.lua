@@ -106,12 +106,12 @@ local generalOptions = {
                 if key and not IsInGroup() then
                     GT:ResetDisplay(false)
                 elseif key and IsInGroup() then
-                    GT:InventoryUpdate("Group Mode 1")
+                    GT:InventoryUpdate("Group Mode 1", true)
                     GT:ResetDisplay(true)
                 elseif not key and IsInGroup() then
                     GT:ResetDisplay(false)
                 elseif not key and not IsInGroup() then
-                    GT:InventoryUpdate("Group Mode 2")
+                    GT:InventoryUpdate("Group Mode 2", true)
                     GT:ResetDisplay(true)
                 end
             end,
@@ -208,7 +208,7 @@ local generalOptions = {
             desc = "If selected displayed values will include items in your bank.",
             width = 1.77,
             get = function() return GT.db.profile.General.includeBank end,
-            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank") end,
+            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank", true) end,
             order = 204
         },
         header3 = {
@@ -316,7 +316,8 @@ local generalOptions = {
                 if type(GT.db.profile.General.debugOption) == "boolean" then
                     GT.db.profile.General.debugOption = 0
                 end
-                return GT.db.profile.General.debugOption end,
+                return GT.db.profile.General.debugOption 
+            end,
             set = function(_, key) GT.db.profile.General.debugOption = key end,
             order = 10001
         },
@@ -353,7 +354,11 @@ local filterOptions = {
                     usage = "Please only enter item ID's (aka numbers)",
                     validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
-                    set = function(_, key) GT.db.profile.CustomFilters = key GT:RebuildIDTables() GT:InventoryUpdate("Custom Filter Changed") end,
+                    set = function(_, key) 
+                        GT.db.profile.CustomFilters = key 
+                        GT:RebuildIDTables() 
+                        GT:InventoryUpdate("Custom Filter Changed", true) 
+                    end,
                     order = 2
                 },
             }
@@ -397,11 +402,13 @@ for expansion, expansionData in pairs(GT.ItemData) do
 
                         GT:RebuildIDTables()
 
-                        if GT.count[tostring(itemData.id)] == nil then
-                            GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." option clicked")
+                        --[[if GT.count[tostring(itemData.id)] == nil then
+                            GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." option clicked", true)
                         else
                             GT:ResetDisplay(true)
-                        end
+                        end]]--
+                        GT:ResetDisplay(false)
+                        GT:InventoryUpdate("Filters "..expansion.." "..category.." "..itemData.name.." option clicked", true)
                     end,
                     order = itemData.order
                 }
