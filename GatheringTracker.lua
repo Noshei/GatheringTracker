@@ -36,6 +36,8 @@ function GT:OnEnable()
         --Register addon comm's
         GT:RegisterComm("GT_Data", "DataUpdateReceived")
         GT:RegisterComm("GT_Config", "ConfigUpdateReceived")
+    else
+        GT:OnDisable()
     end
 end
 
@@ -54,6 +56,8 @@ function GT:OnDisable()
         --Unregister addon comm's
         GT:UnregisterComm("GT_Data")
         GT:UnregisterComm("GT_Config")
+    else
+        GT:OnEnable()
     end
 end
 
@@ -108,33 +112,34 @@ local waitFrame = nil
 
 function GT:wait(delay, func, ...)
     GT.Debug("Wait Function Called", 1, delay, func)
-    if type(delay) ~= "number" then
-        GT.Debug("Wait Function return false", 2, type(delay), type(func))
-        return false
+    local timer = {
+        object = self,
+        func = func,
+        argsCount = select("#", ...),
+        delay = delay,
+        args = {...}
+    }
+
+    --check if a wait timer has already been created for the called function
+    for _, waitEvent in pairs(waitTable) do
+        if waitEvent.func == timer.func and waitEvent.delay == timer.delay then
+            GT.Debug("Wait Function Exists", 2, timer.delay, timer.func)
+            return
+        end
     end
-    if not waitFrame then
-        GT.Debug("Wait Function create frame", 2)
-        waitFrame = CreateFrame("Frame", nil, UIParent)
-        waitFrame:SetScript("OnUpdate", function (self, elapse)
-            for i = 1, #waitTable do
-                local waitRecord = tremove(waitTable, i)
-                local d = tremove(waitRecord, 1)
-                local f = tremove(waitRecord, 1)
-                local p = tremove(waitRecord, 1)
-                --GT.Debug("Wait Function details:", d, elapse)
-                if d > elapse then
-                    tinsert(waitTable, i, {d - elapse, f, p})
-                    i = i + 1
-                else
-                    --count = count - 1
-                    GT.Debug("Wait Function call function", 2, f, unpack(p))
-                    GT[f](self,unpack(p))
-                end
-            end
-        end)
+
+    waitTable[timer] = timer
+
+    --create the callback function so that we can pass along arguements
+    timer.callback = function()
+        GT.Debug("Wait Function Complete", 1, timer.delay, timer.func)
+        --remove wait table entry since the timer is complete
+        waitTable[timer] = nil
+        --we need to know the number of args incase we ever have a use case where we need to pass a nil arg
+        GT[timer.func](timer.object, unpack(timer.args, 1, timer.argsCount))
     end
-    tinsert(waitTable, {delay, func, {...}})
-    return true
+
+    C_Timer.After(delay, timer.callback)
 end
 
 function GT:PLAYER_ENTERING_WORLD()
@@ -172,15 +177,7 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
             GT:ResetDisplay()
             GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
         else
-            if #waitTable == 0 then
-                if IsInGroup() then  --If we are no longer in a party, just do the update.
-                    GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
-                else
-                    GT:GROUP_ROSTER_UPDATE("GROUP_ROSTER_UPDATE", true)
-                end
-            elseif waitTable[1][2] ~= "GROUP_ROSTER_UPDATE" then
-                GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
-            end
+            GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
         end
     end
 end
@@ -228,7 +225,6 @@ function GT:CreateBaseFrame()
 end
 
 function GT:FiltersButton()
-    --(GT.db.profile.General.groupType and IsInGroup() and GT.Enabled) or (not GT.db.profile.General.groupType and not IsInGroup() and GT.Enabled)
     if GT.db.profile.General.filtersButton and GT:GroupCheck() and GT.Enabled then --show setting button or create it if needed
         if GT.baseFrame.button then
             GT.Debug("Show Filters Button", 1)
@@ -266,6 +262,7 @@ function GT:FiltersButton()
                                 text = itemData.name,
                                 isNotRadio = true,
                                 keepShownOnClick = true,
+                                icon = tostring(GetItemIcon(tonumber(itemData.id)) or ""),
                                 checked = function()
                                     if GT.db.profile.Filters[itemData.id] == true then
                                         return true
@@ -845,15 +842,7 @@ function GT:InventoryUpdate(event, dontWait)
             GT.Debug(traceback, 1, event)
         end
     else
-        if #waitTable == 0 then
-            if IsInGroup() then  --If we are no longer in a party, just do the update.
-                GT:wait(1, "InventoryUpdate", "InventoryUpdate", true)
-            else
-                GT:InventoryUpdate("InventoryUpdate", true)
-            end
-        elseif waitTable[1][2] ~= "InventoryUpdate" then
-            GT:wait(1, "InventoryUpdate", "InventoryUpdate", true)
-        end
+        GT:wait(0.1, "InventoryUpdate", "InventoryUpdate", true)
     end
 end
 
@@ -916,7 +905,8 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
                 end
             end
         end
-        GT:PrepareForDisplayUpdate()
+
+        GT:wait(0.4, "PrepareForDisplayUpdate", "Data Update Received", true)
     elseif GT.Enabled then  --process reset messages if we are enabled but didn't pass the earlier check to display
         GT.Debug("Group Check Failed but Enabled, Process reset messages only", 1)
         local SenderExists = false

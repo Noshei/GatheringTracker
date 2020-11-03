@@ -936,8 +936,8 @@ local ItemData = {
 
     Other = {
         Other = {
-            {id = "gold", name = "Current Gold", order = 1, icon = 370211},
-            {id = "bag", name = "Open Bag Space", order = 2, icon = 975745},
+            {id = "gold", name = "Current Gold", order = 1, icon = 370211, desc = "Displays the current Gold on the character, rounded to the nearest whole number."},
+            {id = "bag", name = "Open Bag Space", order = 2, icon = 975745, desc = "Displays the number of open bag space."},            
         },
     },
 }

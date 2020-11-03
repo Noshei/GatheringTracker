@@ -392,6 +392,13 @@ for expansion, expansionData in pairs(GT.ItemData) do
                 filterOptions.args[expansion].args[category].args[itemData.name] = {
                     type = "toggle",
                     name = itemData.name,
+                    image = function()
+                        if string.match(tostring(itemData.id), "(%a)") then
+                            return itemData.icon
+                        else
+                            return GetItemIcon(tonumber(itemData.id))
+                        end
+                    end,
                     get = function() return GT.db.profile.Filters[itemData.id] end,
                     set = function(_, key) 
                         if key then 
@@ -412,6 +419,9 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     end,
                     order = itemData.order
                 }
+                if itemData.desc then
+                    filterOptions.args[expansion].args[category].args[itemData.name].desc = itemData.desc
+                end
             end
         end
     end
@@ -573,7 +583,8 @@ function Config:OnInitialize()
     GT:UpdateAliases()
 
     local function openOptions()
-		InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
     end
     
     SLASH_GatheringTracker1 = "/gatheringtracker"
