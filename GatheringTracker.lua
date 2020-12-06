@@ -543,9 +543,11 @@ function GT:PrepareForDisplayUpdate()
                     value = 0
                 end
                 playerTotal = playerTotal + value
-                local price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
-                local totalPrice = value * price
-                GT.sender[i].totalValue = GT.sender[i].totalValue + totalPrice
+                if GT.db.profile.General.tsmPrice > 0 then
+                    local price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
+                    local totalPrice = value * price
+                    GT.sender[i].totalValue = GT.sender[i].totalValue + totalPrice
+                end
             end
         end
         GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
