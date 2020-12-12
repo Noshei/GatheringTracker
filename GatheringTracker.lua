@@ -208,9 +208,12 @@ function GT:CreateBaseFrame()
     container:SetWidth(math.floor(GetScreenWidth()))
     container.frame:SetFrameStrata("BACKGROUND")
     if GT.ElvUI then
-        if container.frame.backdrop.SetBackdropBorderColor then
+        if container.frame.backdrop and container.frame.backdrop.SetBackdropBorderColor then
             container.frame.backdrop:SetBackdropBorderColor(0,0,0,0)
             container.frame.backdrop:SetBackdropColor(0,0,0,0)
+        elseif container.frame.SetBackdropBorderColor then
+            container.frame:SetBackdropBorderColor(0,0,0,0)
+            container.frame:SetBackdropColor(0,0,0,0)
         end
     end
     
