@@ -458,9 +458,9 @@ local ItemData = {
         Leather = {
             {id = 52976, name = "Savage Leather", order = 1},
             {id = 52980, name = "Pristine Hide", order = 2},
-            {id = -1, name = "Scales", order = 2},
-            {id = 52979, name = "Blackened Dragonscale", order = 3},
-            {id = 52982, name = "Deepsea Scale", order = 4},            
+            {id = -1, name = "Scales", order = 3},
+            {id = 52979, name = "Blackened Dragonscale", order = 4},
+            {id = 52982, name = "Deepsea Scale", order = 5},            
         },
         Meat = {
             {id = 62784, name = "Crocolisk Tail", order = 1},
