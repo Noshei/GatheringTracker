@@ -150,7 +150,8 @@ local ItemData = {
             {id = 13758, name = "Raw Redgill", order = 16},
             {id = 13756, name = "Raw Summer Bass", order = 17},
             {id = 13889, name = "Raw Whitescale Salmon", order = 18},
-            {id = 124669, name = "Darkmoon Daggermaw", order = 19},            
+            {id = 6522, name = "Deviate Fish", order = 19},
+            {id = 124669, name = "Darkmoon Daggermaw", order = 20},
         },
         Elemental = {
             {id = 7081, name = "Breath of Wind", order = 1},
@@ -456,6 +457,7 @@ local ItemData = {
         },
         Leather = {
             {id = 52976, name = "Savage Leather", order = 1},
+            {id = 52980, name = "Pristine Hide", order = 2},
             {id = -1, name = "Scales", order = 2},
             {id = 52979, name = "Blackened Dragonscale", order = 3},
             {id = 52982, name = "Deepsea Scale", order = 4},            
