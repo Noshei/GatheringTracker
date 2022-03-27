@@ -36,6 +36,8 @@ local defaults = {
             debugOption = 0,
             displayAlias = false,
             characterValue = false,
+            hideOthers = false,
+            rejectSharedSettings = true,
         },
         Filters = {
         },
@@ -47,282 +49,328 @@ local defaults = {
 
 local generalOptions = {
     type = "group",
+    childGroups = "tab",
     args = {
-        enable = {
-            type = "toggle",
-            name = "Enabled",
-            desc = "Uncheck to disable the addon, this will effectively turn off the addon.",
-            width = 1.77,
-            get = function() return GT.db.profile.General.enable end,
-            set = function(_, key) 
-                GT.db.profile.General.enable = key
-                GT.Enabled = key
-                if key then
-                    GT:OnEnable()
-                elseif not key then
-                    GT:OnDisable()
-                end
-                GT:ResetDisplay(true)
-                --GT:FiltersButton()  --Likely unnecessary
-            end,
-            order = 1
+        General = {
+            type = "group",
+            name = "General",
+            order = 1,
+            args = {
+                enable = {
+                    type = "toggle",
+                    name = "Enabled",
+                    desc = "Uncheck to disable the addon, this will effectively turn off the addon.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.enable end,
+                    set = function(_, key) 
+                        GT.db.profile.General.enable = key
+                        GT.Enabled = key
+                        if key then
+                            GT:OnEnable()
+                        elseif not key then
+                            GT:OnDisable()
+                        end
+                        GT:ResetDisplay(true)
+                        --GT:FiltersButton()  --Likely unnecessary
+                    end,
+                    order = 1
+                },
+                unlock = {
+                    type = "toggle",
+                    name = "Unlock Frame",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.unlock end,
+                    set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
+                    order = 2
+                },
+                filtersButton = {
+                    type = "toggle",
+                    name = "Filters Button",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.filtersButton end,
+                    set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
+                    order = 3
+                },
+                header1 = {
+                    type = "header",
+                    name = "Group Options",
+                    order = 100
+                },
+                groupType = {
+                    type = "toggle",
+                    name = "Group Mode",
+                    desc  = "Select this if you want to share information with your group and display the groups information.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.groupType end,
+                    set = function(_, key) 
+                        GT.db.profile.General.groupType = key
+                        if key then
+                            GT.groupMode = "RAID"
+                        else
+                            GT.groupMode = "WHISPER"
+                            --GT.db.profile.General.shareSettings = false
+                            --GT.db.profile.General.displayAlias = false
+                        end
+                        if key and not IsInGroup() then
+                            GT:ResetDisplay(false)
+                        elseif key and IsInGroup() then
+                            GT:InventoryUpdate("Group Mode 1", true)
+                            GT:ResetDisplay(true)
+                        elseif not key and IsInGroup() then
+                            GT:ResetDisplay(false)
+                        elseif not key and not IsInGroup() then
+                            GT:InventoryUpdate("Group Mode 2", true)
+                            GT:ResetDisplay(true)
+                        end
+                    end,
+                    order = 101
+                },
+                hideOthers = {
+                    type = "toggle",
+                    name = "Hide Other Party Members",
+                    desc  = "When selected only your character will be displayed when you are in a group.  Information will still be sent to and received from party members, and settings may still be shared.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.hideOthers end,
+                    set = function(_, key)
+                        GT.db.profile.General.hideOthers = key
+                        if key then
+                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members",true)
+                        end
+                    end,
+                    disabled = function() return not GT.db.profile.General.groupType end,
+                    order = 102
+                },
+                shareSettings = {
+                    type = "toggle",
+                    name = "Share Settings with Group",
+                    desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.  When a party is formed or changed the party leader will share their settings.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.shareSettings end,
+                    set = function(_, key) GT.db.profile.General.shareSettings = key end,
+                    disabled = function() return not GT.db.profile.General.groupType end,
+                    order = 103
+                },
+                rejectSharedSettings = {
+                    type = "toggle",
+                    name = "Reject Shared Settings",
+                    desc  = "When selected shared settings will be ignored.  If you are the party leader, you can still share settings to your party.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.rejectSharedSettings end,
+                    set = function(_, key) GT.db.profile.General.rejectSharedSettings = key end,
+                    order = 104
+                },
+                displayAlias = {
+                    type = "toggle",
+                    name = "Display Characters Alias",
+                    desc  = "When selected the character aliases will be displayed above their count column.",
+                    width = 1.70,
+                    image = function() return 413577 end,
+                    get = function() return GT.db.profile.General.displayAlias end,
+                    set = function(_, key) GT.db.profile.General.displayAlias = key end,
+                    disabled = function() return not GT.db.profile.General.groupType end,
+                    order = 105
+                },
+                characterValue = {
+                    type = "toggle",
+                    name = "Display Per Character Value",
+                    desc  = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
+                    width = 1.70,
+                    image = function() return 133784 end,
+                    get = function() return GT.db.profile.General.characterValue end,
+                    set = function(_, key) GT.db.profile.General.characterValue = key end,
+                    disabled = function() return not GT.db.profile.General.groupType end,
+                    order = 106
+                },
+            },
         },
-        unlock = {
-            type = "toggle",
-            name = "Unlock Frame",
-            width = 1.77,
-            get = function() return GT.db.profile.General.unlock end,
-            set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
-            order = 2
+        LookandFeel = {
+            type = "group",
+            name = "Look and Feel",
+            order = 2,
+            args = {
+                header2 = {
+                    type = "header",
+                    name = "Display Options",
+                    order = 200
+                },
+                tsmPrice = {
+                    type = "select",
+                    name = "TSM Price Source",
+                    desc = "Select the desired TSM price source, or none to disable price information.  TSM is required for this option to be enabled.",
+                    width = 1.70,
+                    values = {[0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical"},
+                    get = function() return GT.db.profile.General.tsmPrice end,
+                    set = function(_, key) 
+                        GT.db.profile.General.tsmPrice = key
+                        if GT.db.profile.General.tsmPrice == 0 then
+                            GT.db.profile.General.perItemPrice = false
+                        end
+                        GT:ResetDisplay(true) end,
+                    disabled = function() 
+                        if not GT.tsmLoaded then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 201
+                },
+                perItemPrice = {
+                    type = "toggle",
+                    name = "Display Per Item Price",
+                    desc = "If selected the price for 1 of each item will be displayed",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.perItemPrice end,
+                    set = function(_, key) GT.db.profile.General.perItemPrice = key GT:ResetDisplay(true) end,
+                    disabled = function() 
+                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 202
+                },
+                ignoreAmount = {
+                    type = "range",
+                    name = "Ignore Amount",
+                    desc = "Use this option to ignore a specific amount, this value will be subtracted from the totals.",
+                    min = 0,
+                    max = 100,
+                    step = 1,
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.ignoreAmount or 1 end,
+                    set = function(_, key) GT.db.profile.General.ignoreAmount = key GT:ResetDisplay(true) end,
+                    order = 203
+                },
+                includeBank = {
+                    type = "toggle",
+                    name = "Include Bank",
+                    desc = "If selected displayed values will include items in your bank.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.includeBank end,
+                    set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank", true) end,
+                    order = 204
+                },
+                header3 = {
+                    type = "header",
+                    name = "Icon Size",
+                    order = 300
+                },
+                iconWidth = {
+                    type = "range",
+                    name = "Icon Width",
+                    min = 10,
+                    max = 100,
+                    step = 1,
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.iconWidth or 1 end,
+                    set = function(_, key) GT.db.profile.General.iconWidth = key GT:ResetDisplay(true) end,
+                    order = 301
+                },
+                iconHeight = {
+                    type = "range",
+                    name = "Icon Height",
+                    min = 10,
+                    max = 100,
+                    step = 1,
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.iconHeight or 1 end,
+                    set = function(_, key) GT.db.profile.General.iconHeight = key GT:ResetDisplay(true) end,
+                    order = 302
+                },
+                header4 = {
+                    type = "header",
+                    name = "Text",
+                    order = 400
+                },
+                textColor = {
+                    type = "color",
+                    name = "Text Color",
+                    hasAlpha = false,
+                    get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3] or 1,1,1 end,
+                    set = function(_,r,g,b) GT.db.profile.General.textColor = {r,g,b} GT:ResetDisplay(true) end,
+                    order = 401
+                },
+                textSize = {
+                    type = "range",
+                    name = "Text Size",
+                    min = 10,
+                    max = 70,
+                    step = 1,
+                    width = 1.20,
+                    get = function() return GT.db.profile.General.textSize or 1 end,
+                    set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true) end,
+                    order = 402
+                },
+                textFont = {
+                    type = "select",
+                    name = "Text Font",
+                    width = 1.20,
+                    dialogControl = 'LSM30_Font',
+                    values = media:HashTable("font"),
+                    get = function() return GT.db.profile.General.textFont end,
+                    set = function(_, key) GT.db.profile.General.textFont = key GT:ResetDisplay(true) end,
+                    order = 403
+                },
+                totalColor = {
+                    type = "color",
+                    name = "Total Color",
+                    hasAlpha = false,
+                    get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3] or 1,1,1 end,
+                    set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} GT:ResetDisplay(true) end,
+                    order = 404
+                },
+                totalSize = {
+                    type = "range",
+                    name = "Total Size",
+                    min = 10,
+                    max = 70,
+                    step = 1,
+                    width = 1.20,
+                    get = function() return GT.db.profile.General.totalSize or 1 end,
+                    set = function(_, key) GT.db.profile.General.totalSize = key GT:ResetDisplay(true) end,
+                    order = 405
+                },
+                totalFont = {
+                    type = "select",
+                    name = "Total Font",
+                    width = 1.20,
+                    dialogControl = 'LSM30_Font',
+                    values = media:HashTable("font"),
+                    get = function() return GT.db.profile.General.totalFont end,
+                    set = function(_, key) GT.db.profile.General.totalFont = key GT:ResetDisplay(true) end,
+                    order = 406
+                },
+            },
         },
-        filtersButton = {
-            type = "toggle",
-            name = "Filters Button",
-            width = 1.77,
-            get = function() return GT.db.profile.General.filtersButton end,
-            set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
-            order = 3
-        },
-        header1 = {
-            type = "header",
-            name = "Group Options",
-            order = 100
-        },
-        groupType = {
-            type = "toggle",
-            name = "Group Mode",
-            desc  = "Select this if you want to share information with your group and display the groups information.",
-            width = 1.77,
-            get = function() return GT.db.profile.General.groupType end,
-            set = function(_, key) 
-                GT.db.profile.General.groupType = key
-                if key then
-                    GT.groupMode = "RAID"
-                else
-                    GT.groupMode = "WHISPER"
-                    --GT.db.profile.General.shareSettings = false
-                    --GT.db.profile.General.displayAlias = false
-                end
-                if key and not IsInGroup() then
-                    GT:ResetDisplay(false)
-                elseif key and IsInGroup() then
-                    GT:InventoryUpdate("Group Mode 1", true)
-                    GT:ResetDisplay(true)
-                elseif not key and IsInGroup() then
-                    GT:ResetDisplay(false)
-                elseif not key and not IsInGroup() then
-                    GT:InventoryUpdate("Group Mode 2", true)
-                    GT:ResetDisplay(true)
-                end
-            end,
-            order = 101
-        },
-        shareSettings = {
-            type = "toggle",
-            name = "Share Settings with Group",
-            desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.  When a party is formed or changed the party leader will share their settings.",
-            width = 1.77,
-            get = function() return GT.db.profile.General.shareSettings end,
-            set = function(_, key) GT.db.profile.General.shareSettings = key end,
-            disabled = function() return not GT.db.profile.General.groupType end,
-            order = 102
-        },
-        displayAlias = {
-            type = "toggle",
-            name = "Display Characters Alias",
-            desc  = "When selected the character aliases will be displayed above their count column.",
-            width = 1.77,
-            image = function() return 413577 end,
-            get = function() return GT.db.profile.General.displayAlias end,
-            set = function(_, key) GT.db.profile.General.displayAlias = key end,
-            disabled = function() return not GT.db.profile.General.groupType end,
-            order = 103
-        },
-        characterValue = {
-            type = "toggle",
-            name = "Display Per Character Value",
-            desc  = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
-            width = 1.77,
-            image = function() return 133784 end,
-            get = function() return GT.db.profile.General.characterValue end,
-            set = function(_, key) GT.db.profile.General.characterValue = key end,
-            disabled = function() return not GT.db.profile.General.groupType end,
-            order = 104
-        },
-        header2 = {
-            type = "header",
-            name = "Display Options",
-            order = 200
-        },
-        tsmPrice = {
-            type = "select",
-            name = "TSM Price Source",
-            desc = "Select the desired TSM price source, or none to disable price information.  TSM is required for this option to be enabled.",
-            width = 1.77,
-            values = {[0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical"},
-            get = function() return GT.db.profile.General.tsmPrice end,
-            set = function(_, key) 
-                GT.db.profile.General.tsmPrice = key
-                if GT.db.profile.General.tsmPrice == 0 then
-                    GT.db.profile.General.perItemPrice = false
-                end
-                GT:ResetDisplay(true) end,
-            disabled = function() 
-                if not GT.tsmLoaded then
-                    return true
-                else
-                    return false
-                end
-            end,
-            order = 201
-        },
-        perItemPrice = {
-            type = "toggle",
-            name = "Display Per Item Price",
-            desc = "If selected the price for 1 of each item will be displayed",
-            width = 1.77,
-            get = function() return GT.db.profile.General.perItemPrice end,
-            set = function(_, key) GT.db.profile.General.perItemPrice = key GT:ResetDisplay(true) end,
-            disabled = function() 
-                if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
-                    return true
-                else
-                    return false
-                end
-            end,
-            order = 202
-        },
-        ignoreAmount = {
-            type = "range",
-            name = "Ignore Amount",
-            desc = "Use this option to ignore a specific amount, this value will be subtracted from the totals.",
-            min = 0,
-            max = 100,
-            step = 1,
-            width = 1.77,
-            get = function() return GT.db.profile.General.ignoreAmount or 1 end,
-            set = function(_, key) GT.db.profile.General.ignoreAmount = key GT:ResetDisplay(true) end,
-            order = 203
-        },
-        includeBank = {
-            type = "toggle",
-            name = "Include Bank",
-            desc = "If selected displayed values will include items in your bank.",
-            width = 1.77,
-            get = function() return GT.db.profile.General.includeBank end,
-            set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank", true) end,
-            order = 204
-        },
-        header3 = {
-            type = "header",
-            name = "Icon Size",
-            order = 300
-        },
-        iconWidth = {
-            type = "range",
-            name = "Icon Width",
-            min = 10,
-            max = 100,
-            step = 1,
-            width = 1.77,
-            get = function() return GT.db.profile.General.iconWidth or 1 end,
-            set = function(_, key) GT.db.profile.General.iconWidth = key GT:ResetDisplay(true) end,
-            order = 301
-        },
-        iconHeight = {
-            type = "range",
-            name = "Icon Height",
-            min = 10,
-            max = 100,
-            step = 1,
-            width = 1.77,
-            get = function() return GT.db.profile.General.iconHeight or 1 end,
-            set = function(_, key) GT.db.profile.General.iconHeight = key GT:ResetDisplay(true) end,
-            order = 302
-        },
-        header4 = {
-            type = "header",
-            name = "Text",
-            order = 400
-        },
-        textColor = {
-            type = "color",
-            name = "Text Color",
-            hasAlpha = false,
-            get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3] or 1,1,1 end,
-            set = function(_,r,g,b) GT.db.profile.General.textColor = {r,g,b} GT:ResetDisplay(true) end,
-            order = 401
-        },
-        textSize = {
-            type = "range",
-            name = "Text Size",
-            min = 10,
-            max = 70,
-            step = 1,
-            width = 1.25,
-            get = function() return GT.db.profile.General.textSize or 1 end,
-            set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true) end,
-            order = 402
-        },
-        textFont = {
-            type = "select",
-            name = "Text Font",
-            width = 1.25,
-            dialogControl = 'LSM30_Font',
-            values = media:HashTable("font"),
-            get = function() return GT.db.profile.General.textFont end,
-            set = function(_, key) GT.db.profile.General.textFont = key GT:ResetDisplay(true) end,
-            order = 403
-        },
-        totalColor = {
-            type = "color",
-            name = "Total Color",
-            hasAlpha = false,
-            get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3] or 1,1,1 end,
-            set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} GT:ResetDisplay(true) end,
-            order = 404
-        },
-        totalSize = {
-            type = "range",
-            name = "Total Size",
-            min = 10,
-            max = 70,
-            step = 1,
-            width = 1.25,
-            get = function() return GT.db.profile.General.totalSize or 1 end,
-            set = function(_, key) GT.db.profile.General.totalSize = key GT:ResetDisplay(true) end,
-            order = 405
-        },
-        totalFont = {
-            type = "select",
-            name = "Total Font",
-            width = 1.25,
-            dialogControl = 'LSM30_Font',
-            values = media:HashTable("font"),
-            get = function() return GT.db.profile.General.totalFont end,
-            set = function(_, key) GT.db.profile.General.totalFont = key GT:ResetDisplay(true) end,
-            order = 406
-        },
-        header5 = {
-            type = "header",
+        Debug = {
+            type = "group",
             name = "Debug",
-            order = 10000
-        },
-        debugOption = {
-            type = "select",
-            name = "Debug",
-            desc = "This is for debugging the addon, do NOT enable, it is spammy.",
-            width = 1.77,
-            values = {[0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)"},
-            get = function()
-                if type(GT.db.profile.General.debugOption) == "boolean" then
-                    GT.db.profile.General.debugOption = 0
-                end
-                return GT.db.profile.General.debugOption 
-            end,
-            set = function(_, key) GT.db.profile.General.debugOption = key end,
-            order = 10001
-        },
+            order = 3,
+            args = {
+                header5 = {
+                    type = "header",
+                    name = "Debug",
+                    order = 10000
+                },
+                debugOption = {
+                    type = "select",
+                    name = "Debug",
+                    desc = "This is for debugging the addon, do NOT enable, it is spammy.",
+                    width = 1.70,
+                    values = {[0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)"},
+                    get = function()
+                        if type(GT.db.profile.General.debugOption) == "boolean" then
+                            GT.db.profile.General.debugOption = 0
+                        end
+                        return GT.db.profile.General.debugOption 
+                    end,
+                    set = function(_, key) GT.db.profile.General.debugOption = key end,
+                    order = 10001
+                },
+            }
+        }
     }
 }
 

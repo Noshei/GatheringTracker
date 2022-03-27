@@ -855,63 +855,68 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
     GT.Debug("Data Update Received", 3, prefix, message)
     --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
     if GT:GroupCheck() and GT.Enabled then
-        GT.Debug("Data Update Being Processed", 1)
-        GT.Display.length = 0
-        --determine sender index or add sender if they dont exist
-        local SenderExists = false
-        local senderIndex
-        for index, data in ipairs(GT.sender) do
-            if data.name == sender then
-                SenderExists = true
-                senderIndex = index
-            end
-        end
-        if not SenderExists then
-            local senderTable = {
-                name = sender,
-                inGroup = false,
-                totalValue = 0,
-            }
-            if UnitInParty(sender) or UnitInRaid(sender) then
-                senderTable.inGroup = true
-            end
-
-            table.insert(GT.sender, senderTable)
-            senderIndex = #GT.sender
-        end
-        
-        if message == "reset" then
-            for itemID, data in pairs(GT.count) do
-                if GT.count[itemID][senderIndex] then
-                    GT.count[itemID][senderIndex] = 0
+        if (GT.db.profile.General.hideOthers and sender == GT.Player) or not GT.db.profile.General.hideOthers then
+            --if hideOthers is Checked and sender is Player
+            --or
+            --if hideOthers is NOT checked
+            GT.Debug("Data Update Being Processed", 1)
+            GT.Display.length = 0
+            --determine sender index or add sender if they dont exist
+            local SenderExists = false
+            local senderIndex
+            for index, data in ipairs(GT.sender) do
+                if data.name == sender then
+                    SenderExists = true
+                    senderIndex = index
                 end
             end
-        else
-            --create messageText table
-            local str = " " .. message .. "\n"
-            str = str:gsub("%s(%S-)=", "\n%1=")
-            local messageText = {}
-            for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                messageText[itemID] = value
+            if not SenderExists then
+                local senderTable = {
+                    name = sender,
+                    inGroup = false,
+                    totalValue = 0,
+                }
+                if UnitInParty(sender) or UnitInRaid(sender) then
+                    senderTable.inGroup = true
+                end
 
-                --add message data to counts
-                if GT.count[itemID] then
-                    GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
-                else
-                    GT.count[itemID] = {}
-                    GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
+                table.insert(GT.sender, senderTable)
+                senderIndex = #GT.sender
+            end
+            
+            if message == "reset" then
+                for itemID, data in pairs(GT.count) do
+                    if GT.count[itemID][senderIndex] then
+                        GT.count[itemID][senderIndex] = 0
+                    end
+                end
+            else
+                --create messageText table
+                local str = " " .. message .. "\n"
+                str = str:gsub("%s(%S-)=", "\n%1=")
+                local messageText = {}
+                for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
+                    messageText[itemID] = value
+
+                    --add message data to counts
+                    if GT.count[itemID] then
+                        GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
+                    else
+                        GT.count[itemID] = {}
+                        GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
+                    end
+                end
+
+                --loop existing counts to update, set to 0 if not in message
+                for itemID, data in pairs(GT.count) do
+                    if not messageText[itemID] then
+                        GT.count[itemID][senderIndex] = 0
+                    end
                 end
             end
 
-            --loop existing counts to update, set to 0 if not in message
-            for itemID, data in pairs(GT.count) do
-                if not messageText[itemID] then
-                    GT.count[itemID][senderIndex] = 0
-                end
-            end
+            GT:wait(0.4, "PrepareForDisplayUpdate", "Data Update Received", true)
         end
-
-        GT:wait(0.4, "PrepareForDisplayUpdate", "Data Update Received", true)
     elseif GT.Enabled then  --process reset messages if we are enabled but didn't pass the earlier check to display
         GT.Debug("Group Check Failed but Enabled, Process reset messages only", 1)
         local SenderExists = false
@@ -987,63 +992,67 @@ end
 function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
     GT.Debug("Received Config Message", 3, prefix, message, sender)
 
-    if sender ~= GT.Player then  --ignores settings sent from the player
-        GT.Debug("Processing Config Message", 2, sender)
-        --determine the category so we can save the settings to the right place
-        local category = message:sub(0, string.find(message, ":")-1)
-        --remove the category from the settings
-        message = string.sub(message, string.find(message, ":")+1)
+    if not GT.db.profile.General.rejectSharedSettings then  --ignores settings if reject option is enabled
+        if sender ~= GT.Player then  --ignores settings sent from the player
+            GT.Debug("Processing Config Message", 2, sender)
+            --determine the category so we can save the settings to the right place
+            local category = message:sub(0, string.find(message, ":")-1)
+            --remove the category from the settings
+            message = string.sub(message, string.find(message, ":")+1)
 
-        if category == "CustomFilters" then
-            GT.db.profile[category] = message
-        else
-            local str = message .. "\n"
-            str = str:gsub("%s(%S-)=", "\n%1=")
-            local messageText = {}
+            if category == "CustomFilters" then
+                GT.db.profile[category] = message
+            else
+                local str = message .. "\n"
+                str = str:gsub("%s(%S-)=", "\n%1=")
+                local messageText = {}
 
-            if category == "General" then
-                for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                    messageText[itemID] = value
-                end
+                if category == "General" then
+                    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
+                        messageText[itemID] = value
+                    end
 
-                for setting,value in pairs(messageText) do
-                    if tonumber(value) then
-                        GT.db.profile.General[setting] = tonumber(value)
-                    elseif value == "true" then
-                        GT.db.profile.General[setting] = true
-                    elseif value == "false" then
-                        GT.db.profile.General[setting] = false
-                    elseif string.find(value, ",") then
-                        GT.db.profile.General[setting] = {}
-                        for v in string.gmatch(value, "([^,]+)") do
-                            table.insert(GT.db.profile.General[setting], tonumber(v))
+                    for setting,value in pairs(messageText) do
+                        if tonumber(value) then
+                            GT.db.profile.General[setting] = tonumber(value)
+                        elseif value == "true" then
+                            GT.db.profile.General[setting] = true
+                        elseif value == "false" then
+                            GT.db.profile.General[setting] = false
+                        elseif string.find(value, ",") then
+                            GT.db.profile.General[setting] = {}
+                            for v in string.gmatch(value, "([^,]+)") do
+                                table.insert(GT.db.profile.General[setting], tonumber(v))
+                            end
+                        else
+                            GT.db.profile.General[setting] = value
                         end
-                    else
-                        GT.db.profile.General[setting] = value
                     end
-                end
-            elseif category == "Filters" then
-                for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                    if string.match(tostring(itemID), "(%a)") then
-                        messageText[itemID] = true
-                    else
-                        messageText[tonumber(itemID)] = true
+                elseif category == "Filters" then
+                    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
+                        if string.match(tostring(itemID), "(%a)") then
+                            messageText[itemID] = true
+                        else
+                            messageText[tonumber(itemID)] = true
+                        end
                     end
+                    GT.db.profile[category] = messageText
+                elseif category == "Aliases" then
+                    for n, a in string.gmatch(str, "(%S-)=(.-)\n") do
+                        table.insert(messageText,{name = n, alias = a})
+                    end
+                    GT.db.profile[category] = messageText
                 end
-                GT.db.profile[category] = messageText
-            elseif category == "Aliases" then
-                for n, a in string.gmatch(str, "(%S-)=(.-)\n") do
-                    table.insert(messageText,{name = n, alias = a})
-                end
-                GT.db.profile[category] = messageText
             end
+            if GT.db.profile.General.xPos ~= GT.db.defaults.profile.General.xPos or GT.db.profile.General.yPos ~= GT.db.defaults.profile.General.yPos then
+                GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
+            end
+            
+            GT:ResetDisplay(false)
+            GT:RebuildIDTables()
+            GT:InventoryUpdate("Config Update Received")
         end
-        if GT.db.profile.General.xPos ~= GT.db.defaults.profile.General.xPos or GT.db.profile.General.yPos ~= GT.db.defaults.profile.General.yPos then
-            GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
-        end
-        
-        GT:ResetDisplay(false)
-        GT:RebuildIDTables()
-        GT:InventoryUpdate("Config Update Received")
+    else
+        GT.Debug("REJECT Received Config Message", 3, prefix, message, sender)
     end
 end
