@@ -885,7 +885,8 @@ local ItemData = {
         },
         Cloth = {
             {id = 173202, name = "Shrouded Cloth", order = 1},
-            {id = 173204, name = "Lightless Silk", order = 2},            
+            {id = 173204, name = "Lightless Silk", order = 2},
+            {id = 187703, name = "Silken Protofiber", order = 3},
         },
         Leather = {
             {id = 172089, name = "Desolate Leather", order = 1},
