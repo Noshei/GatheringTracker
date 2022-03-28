@@ -29,7 +29,7 @@ local categories = {
     ["Legendary"] = 11,
     ["Synthesis"] = 11,
 
-    ["Other"] = 1,
+    ["Other"] = 12,
 }
 GT.categories = categories
 
@@ -76,7 +76,16 @@ local ItemData = {
             {id = 3858, name = "Mithril Ore", order = 6},
             {id = 7911, name = "Truesilver Ore", order = 7},
             {id = 10620, name = "Thorium Ore", order = 8},
-            {id = 11370, name = "Dark Iron Ore", order = 9},            
+            {id = 11370, name = "Dark Iron Ore", order = 9},
+            {id = -1, name = "Stone", order = 10},
+            {id = 2835, name = "Rough Stone", order = 11},
+            {id = 2836, name = "Coarse Stone", order = 12},
+            {id = 2838, name = "Heavy Stone", order = 13},
+            {id = 7912, name = "Solid Stone", order = 14},
+            {id = 12365, name = "Dense Stone", order = 15},
+            {id = -1, name = "Other", order = 16},
+            {id = 22202, name = "Small Obsidian Shard", order = 17},
+            {id = 22203, name = "Large Obsidian Shard", order = 18},
         },
         Cloth = {
             {id = 2589, name = "Linen Cloth", order = 1},
@@ -214,6 +223,14 @@ local ItemData = {
             {id = 43105, name = "Indigo Pigment", order = 10},
             {id = 43106, name = "Ruby Pigment", order = 11},
             {id = 43107, name = "Sapphire Pigment", order = 12},            
+        },
+        Other = {
+            {id = 5498, name = "Small Lustrous Pearl", order = 1},
+            {id = 7971, name = "Black Pearl", order = 2},
+            {id = 12804, name = "Powerful Mojo", order = 3},
+            {id = 13926, name = "Golden Pearl", order = 4},
+            {id = 12811, name = "Righteous Orb", order = 5},
+            {id = 12809, name = "Guardian Stone", order = 6},
         },
     },
     BC = {
