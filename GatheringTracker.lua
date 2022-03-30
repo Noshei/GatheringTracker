@@ -852,7 +852,7 @@ function GT:InventoryUpdate(event, dontWait)
 end
 
 function GT:DataUpdateReceived(prefix, message, distribution, sender)
-    GT.Debug("Data Update Received", 3, prefix, message)
+    GT.Debug("Data Update Received", 3, prefix, message, sender)
     --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
     if GT:GroupCheck() and GT.Enabled then
         if (GT.db.profile.General.hideOthers and sender == GT.Player) or not GT.db.profile.General.hideOthers then
@@ -933,7 +933,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
                 inGroup = false,
                 totalValue = 0,
             }
-            if UnitInParty(sender) or UnitInRaid(sender) > 0 then
+            if UnitInParty(sender) or UnitInRaid(sender) then
                 senderTable.inGroup = true
             end
 
