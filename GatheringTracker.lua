@@ -357,7 +357,8 @@ function GT:FiltersButton()
             menuFrame:Hide()
 
             GT.baseFrame.menu = menuFrame
-
+            GT.baseFrame.filterMenu = filterMenu
+            
             filterButton:SetScript("OnClick", 
                 function (self, button, down)
                     if button == "LeftButton" then

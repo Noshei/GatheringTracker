@@ -27,9 +27,9 @@ local categories = {
     ["Enchanting"] = 9,
     ["Pigment"] = 10,
     ["Legendary"] = 11,
-    ["Synthesis"] = 11,
+    ["Synthesis"] = 12,
 
-    ["Other"] = 12,
+    ["Other"] = 13,
 }
 GT.categories = categories
 
@@ -248,7 +248,7 @@ local ItemData = {
         Ore = {
             {id = 23425, name = "Adamantite Ore", order = 1},
             {id = 23427, name = "Eternium Ore", order = 2},
-            {id = 23424, name = "Fel Iron Ore", order = 2},
+            {id = 23424, name = "Fel Iron Ore", order = 3},
             {id = 23426, name = "Khorium Ore", order = 4},            
         },
         Cloth = {
