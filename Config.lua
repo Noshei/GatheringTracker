@@ -619,16 +619,20 @@ function Config:OnInitialize()
     end
 
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
-    local options = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
+    GT.Options.Main = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
+    GT.Options.Main:SetScript("OnHide", GT.OptionsHide)
 
     AceConfigRegistry:RegisterOptionsTable("GT/Filter", filterOptions)
-    AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
+    GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
+    GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
     
     AceConfigRegistry:RegisterOptionsTable("GT/Alias", aliasOptions)
-    AceConfigDialog:AddToBlizOptions("GT/Alias", "Alias", GT.metaData.name)
+    GT.Options.Alias = AceConfigDialog:AddToBlizOptions("GT/Alias", "Alias", GT.metaData.name)
+    GT.Options.Alias:SetScript("OnHide", GT.OptionsHide)
 
     AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
-    AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
+    GT.Options.Profiles = AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
+    GT.Options.Profiles:SetScript("OnHide", GT.OptionsHide)
 
     GT:UpdateAliases()
 

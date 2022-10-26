@@ -1,8 +1,8 @@
-## Interface: 90200
+## Interface: 100000
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and multiboxers
 ## Author: Noshei
-## Version: 1.1.18
+## Version: 1.1.19
 ## OptionalDeps: TradeSkillMaster
 ## SavedVariables: GatheringTrackerDB
 

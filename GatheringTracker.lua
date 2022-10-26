@@ -9,6 +9,7 @@ GT.Display.frames = {}
 GT.Display.list = {}
 GT.Display.length = 0
 GT.DebugCount = 0
+GT.Options = {}
 
 GT.metaData = {
     name = GetAddOnMetadata("GatheringTracker", "Title"),
@@ -423,38 +424,40 @@ function GT:ToggleBaseLock(key)
     end
 end
 
-InterfaceOptionsFrame:HookScript("OnHide", function()
-    --[[This is called when the Interface Options Panel is closed.]]--
-
-    --locks the base frame if the options are closed without first locking it.
-    if GT.db.profile.General.unlock then
-        GT.db.profile.General.unlock = false
-        GT:ToggleBaseLock(false)
-    end
-
-    if GT.db.profile.General.groupType then
-        if IsInRaid() then
-            GT.groupMode = "RAID"
-        else
-            GT.groupMode = "PARTY"
+function GT:OptionsHide()
+    if GT.baseFrame then
+        --[[This is called when the Interface Options Panel is closed.]]--
+        ChatFrame1:AddMessage("Hide")
+        --locks the base frame if the options are closed without first locking it.
+        if GT.db.profile.General.unlock then
+            GT.db.profile.General.unlock = false
+            GT:ToggleBaseLock(false)
         end
-    else
-        GT.groupMode = "WHISPER"
+
+        if GT.db.profile.General.groupType then
+            if IsInRaid() then
+                GT.groupMode = "RAID"
+            else
+                GT.groupMode = "PARTY"
+            end
+        else
+            GT.groupMode = "WHISPER"
+        end
+
+        --call method to share settings with party
+        GT:ShareSettings()
+
+        --Do an inventory update if we dont have any information
+        if #GT.count == 0 then
+            GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", true)
+        end
+
+        --determine if a full or partial reset is needed after closing the Interface Options
+        --false will clear everything and wipe the display
+        --true will reset the data and recreate the GUI
+        GT:ResetDisplay(GT:GroupCheck())
     end
-
-    --call method to share settings with party
-    GT:ShareSettings()
-
-    --Do an inventory update if we dont have any information
-    if #GT.count == 0 then
-        GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", true)
-    end
-
-    --determine if a full or partial reset is needed after closing the Interface Options
-    --false will clear everything and wipe the display
-    --true will reset the data and recreate the GUI
-    GT:ResetDisplay(GT:GroupCheck())
-end)
+end
 
 function GT:GroupCheck(mode)
     GT.Debug("Group Check", 2, mode)
