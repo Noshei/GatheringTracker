@@ -295,7 +295,8 @@ function GT:FiltersButton()
                         categoryMenuList[itemData.order] = itemDetails
                     end
 
-                    expansionMenuList[GT.categories[category]] = {
+                    local categoryMenuData = {}
+                    categoryMenuData = {
                         text = category,
                         keepShownOnClick = false,
                         hasArrow = true,
@@ -343,7 +344,10 @@ function GT:FiltersButton()
                             GT:InventoryUpdate(expansion.." "..category.." clicked", true)
                         end,
                     }
+                    table.insert(expansionMenuList, categoryMenuData)
                 end
+                
+                table.sort(expansionMenuList, function(k1, k2) return GT.categories[k1.text] < GT.categories[k2.text] end )
 
                 filterMenu[GT.expansions[expansion]] = {
                     text = expansion,
