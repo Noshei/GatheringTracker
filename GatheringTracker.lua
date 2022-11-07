@@ -368,6 +368,8 @@ function GT:FiltersButton()
                 function (self, button, down)
                     if button == "LeftButton" then
                         EasyMenu(filterMenu, menuFrame, "cursor", 0 , 0, "MENU");
+                    elseif button == "RightButton" then
+                        GT:ClearFilters()
                     end
                 end
             )
@@ -380,6 +382,22 @@ function GT:FiltersButton()
             GT.baseFrame.button:Hide()
         end
     end
+end
+
+function GT:ClearFilters()
+    --disables all enabled filters
+    GT.Debug("Clear Filters", 1)
+
+    for id,value in pairs(GT.db.profile.Filters) do
+        GT.db.profile.Filters[id] = nil
+    end
+    for id,value in pairs(GT.db.profile.CustomFiltersTable) do
+        GT.db.profile.CustomFiltersTable[id] = false
+    end
+
+    GT:ResetDisplay(false)
+    GT:RebuildIDTables()
+    GT:InventoryUpdate("Clear Filters clicked", true)
 end
 
 function GT:ToggleBaseLock(key)
@@ -431,7 +449,6 @@ end
 function GT:OptionsHide()
     if GT.baseFrame then
         --[[This is called when the Interface Options Panel is closed.]]--
-        ChatFrame1:AddMessage("Hide")
         --locks the base frame if the options are closed without first locking it.
         if GT.db.profile.General.unlock then
             GT.db.profile.General.unlock = false
@@ -775,11 +792,13 @@ function GT:RebuildIDTables()
     for key, value in pairs(GT.db.profile.Filters) do
         table.insert(GT.IDs, key)
     end
-    if GT.db.profile.CustomFilters then
-        for itemID in string.gmatch(GT.db.profile.CustomFilters, "%S+") do
+    if GT.db.profile.CustomFiltersTable then
+        for itemID, value in pairs(GT.db.profile.CustomFiltersTable) do
             itemID = tonumber(itemID)
             if not GT.db.profile.Filters[itemID] then
-                table.insert(GT.IDs, itemID)
+                if value then
+                    table.insert(GT.IDs, itemID)
+                end
             end
         end
     end

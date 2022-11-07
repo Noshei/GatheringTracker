@@ -42,6 +42,8 @@ local defaults = {
         Filters = {
         },
         CustomFilters = "",
+        CustomFiltersTable = {
+        },
         Aliases = {
         },
     },
@@ -86,6 +88,7 @@ local generalOptions = {
                 filtersButton = {
                     type = "toggle",
                     name = "Filters Button",
+                    desc = "Left Click shows filters menu.\nRight Click clears all filters.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.filtersButton end,
                     set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
@@ -405,11 +408,26 @@ local filterOptions = {
                     validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
                     set = function(_, key) 
-                        GT.db.profile.CustomFilters = key 
-                        GT:RebuildIDTables() 
-                        GT:InventoryUpdate("Custom Filter Changed", true) 
+                        GT.db.profile.CustomFilters = key
+                        local tempFilterTable = {}
+                        for itemID in string.gmatch(GT.db.profile.CustomFilters, "%S+") do
+                            if GT.db.profile.CustomFiltersTable[itemID] then
+                                tempFilterTable[itemID] = GT.db.profile.CustomFiltersTable[itemID]
+                            else
+                                tempFilterTable[itemID] = true
+                            end
+                        end
+                        GT.db.profile.CustomFiltersTable = tempFilterTable
+                        GT:CreateCustomFilterOptions()
+                        GT:RebuildIDTables()
+                        GT:InventoryUpdate("Custom Filter Changed", true)
                     end,
                     order = 2
+                },
+                header1 = {
+                    type = "header",
+                    name = "Custom Options",
+                    order = 100
                 },
             }
         }
@@ -597,6 +615,49 @@ function GT:UpdateAliases(removeCharacter)
     AceConfigRegistry:NotifyChange("GT/Alias")
 end
 
+function GT:CreateCustomFilterOptions()
+    if GT.db.profile.CustomFilters then
+        for arg, data in pairs(filterOptions.args.custom.args) do
+            if data.order > 1000 then
+                filterOptions.args.custom.args[arg] = nil
+            end
+        end
+        for id, value in pairs(GT.db.profile.CustomFiltersTable) do
+            --Create a local item to get data from the server
+            local itemID = tonumber(id)
+            item = Item:CreateFromItemID(itemID)
+            GT.Debug("Create Custom Filter Options", 2, item)
+            --Waits for the data to be returned from the server
+            if not item:IsItemEmpty() then
+                item:ContinueOnItemLoad(function()
+                    local itemName = item:GetItemName()
+                    filterOptions.args.custom.args[itemName] = {
+                        type = "toggle",
+                        name = itemName,
+                        image = function() return GetItemIcon(tonumber(id)) end,
+                        get = function() return GT.db.profile.CustomFiltersTable[id] end,
+                        set = function(_, key) 
+                            if key then 
+                                GT.db.profile.CustomFiltersTable[id] = key 
+                            else
+                                GT.db.profile.CustomFiltersTable[id] = false
+                            end
+
+                            GT:RebuildIDTables()
+                            GT:ResetDisplay(false)
+                            GT:InventoryUpdate("Filters Custom "..itemName.." option clicked", true)
+                        end,
+                        order = (id + 1000)
+                    }
+                    AceConfigRegistry:NotifyChange("GT/Filter")
+                end)
+            else
+                ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r "..id.." is not a valid item ID")
+            end
+        end
+    end
+end
+
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
@@ -635,6 +696,7 @@ function Config:OnInitialize()
     GT.Options.Profiles:SetScript("OnHide", GT.OptionsHide)
 
     GT:UpdateAliases()
+    GT:CreateCustomFilterOptions()
 
     local function openOptions()
         InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
