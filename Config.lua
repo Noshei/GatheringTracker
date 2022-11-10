@@ -39,6 +39,22 @@ local defaults = {
             hideOthers = false,
             rejectSharedSettings = true,
         },
+        Notifications = {
+            Count = {
+                enable = false,
+                threshold = "100",
+                itemAll = 1,
+                interval = 1,
+                sound = "Auction Window Close"
+            },
+            Gold = {
+                enable = false,
+                threshold = "1000",
+                itemAll = 1,
+                interval = 1,
+                sound = "Auction Window Open"
+            },
+        },
         Filters = {
         },
         CustomFilters = "",
@@ -347,10 +363,232 @@ local generalOptions = {
                 },
             },
         },
+        Notifications = {
+            type = "group",
+            name = "Notifications",
+            order = 3,
+            args = {
+                header1 = {
+                    type = "header",
+                    name = "Count Notification",
+                    order = 1
+                },
+                countEnable = {
+                    type = "toggle",
+                    name = "Enable Count Notification",
+                    desc = "Check to enable Count notification.\n\nRequires TSM.",
+                    width = "full",
+                    get = function() return GT.db.profile.Notifications.Count.enable end,
+                    set = function(_, key) 
+                        GT.db.profile.Notifications.Count.enable = key
+                    end,
+                    order = 2
+                },
+                countSound = {
+                    type = "select",
+                    name = "Alert Sound",
+                    desc = "The sound that plays when the notification is triggered.\nDefault: Auction Window Close",
+                    width = 1.40,
+                    dialogControl = "LSM30_Sound",
+                    values = media:HashTable("sound"),
+                    get = function()return GT.db.profile.Notifications.Count.sound end,
+                    set = function(_, key) GT.db.profile.Notifications.Count.sound = key end,
+                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
+                    order = 3
+                },
+                spacer1 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 4
+                },
+                countThreshold = {
+                    type = "input",
+                    name = "Count Threshold",
+                    width = "Normal",
+                    usage = "Enter threshold for alert\n\nDefault: 100",
+                    validate = function(_, key) 
+                        if not (string.match(key, "[%d]+") or key == '') then 
+                            return false 
+                        end
+                        return true 
+                    end,
+                    get = function() return GT.db.profile.Notifications.Count.threshold end,
+                    set = function(_, key)
+                        if key == '' or key == nil then
+                            key = '0'
+                        end
+                        GT.db.profile.Notifications.Count.threshold = key
+                    end,
+                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
+                    order = 5
+                },
+                countItemAll = {
+                    type = "select",
+                    name = "Notify for each item, all items, or both",
+                    desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
+                    width = 1.40,
+                    values = {[0] = "Each Item", [1] = "All Items", [2] = "Both"},
+                    get = function()return GT.db.profile.Notifications.Count.itemAll end,
+                    set = function(_, key) GT.db.profile.Notifications.Count.itemAll = key end,
+                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
+                    order = 6
+                },
+                spacer2 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 7
+                },
+                countInterval = {
+                    type = "select",
+                    name = "Exact or Interval",
+                    desc = "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    width = 1.40,
+                    values = {[0] = "Exact", [1] = "Interval"},
+                    get = function()return GT.db.profile.Notifications.Count.interval end,
+                    set = function(_, key) GT.db.profile.Notifications.Count.interval = key end,
+                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
+                    order = 8
+                },
+
+                --Gold Notification Settings
+                header2 = {
+                    type = "header",
+                    name = "Gold Notification",
+                    order = 101
+                },
+                goldEnable = {
+                    type = "toggle",
+                    name = "Enable Gold Notification",
+                    desc = "Check to enable gold notification.\n\nRequires TSM.",
+                    width = "full",
+                    get = function() return GT.db.profile.Notifications.Gold.enable end,
+                    set = function(_, key) 
+                        GT.db.profile.Notifications.Gold.enable = key
+                    end,
+                    disabled = function()
+                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 102
+                },
+                goldSound = {
+                    type = "select",
+                    name = "Alert Sound",
+                    desc = "The sound that plays when the notification is triggered.\nDefault: Auction Window Open",
+                    width = 1.40,
+                    dialogControl = "LSM30_Sound",
+                    values = media:HashTable("sound"),
+                    get = function()return GT.db.profile.Notifications.Gold.sound end,
+                    set = function(_, key) GT.db.profile.Notifications.Gold.sound = key end,
+                    disabled = function()
+                        if GT.db.profile.Notifications.Gold.enable then
+                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                                return true
+                            else
+                                return false
+                            end
+                        else
+                            return true
+                        end
+                    end,
+                    order = 103
+                },
+                spacer3 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 104
+                },
+                goldThreshold = {
+                    type = "input",
+                    name = "Gold Threshold",
+                    width = "Normal",
+                    usage = "Enter threshold for alert in gold value\n\nDefault: 1000",
+                    validate = function(_, key) 
+                        if not (string.match(key, "[%d]+") or key == '') then 
+                            return false 
+                        end
+                        return true 
+                    end,
+                    get = function() return GT.db.profile.Notifications.Gold.threshold end,
+                    set = function(_, key)
+                        if key == '' or key == nil then
+                            key = '0'
+                        end
+                        GT.db.profile.Notifications.Gold.threshold = key
+                    end,
+                    disabled = function()
+                        if GT.db.profile.Notifications.Gold.enable then
+                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                                return true
+                            else
+                                return false
+                            end
+                        else
+                            return true
+                        end
+                    end,
+                    order = 105
+                },
+                goldItemAll = {
+                    type = "select",
+                    name = "Notify for each item, all items, or both",
+                    desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
+                    width = 1.40,
+                    values = {[0] = "Each Item", [1] = "All Items", [2] = "Both"},
+                    get = function()return GT.db.profile.Notifications.Gold.itemAll end,
+                    set = function(_, key) GT.db.profile.Notifications.Gold.itemAll = key end,
+                    disabled = function()
+                        if GT.db.profile.Notifications.Gold.enable then
+                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                                return true
+                            else
+                                return false
+                            end
+                        else
+                            return true
+                        end
+                    end,
+                    order = 106
+                },
+                spacer4 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 107
+                },
+                goldInterval = {
+                    type = "select",
+                    name = "Exact or Interval",
+                    desc = "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    width = 1.40,
+                    values = {[0] = "Exact", [1] = "Interval"},
+                    get = function()return GT.db.profile.Notifications.Gold.interval end,
+                    set = function(_, key) GT.db.profile.Notifications.Gold.interval = key end,
+                    disabled = function()
+                        if GT.db.profile.Notifications.Gold.enable then
+                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                                return true
+                            else
+                                return false
+                            end
+                        else
+                            return true
+                        end
+                    end,
+                    order = 108
+                },
+            }
+        },
         Debug = {
             type = "group",
             name = "Debug",
-            order = 3,
+            order = 4,
             args = {
                 header5 = {
                     type = "header",
@@ -672,6 +910,8 @@ function Config:OnInitialize()
     if not GT.tsmLoaded then
         GT.db.profile.General.tsmPrice = 0
         GT.db.profile.General.perItemPrice = false
+    else
+        GT:SetTSMPriceSource()
     end
 
     --Change debug to int instead of bool
@@ -719,6 +959,9 @@ function Config:OnInitialize()
     else
         GT.groupMode = "WHISPER"
     end
+
+    --Pause Notifications to prevent spam after reloading the UI
+    GT.NotificationPause = true
     
     GT:RebuildIDTables()
     GT:CreateBaseFrame("Config:OnInitialize")
