@@ -677,7 +677,7 @@ function GT:TriggerNotification(alertType)
     elseif alertType == "wait return" then
         GT.NotificationPause = false
     elseif not GT.NotificationPause then
-        ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 Notifications |r" .. alertType)
+        --ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 Notifications |r" .. alertType)
         PlaySoundFile(media:Fetch("sound", GT.db.profile.Notifications[alertType].sound), "master")
     end
 end
@@ -737,6 +737,7 @@ function GT:PrepareForDisplayUpdate()
             GT:NotificationHandler("all", "all", playerTotal, GT.sender[i].totalValue)
         end
 
+        --Determines the length of the message, which is needed to display things properly
         GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
         if GT.db.profile.General.characterValue then
             if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) >= GT.Display.length then
