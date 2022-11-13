@@ -1,6 +1,6 @@
 GatheringTracker = LibStub("AceAddon-3.0"):NewAddon("GatheringTracker", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
-local media = LibStub("LibSharedMedia-3.0")
+local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 local GT = GatheringTracker
 GT.sender = {}
 GT.count = {}
@@ -505,35 +505,35 @@ function GT:OptionsHide()
 end
 
 function GT:GroupCheck(mode)
-    GT.Debug("Group Check", 2, mode)
+    GT.Debug("Group Check", 2, mode, GT.db.profile.General.groupType)
     if mode == "Group" then
         if GT.db.profile.General.groupType and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, false)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
         elseif GT.db.profile.General.groupType and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, true)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
     elseif mode == "Solo" then
         if not GT.db.profile.General.groupType and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, false)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
         elseif not GT.db.profile.General.groupType and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, true)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
     elseif mode == nil then
         if GT.db.profile.General.groupType and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, false)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
         elseif GT.db.profile.General.groupType and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, true)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         elseif not GT.db.profile.General.groupType and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, false)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
         elseif not GT.db.profile.General.groupType and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, true)
+            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
     end
@@ -543,6 +543,10 @@ function GT:NotificationHandler(mode, id, amount, value)
     GT.Debug("Notifications Handler", 2, mode, id, amount, value)
 
     local NotificationTriggered = false
+
+    if value then
+        value = math.ceil(value)
+    end
 
     local function countNotification()
         local threshold = tonumber(GT.db.profile.Notifications.Count.threshold)
@@ -555,8 +559,6 @@ function GT:NotificationHandler(mode, id, amount, value)
                         GT.Notifications[id].count = math.floor(amount/threshold)*threshold
                         NotificationTriggered = true
                         GT:TriggerNotification("Count")
-                    elseif not NotificationTriggered and GT.NotificationPause then
-                        GT:TriggerNotification("Settings")
                     end
                 else
                     if GT.Notifications[id] then
@@ -590,8 +592,6 @@ function GT:NotificationHandler(mode, id, amount, value)
                     end
                     NotificationTriggered = true
                     GT:TriggerNotification("Count")
-                elseif not NotificationTriggered and GT.NotificationPause then
-                    GT:TriggerNotification("Settings")
                 end
             end
         end
@@ -608,8 +608,6 @@ function GT:NotificationHandler(mode, id, amount, value)
                         GT.Notifications[id].gold = math.floor(value/threshold)*threshold
                         NotificationTriggered = true
                         GT:TriggerNotification("Gold")
-                    elseif not NotificationTriggered and GT.NotificationPause then
-                        GT:TriggerNotification("Settings")
                     end
                 else
                     if GT.Notifications[id] then
@@ -643,8 +641,6 @@ function GT:NotificationHandler(mode, id, amount, value)
                     end
                     NotificationTriggered = true
                     GT:TriggerNotification("Gold")
-                elseif not NotificationTriggered and GT.NotificationPause then
-                    GT:TriggerNotification("Settings")
                 end
             end
         end
@@ -665,20 +661,22 @@ function GT:NotificationHandler(mode, id, amount, value)
         end
         if mode == "each" and (GT.db.profile.Notifications.Gold.itemAll == 0 or GT.db.profile.Notifications.Gold.itemAll == 2) then  --Each Item or Both
             local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
-            value = eprice * amount
+            value = math.ceil(eprice * amount)
             goldNotification()
         end
     end
 end
 
 function GT:TriggerNotification(alertType)
-    if GT.NotificationPause and alertType ~= "wait return" then
-        GT:wait(3,"TriggerNotification", "wait return")
-    elseif alertType == "wait return" then
-        GT.NotificationPause = false
-    elseif not GT.NotificationPause then
-        --ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 Notifications |r" .. alertType)
-        PlaySoundFile(media:Fetch("sound", GT.db.profile.Notifications[alertType].sound), "master")
+    GT.Debug("Trigger Notifications", 1, alertType, GT.NotificationPause)
+    if not GT.NotificationPause then
+        --GT.Debug("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 Notifications |r" .. alertType, 1)
+        if media:IsValid("sound", GT.db.profile.Notifications[alertType].sound) then
+            PlaySoundFile(media:Fetch("sound", GT.db.profile.Notifications[alertType].sound), "master")
+        else
+            GT.Debug("Trigger Notifications: Play Default Sound", 1, alertType, GT.NotificationPause, GT.db.profile.Notifications[alertType].sound, GT.defaults.profile.Notifications[alertType].sound)
+            PlaySoundFile(media:Fetch("sound", GT.defaults.profile.Notifications[alertType].sound), "master")
+        end
     end
 end
 
@@ -691,12 +689,12 @@ function GT:ResetDisplay(display)
     GT:FiltersButton()
 
     if GT.db.profile.General.enable and display and GT:GroupCheck() then
-        GT:PrepareForDisplayUpdate()
+        GT:PrepareForDisplayUpdate("Reset Diaplay")
     end
 end
 
-function GT:PrepareForDisplayUpdate()
-    GT.Debug("Prepare for Display Update", 1)
+function GT:PrepareForDisplayUpdate(event)
+    GT.Debug("Prepare for Display Update", 1, event)
     local globalPrice = 0
     local globalCounts = ""
     local globalTotal = 0
@@ -732,8 +730,8 @@ function GT:PrepareForDisplayUpdate()
         end
 
         --if sender is player, call NotificationHandler
-        if GT.sender[i].name == GT.Player then
-            GT.Debug("Trigger Notification Handler for all", 1)
+        if GT.sender[i].name == GT.Player and not GT.NotificationPause then
+            GT.Debug("Trigger Notification Handler for all", 2)
             GT:NotificationHandler("all", "all", playerTotal, GT.sender[i].totalValue)
         end
 
@@ -770,9 +768,11 @@ function GT:PrepareForDisplayUpdate()
         GT.Display.frames = {}
     end
 
-    for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels
+    for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels  ***NOTE: Why not just loop through GT.count?***
+        GT.Debug("Prepare for Display Update: Loop ID's", 3, id)
         if GT.count[tostring(id)] then
             if string.match(tostring(id), "(%a)") then
+                GT.Debug("Prepare for Display Update: Process Gold and Bags", 3, id)
                 --If the ID includes any letters, we need to handle it differently
                 local data = GT.count[tostring(id)]
                 local counts = ""
@@ -788,6 +788,7 @@ function GT:PrepareForDisplayUpdate()
                 end
                 GT:UpdateDisplay(order, counts, iconID)
             else
+                GT.Debug("Prepare for Display Update: Process Normal Items", 3, id)
                 local data = GT.count[tostring(id)]
                 local counts = ""
                 local total = 0
@@ -987,9 +988,12 @@ function GT:InventoryUpdate(event, dontWait)
                             end
                         end
                     else
-                        GT.Debug("Trigger Notification Handler for each", 1)
                         count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
-                        GT:NotificationHandler("each", id, count)
+                        if event and event == "InventoryUpdate" then
+                            GT.Debug("Trigger Notification Handler for each", 2)
+                            GT.NotificationPause = false
+                            GT:NotificationHandler("each", id, count)
+                        end
                     end
 
                     if count > 0 then

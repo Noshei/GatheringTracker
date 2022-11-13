@@ -2,14 +2,11 @@ local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local Config = GT:NewModule("Config","AceEvent-3.0")
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local media = LibStub("LibSharedMedia-3.0")
+local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 GT.media = media
 
---register font with LSM
-media:Register("font", "Fira Mono Medium", "Interface\\Addons\\GatheringTracker\\Media\\Fonts\\FiraMono-Medium.ttf", media.LOCALE_BIT_western + media.LOCALE_BIT_ruRU)
-
-local defaults = {
+GT.defaults = {
     profile = {
         General = {
             enable = true,
@@ -901,7 +898,7 @@ function Config:OnInitialize()
     GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
     GT.ElvUI = IsAddOnLoaded("ElvUI")
 
-    GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", defaults, true)
+    GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     if GT.db.profile.General.unlock then
         GT.db.profile.General.unlock = false
     end
@@ -948,6 +945,21 @@ function Config:OnInitialize()
     SlashCmdList.GatheringTracker = openOptions
 
     GT.Player = UnitName("player")
+
+    --register font and sound with LSM
+    media:Register("font", "Fira Mono Medium", "Interface\\Addons\\GatheringTracker\\Media\\Fonts\\FiraMono-Medium.ttf", media.LOCALE_BIT_western + media.LOCALE_BIT_ruRU)
+    media:Register("sound", "Auction Window Open", 567482)
+    media:Register("sound", "Auction Window Close", 567499)
+    media:Register("sound", "Auto Quest Complete", 567476)
+    media:Register("sound", "Level Up", 567431)
+    media:Register("sound", "Player Invite", 567451)
+    media:Register("sound", "Raid Warning", 567397)
+    media:Register("sound", "Ready Check", 567409)
+    media:Register("sound", "Murloc Aggro", 556000)
+    media:Register("sound", "Map Ping", 567416)
+    media:Register("sound", "Bonk 1", 568956)
+    media:Register("sound", "Bonk 2", 569179)
+    media:Register("sound", "Bonk 3", 569569)
 
     GT.Enabled = GT.db.profile.General.enable
     if not GT.Enabled then
