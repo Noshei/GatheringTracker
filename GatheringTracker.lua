@@ -38,7 +38,7 @@ function GT:OnEnable()
         
         --Register addon comm's
         GT:RegisterComm("GT_Data", "DataUpdateReceived")
-        GT:RegisterComm("GT_Config", "ConfigUpdateReceived")
+        --GT:RegisterComm("GT_Config", "ConfigUpdateReceived")
     else
         GT:OnDisable()
     end
@@ -58,7 +58,7 @@ function GT:OnDisable()
         
         --Unregister addon comm's
         GT:UnregisterComm("GT_Data")
-        GT:UnregisterComm("GT_Config")
+        --GT:UnregisterComm("GT_Config")
     else
         GT:OnEnable()
     end
@@ -179,11 +179,13 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
     --If we dont need to wait, do the update.
     if GT.Enabled then
         if dontWait then
-            if GT.db.profile.General.groupType then
+            if GT.db.profile.General.groupType > 0 then
                 if IsInRaid() then
                     GT.groupMode = "RAID"
-                else
+                elseif IsInGroup() then
                     GT.groupMode = "PARTY"
+                else
+                    GT.groupMode = "WHISPER"
                 end
             else
                 GT.groupMode = "WHISPER"
@@ -192,9 +194,9 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
             GT.sender = {}
             GT.count = {}
 
-            if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
+            --[[if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
                 GT:ShareSettings()
-            end
+            end]]
 
             GT:ResetDisplay()
             GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
@@ -303,9 +305,9 @@ function GT:FiltersButton()
                                         GT.db.profile.Filters[itemData.id] = true 
                                     end
 
-                                    if GT.db.profile.General.shareSettings then
+                                    --[[if GT.db.profile.General.shareSettings then
                                         GT:ShareSettings("Filters")
-                                    end
+                                    end]]
 
                                     GT:ResetDisplay(false)
                                     GT:RebuildIDTables()
@@ -356,9 +358,9 @@ function GT:FiltersButton()
                                     end
                                 end
                             end
-                            if GT.db.profile.General.shareSettings then
+                            --[[if GT.db.profile.General.shareSettings then
                                 GT:ShareSettings("Filters")
-                            end
+                            end]]
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
@@ -476,18 +478,20 @@ function GT:OptionsHide()
             GT:ToggleBaseLock(false)
         end
 
-        if GT.db.profile.General.groupType then
+        if GT.db.profile.General.groupType > 0 then
             if IsInRaid() then
                 GT.groupMode = "RAID"
-            else
+            elseif IsInGroup() then
                 GT.groupMode = "PARTY"
+            else
+                GT.groupMode = "WHISPER"
             end
         else
             GT.groupMode = "WHISPER"
         end
 
         --call method to share settings with party
-        GT:ShareSettings()
+        --GT:ShareSettings()
 
         --Pause Notifications to prevent spam after closing the settings
         GT.NotificationPause = true
@@ -507,32 +511,32 @@ end
 function GT:GroupCheck(mode)
     GT.Debug("Group Check", 2, mode, GT.db.profile.General.groupType)
     if mode == "Group" then
-        if GT.db.profile.General.groupType and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
+        if GT.db.profile.General.groupType == 1 and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif GT.db.profile.General.groupType and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
+        elseif GT.db.profile.General.groupType >= 1 and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
     elseif mode == "Solo" then
-        if not GT.db.profile.General.groupType and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
+        if not GT.db.profile.General.groupType == 1 and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif not GT.db.profile.General.groupType and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
+        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
     elseif mode == nil then
-        if GT.db.profile.General.groupType and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
+        if GT.db.profile.General.groupType == 1 and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif GT.db.profile.General.groupType and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
+        elseif GT.db.profile.General.groupType >= 1 and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
-        elseif not GT.db.profile.General.groupType and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
+        elseif GT.db.profile.General.groupType ~= 1 and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif not GT.db.profile.General.groupType and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
+        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
@@ -555,7 +559,7 @@ function GT:NotificationHandler(mode, id, amount, value)
             if GT.db.profile.Notifications.Count.interval == 1 then  --Interval
                 if GT.Notifications[id] and GT.Notifications[id].count > 0 then
                     if (amount - GT.Notifications[id].count) >= threshold then
-                        GT.Debug("Count Notifications Interval Threshold Exceeded", 2, mode, id, amount, value)
+                        GT.Debug("Count Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].count)
                         GT.Notifications[id].count = math.floor(amount/threshold)*threshold
                         NotificationTriggered = true
                         GT:TriggerNotification("Count")
@@ -578,7 +582,7 @@ function GT:NotificationHandler(mode, id, amount, value)
             end
             if GT.db.profile.Notifications.Count.interval == 0 then  --Exact
                 if not GT.Notifications[id] or GT.Notifications[id].count < threshold then
-                    GT.Debug("Count Notifications Exact Threshold Exceeded", 2, mode, id, amount, value)
+                    GT.Debug("Count Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].count)
                     if GT.Notifications[id] then
                         GT.Notifications[id] = {
                             count = threshold,
@@ -604,7 +608,7 @@ function GT:NotificationHandler(mode, id, amount, value)
             if GT.db.profile.Notifications.Gold.interval == 1 then  --Interval
                 if GT.Notifications[id] and GT.Notifications[id].gold > 0 then
                     if (value - GT.Notifications[id].gold) >= threshold then
-                        GT.Debug("Gold Notifications Interval Threshold Exceeded", 2, mode, id, amount, value)
+                        GT.Debug("Gold Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].gold)
                         GT.Notifications[id].gold = math.floor(value/threshold)*threshold
                         NotificationTriggered = true
                         GT:TriggerNotification("Gold")
@@ -627,7 +631,7 @@ function GT:NotificationHandler(mode, id, amount, value)
             end
             if GT.db.profile.Notifications.Gold.interval == 0 then  --Exact
                 if not GT.Notifications[id] or GT.Notifications[id].gold < threshold then
-                    GT.Debug("Gold Notifications Exact Threshold Exceeded", 2, mode, id, amount, value)
+                    GT.Debug("Gold Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].gold)
                     if GT.Notifications[id] then
                         GT.Notifications[id] = {
                             count = (GT.Notifications[id].count or 0),
@@ -737,7 +741,7 @@ function GT:PrepareForDisplayUpdate(event)
 
         --Determines the length of the message, which is needed to display things properly
         GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
-        if GT.db.profile.General.characterValue then
+        if GT.db.profile.General.characterValue and GT:GroupCheck("Group") then
             if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) >= GT.Display.length then
                 GT.Display.length = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) + 1
             end
@@ -805,7 +809,7 @@ function GT:PrepareForDisplayUpdate(event)
                 
                 if total > 0 then
                     local text = counts
-                    if GT.db.profile.General.groupType == true then
+                    if GT:GroupCheck("Group") then
                         text = text .. "[" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
                     end
                     if GT.db.profile.General.tsmPrice > 0 then
@@ -834,7 +838,7 @@ function GT:PrepareForDisplayUpdate(event)
         --create the text string for the totals row and create the widget
         local totalText = globalCounts
         local totalStack
-        if GT.db.profile.General.groupType == true then
+        if GT:GroupCheck("Group") then
             totalText = totalText.."["  .. string.format("%-"..(GT.Display.length +2).."s",GT:AddComas(string.format("%.0f",(globalTotal))) .. "]")
         end
         if GT.db.profile.General.tsmPrice > 0 then
@@ -1007,11 +1011,13 @@ function GT:InventoryUpdate(event, dontWait)
                     end
                 end
 
-                if GT.db.profile.General.groupType then
+                if GT.db.profile.General.groupType > 0 then
                     if IsInRaid() then
                         GT.groupMode = "RAID"
-                    else
+                    elseif IsInGroup() then
                         GT.groupMode = "PARTY"
+                    else
+                        GT.groupMode = "WHISPER"
                     end
                 else
                     GT.groupMode = "WHISPER"
@@ -1143,7 +1149,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
     end
 end
 
-function GT:ShareSettings(mode)
+--[[function GT:ShareSettings(mode)
     if GT.Enabled and GT.db.profile.General.shareSettings and GT:GroupCheck("Group") then
         --loop through the setting categories, create a string, and send that string to the party
         GT.Debug("Prepare to share settings", 1)
@@ -1248,4 +1254,4 @@ function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
     else
         GT.Debug("REJECT Received Config Message", 3, prefix, message, sender)
     end
-end
+end]]

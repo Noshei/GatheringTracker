@@ -23,18 +23,18 @@ GT.defaults = {
             totalColor = {0.098, 1, 0.078},
             totalSize = 20,
             totalFont = "Fira Mono Medium",
-            groupType = false,
+            groupType = 0,
             stacksOnIcon = false,
-            shareSettings = false,
             includeBank = false,
             tsmPrice = 1,
             ignoreAmount = 0,
             perItemPrice = false,
             debugOption = 0,
-            displayAlias = false,
             characterValue = false,
             hideOthers = false,
-            rejectSharedSettings = true,
+            displayAlias = false,
+            --rejectSharedSettings = true,
+            --shareSettings = false,
         },
         Notifications = {
             Count = {
@@ -113,38 +113,49 @@ local generalOptions = {
                     order = 100
                 },
                 groupType = {
-                    type = "toggle",
+                    type = "select",
                     name = "Group Mode",
-                    desc  = "Select this if you want to share information with your group and display the groups information.",
-                    width = 1.70,
+                    desc  = "Disabled: Hides the display when in a group\nGroup Only: Only shows the display when in a group\nGroup and Solo:Shows the display when in a group or Solo",
+                    width = 1.40,
+                    values = {[0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo"},
                     get = function() return GT.db.profile.General.groupType end,
                     set = function(_, key) 
                         GT.db.profile.General.groupType = key
-                        if key then
-                            GT.groupMode = "RAID"
+                        if key > 0 then
+                            if IsInRaid() then
+                                GT.groupMode = "RAID"
+                            elseif IsInGroup() then
+                                GT.groupMode = "PARTY"
+                            else
+                                GT.groupMode = "WHISPER"
+                            end
                         else
                             GT.groupMode = "WHISPER"
-                            --GT.db.profile.General.shareSettings = false
-                            --GT.db.profile.General.displayAlias = false
                         end
-                        if key and not IsInGroup() then
+                        if key == 1 and not IsInGroup() then
                             GT:ResetDisplay(false)
-                        elseif key and IsInGroup() then
+                        elseif key >= 1 and IsInGroup() then
                             GT:InventoryUpdate("Group Mode 1", true)
                             GT:ResetDisplay(true)
-                        elseif not key and IsInGroup() then
+                        elseif key ~= 1 and IsInGroup() then
                             GT:ResetDisplay(false)
-                        elseif not key and not IsInGroup() then
+                        elseif key ~= 1 and not IsInGroup() then
                             GT:InventoryUpdate("Group Mode 2", true)
                             GT:ResetDisplay(true)
                         end
                     end,
                     order = 101
                 },
+                spacer1 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 102
+                },
                 hideOthers = {
                     type = "toggle",
                     name = "Hide Other Party Members",
-                    desc  = "When selected only your character will be displayed when you are in a group.  Information will still be sent to and received from party members, and settings may still be shared.",
+                    desc  = "When selected only your character will be displayed when you are in a group.  Information will still be sent to and received from party members.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.hideOthers end,
                     set = function(_, key)
@@ -153,10 +164,16 @@ local generalOptions = {
                             GT:GROUP_ROSTER_UPDATE("Hide Other Party Members",true)
                         end
                     end,
-                    disabled = function() return not GT.db.profile.General.groupType end,
-                    order = 102
+                    disabled = function()
+                        if GT.db.profile.General.groupType == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 103
                 },
-                shareSettings = {
+                --[[shareSettings = {
                     type = "toggle",
                     name = "Share Settings with Group",
                     desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.  When a party is formed or changed the party leader will share their settings.",
@@ -174,7 +191,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.rejectSharedSettings end,
                     set = function(_, key) GT.db.profile.General.rejectSharedSettings = key end,
                     order = 104
-                },
+                },]]
                 displayAlias = {
                     type = "toggle",
                     name = "Display Characters Alias",
@@ -183,7 +200,13 @@ local generalOptions = {
                     image = function() return 413577 end,
                     get = function() return GT.db.profile.General.displayAlias end,
                     set = function(_, key) GT.db.profile.General.displayAlias = key end,
-                    disabled = function() return not GT.db.profile.General.groupType end,
+                    disabled = function()
+                        if GT.db.profile.General.groupType == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
                     order = 105
                 },
                 characterValue = {
@@ -194,7 +217,13 @@ local generalOptions = {
                     image = function() return 133784 end,
                     get = function() return GT.db.profile.General.characterValue end,
                     set = function(_, key) GT.db.profile.General.characterValue = key end,
-                    disabled = function() return not GT.db.profile.General.groupType end,
+                    disabled = function()
+                        if GT.db.profile.General.groupType == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
                     order = 106
                 },
             },
@@ -916,6 +945,15 @@ function Config:OnInitialize()
         GT.db.profile.General.debugOption = 0
     end
 
+    --Change groupType to int from bool
+    if type(GT.db.profile.General.groupType) == "boolean" then
+        if GT.db.profile.General.groupType then
+            GT.db.profile.General.groupType = 1
+        else
+            GT.db.profile.General.groupType = 0
+        end
+    end
+
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
     GT.Options.Main = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
     GT.Options.Main:SetScript("OnHide", GT.OptionsHide)
@@ -966,8 +1004,14 @@ function Config:OnInitialize()
         GT:OnDisable()
     end
 
-    if GT.db.profile.General.groupType then
-        GT.groupMode = "RAID"
+    if GT.db.profile.General.groupType > 0 then
+        if IsInRaid() then
+            GT.groupMode = "RAID"
+        elseif IsInGroup() then
+            GT.groupMode = "PARTY"
+        else
+            GT.groupMode = "WHISPER"
+        end
     else
         GT.groupMode = "WHISPER"
     end
