@@ -7,7 +7,7 @@ GT.count = {}
 GT.Display = {}
 GT.Display.frames = {}
 GT.Display.list = {}
-GT.Display.length = 0
+GT.Display.length = {}
 GT.DebugCount = 0
 GT.Options = {}
 GT.Notifications = {}
@@ -819,6 +819,8 @@ function GT:PrepareForDisplayUpdate(event)
     local globalPrice = 0
     local globalCounts = ""
     local globalTotal = 0
+    GT.Display.length.perItemPrice = 0
+    GT.Display.length.totalsLength = 0
 
     GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
     
@@ -830,6 +832,7 @@ function GT:PrepareForDisplayUpdate(event)
     for i = 1, table.getn(GT.sender) do
         local playerTotal = 0
         GT.sender[i].totalValue = 0
+        GT.sender[i].playerLength = 0
         for itemID, data in pairs(GT.count) do
             if GT:TableFind(GT.IDs, tonumber(itemID)) then
                 if not data[i] then
@@ -846,6 +849,10 @@ function GT:PrepareForDisplayUpdate(event)
                     local price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
                     local totalPrice = value * price
                     GT.sender[i].totalValue = GT.sender[i].totalValue + totalPrice
+                    --Calculate length for Per Item Price column
+                    if string.len(tostring(math.ceil(price))) > GT.Display.length.perItemPrice then
+                        GT.Display.length.perItemPrice = string.len(tostring(math.ceil(price)))
+                    end
                 end
             end
         end
@@ -856,33 +863,38 @@ function GT:PrepareForDisplayUpdate(event)
             GT:NotificationHandler("all", "all", playerTotal, GT.sender[i].totalValue)
         end
 
-        --Determines the length of the message, which is needed to display things properly
+        --[[Determines the length of the player column.
+            If we are in a group and Per Character Value is enabled we use the length of the players total value
+            Otherwise we use the length of the players total item count.]]
         GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
         if GT.db.profile.General.characterValue and GT:GroupCheck("Group") then
-            if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) >= GT.Display.length then
-                GT.Display.length = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) + 1
-                GT.Debug("GT.Display.length: option 1", 1, GT.Display.length)
+            if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) >= GT.sender[i].playerLength then
+                GT.sender[i].playerLength = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) + 1
             end
         else
-            if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3) > GT.Display.length  then
-                GT.Display.length = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3)
+            if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3) > GT.sender[i].playerLength  then
+                GT.sender[i].playerLength = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3)
             end
-            GT.Debug("GT.Display.length: option 2", 1, GT.Display.length)
         end
+        --if gold filter is enabled check if it will be longer than the current length when we include the "g"
         if GT.count["gold"] and GT.count["gold"][i] then
             local gold = GT.count["gold"][i] .. "g"
-            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3) > GT.Display.length  then
-                GT.Display.length = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3)
+            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3) > GT.sender[i].playerLength  then
+                GT.sender[i].playerLength = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3)
             end
-            GT.Debug("GT.Display.length: option 3", 1, GT.Display.length)
         end
         playerTotals[i] = playerTotal
         globalTotal = globalTotal + playerTotal
+        GT.Debug("Display Length for "..GT.sender[i].name..":", 2, GT.sender[i].playerLength)
     end
+    --set the length for the totals items column
+    GT.Display.length.totalsLength = string.len(tostring(globalTotal))
+    --determines text for totals row for the player columns
     for i, t in ipairs(playerTotals) do
-        globalCounts = globalCounts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (t))))
+        globalCounts = globalCounts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (t))))
     end
-    GT.Debug("GT.Display.length: option 4", 1, GT.Display.length)
+    GT.Debug("GT.Display.length.totalsLength", 2, GT.Display.length.totalsLength)
+    GT.Debug("GT.Display.length.perItemPrice", 2, GT.Display.length.perItemPrice)
 
     --call method to determine if we need to reset or can update
     local update = GT:CheckIfDisplayResetNeeded(GT.count)
@@ -902,7 +914,7 @@ function GT:PrepareForDisplayUpdate(event)
                 local data = GT.count[tostring(id)]
                 local counts = ""
                 for i, v in ipairs(data) do
-                    counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (v))) .. ((id == "gold" and "g") or ""))
+                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (v))) .. ((id == "gold" and "g") or ""))
                 end
                 local iconID, order
                 for _, otherData in ipairs(GT.ItemData.Other.Other) do
@@ -924,14 +936,14 @@ function GT:PrepareForDisplayUpdate(event)
                     else
                         value = 0
                     end
-                    counts = counts .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (value))))
+                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (value))))
                     total = total + value
                 end
                 
                 if total > 0 then
                     local text = counts
                     if GT:GroupCheck("Group") then
-                        text = text .. "[" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
+                        text = text .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
                     end
                     if GT.db.profile.General.tsmPrice > 0 then
                         local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
@@ -939,7 +951,7 @@ function GT:PrepareForDisplayUpdate(event)
                         globalPrice = globalPrice + tprice
                         
                         if GT.db.profile.General.perItemPrice then
-                            text = text .. "{" .. string.format("%-" .. (GT.Display.length  + 2) .. "s", GT:AddComas(string.format("%.0f", (eprice))) .. "g}")
+                            text = text .. "{" .. string.format("%-" .. (GT.Display.length.perItemPrice + 3) .. "s", GT:AddComas(string.format("%.0f", (eprice))) .. "g}")
                         end
                         
                         text = text .. "(" .. GT:AddComas(string.format("%.0f", (tprice))) .. "g)"
@@ -960,11 +972,11 @@ function GT:PrepareForDisplayUpdate(event)
         local totalText = globalCounts
         local totalStack
         if GT:GroupCheck("Group") then
-            totalText = totalText.."["  .. string.format("%-"..(GT.Display.length +2).."s",GT:AddComas(string.format("%.0f",(globalTotal))) .. "]")
+            totalText = totalText.."["  .. string.format("%-"..(GT.Display.length.totalsLength + 2).."s",GT:AddComas(string.format("%.0f",(globalTotal))) .. "]")
         end
         if GT.db.profile.General.tsmPrice > 0 then
             if GT.db.profile.General.perItemPrice then
-                totalText = totalText .. string.format("%-"..(GT.Display.length +3).."s","")
+                totalText = totalText .. string.format("%-"..(GT.Display.length.perItemPrice + 4).."s","")
             end
             totalText = totalText.."(" .. GT:AddComas(string.format("%.0f",(globalPrice))) .. "g)"
         end
@@ -979,7 +991,7 @@ function GT:PrepareForDisplayUpdate(event)
         --create the text string for the per character value row and create widget
         local valueText = ""
         for i, senderData in ipairs(GT.sender) do
-            valueText = valueText .. string.format("%-" .. GT.Display.length  .. "s", GT:AddComas(string.format("%.0f", (senderData.totalValue))) .. "g")
+            valueText = valueText .. string.format("%-" .. senderData.playerLength  .. "s", GT:AddComas(string.format("%.0f", (senderData.totalValue))) .. "g")
         end
         if valueText == "" then
             valueText = "Setup"
@@ -998,13 +1010,13 @@ function GT:PrepareForDisplayUpdate(event)
                 end
             end
             if exists > 0 then
-                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (GT.Display.length-1))  --should the -1 be removed?  This needs more testing.
+                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (senderData.playerLength-1))  --should the -1 be removed?  This needs more testing.
                 local extrsSpace = string.len(newText)
-                nameText = nameText..newText..string.format("%-"..(GT.Display.length - extrsSpace).."s","")
+                nameText = nameText..newText..string.format("%-"..(senderData.playerLength - extrsSpace).."s","")
             else
-                local newText = string.sub(senderData.name, 0, (GT.Display.length-1))
+                local newText = string.sub(senderData.name, 0, (senderData.playerLength-1))
                 local extrsSpace = string.len(newText)
-                nameText = nameText..newText..string.format("%-"..(GT.Display.length - extrsSpace).."s","")
+                nameText = nameText..newText..string.format("%-"..(senderData.playerLength - extrsSpace).."s","")
             end
         end
         if nameText == "" then
@@ -1109,7 +1121,7 @@ function GT:InventoryUpdate(event, dontWait)
                             count = math.floor((GetMoney()/10000)+0.5)
                         elseif tostring(id) == "bag" then
                             for i = 0, 4 do
-                                count = count + GetContainerNumFreeSlots(i)
+                                count = count + C_Container.GetContainerNumFreeSlots(i)
                             end
                         end
                     else
@@ -1180,7 +1192,6 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
             --or
             --if hideOthers is NOT checked
             GT.Debug("Data Update Being Processed", 1)
-            GT.Display.length = 0
             --determine sender index or add sender if they dont exist
             local SenderExists = false
             local senderIndex
