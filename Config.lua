@@ -78,15 +78,7 @@ local generalOptions = {
                     width = 1.70,
                     get = function() return GT.db.profile.General.enable end,
                     set = function(_, key) 
-                        GT.db.profile.General.enable = key
-                        GT.Enabled = key
-                        if key then
-                            GT:OnEnable()
-                        elseif not key then
-                            GT:OnDisable()
-                        end
-                        GT:ResetDisplay(true)
-                        --GT:FiltersButton()  --Likely unnecessary
+                        GT:ToggleGatheringTracker()
                     end,
                     order = 1
                 },
@@ -119,30 +111,8 @@ local generalOptions = {
                     width = 1.40,
                     values = {[0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo"},
                     get = function() return GT.db.profile.General.groupType end,
-                    set = function(_, key) 
-                        GT.db.profile.General.groupType = key
-                        if key > 0 then
-                            if IsInRaid() then
-                                GT.groupMode = "RAID"
-                            elseif IsInGroup() then
-                                GT.groupMode = "PARTY"
-                            else
-                                GT.groupMode = "WHISPER"
-                            end
-                        else
-                            GT.groupMode = "WHISPER"
-                        end
-                        if key == 1 and not IsInGroup() then
-                            GT:ResetDisplay(false)
-                        elseif key >= 1 and IsInGroup() then
-                            GT:InventoryUpdate("Group Mode 1", true)
-                            GT:ResetDisplay(true)
-                        elseif key ~= 1 and IsInGroup() then
-                            GT:ResetDisplay(false)
-                        elseif key ~= 1 and not IsInGroup() then
-                            GT:InventoryUpdate("Group Mode 2", true)
-                            GT:ResetDisplay(true)
-                        end
+                    set = function(_, key)
+                        GT:ToggleGroupMode(key)
                     end,
                     order = 101
                 },
@@ -406,7 +376,7 @@ local generalOptions = {
                     width = "full",
                     get = function() return GT.db.profile.Notifications.Count.enable end,
                     set = function(_, key) 
-                        GT.db.profile.Notifications.Count.enable = key
+                        GT:ToggleCountNotifications()
                     end,
                     order = 2
                 },
@@ -491,7 +461,7 @@ local generalOptions = {
                     width = "full",
                     get = function() return GT.db.profile.Notifications.Gold.enable end,
                     set = function(_, key) 
-                        GT.db.profile.Notifications.Gold.enable = key
+                        GT:ToggleGoldNotifications()
                     end,
                     disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
@@ -669,12 +639,12 @@ local filterOptions = {
                     multiline = true,
                     width = "full",
                     usage = "Please only enter item ID's (aka numbers)",
-                    validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
+                    --validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
                     set = function(_, key) 
                         GT.db.profile.CustomFilters = key
                         local tempFilterTable = {}
-                        for itemID in string.gmatch(GT.db.profile.CustomFilters, "%S+") do
+                        for itemID in string.gmatch(GT.db.profile.CustomFilters, "[%d]+") do
                             if GT.db.profile.CustomFiltersTable[itemID] then
                                 tempFilterTable[itemID] = GT.db.profile.CustomFiltersTable[itemID]
                             else
@@ -889,8 +859,8 @@ function GT:CreateCustomFilterOptions()
         for id, value in pairs(GT.db.profile.CustomFiltersTable) do
             --Create a local item to get data from the server
             local itemID = tonumber(id)
-            item = Item:CreateFromItemID(itemID)
-            GT.Debug("Create Custom Filter Options", 2, item)
+            local item = Item:CreateFromItemID(itemID)
+            GT.Debug("Create Custom Filter Options", 2, itemID)
             --Waits for the data to be returned from the server
             if not item:IsItemEmpty() then
                 item:ContinueOnItemLoad(function()

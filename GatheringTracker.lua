@@ -21,10 +21,6 @@ GT.metaData = {
 
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version
 
-function GT:OnInitialize()
---may not be used as OnEnable is likely to be better so that we can handle enable/disable without requiring a full UI reload.
-end
-
 function GT:OnEnable()
     if GT.Enabled then
         --use this for both initial setup on UI load and when the addon is enabled from the settings
@@ -407,22 +403,6 @@ function GT:FiltersButton()
     end
 end
 
-function GT:ClearFilters()
-    --disables all enabled filters
-    GT.Debug("Clear Filters", 1)
-
-    for id,value in pairs(GT.db.profile.Filters) do
-        GT.db.profile.Filters[id] = nil
-    end
-    for id,value in pairs(GT.db.profile.CustomFiltersTable) do
-        GT.db.profile.CustomFiltersTable[id] = false
-    end
-
-    GT:ResetDisplay(false)
-    GT:RebuildIDTables()
-    GT:InventoryUpdate("Clear Filters clicked", true)
-end
-
 function GT:ToggleBaseLock(key)
     --used to toggle if the base frame should be shown and interactable.
     --the base frame should only be shown when unlocked so that the user can position it on screen where they want.
@@ -551,104 +531,6 @@ function GT:NotificationHandler(mode, id, amount, value)
     if value then
         value = math.ceil(value)
     end
-
-    --[[local function countNotification()
-        local threshold = tonumber(GT.db.profile.Notifications.Count.threshold)
-        if amount >= threshold then
-            GT.Debug("Count Notifications Threshold Exceeded", 2, mode, id, amount, value)
-            if GT.db.profile.Notifications.Count.interval == 1 then  --Interval
-                if GT.Notifications[id] and GT.Notifications[id].count > 0 then
-                    if (amount - GT.Notifications[id].count) >= threshold then
-                        GT.Debug("Count Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].count)
-                        GT.Notifications[id].count = math.floor(amount/threshold)*threshold
-                        NotificationTriggered = true
-                        GT:TriggerNotification("Count")
-                    end
-                else
-                    if GT.Notifications[id] then
-                        GT.Notifications[id] = {
-                            count = math.floor(amount/threshold)*threshold,
-                            gold = (GT.Notifications[id].gold or 0)
-                        }
-                    else
-                        GT.Notifications[id] = {
-                            count = math.floor(amount/threshold)*threshold,
-                            gold = 0
-                        }
-                    end
-                    NotificationTriggered = true
-                    GT:TriggerNotification("Count")
-                end
-            end
-            if GT.db.profile.Notifications.Count.interval == 0 then  --Exact
-                if not GT.Notifications[id] or GT.Notifications[id].count < threshold then
-                    GT.Debug("Count Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].count)
-                    if GT.Notifications[id] then
-                        GT.Notifications[id] = {
-                            count = threshold,
-                            gold = (GT.Notifications[id].gold or 0)
-                        }
-                    else
-                        GT.Notifications[id] = {
-                            count = threshold,
-                            gold = 0
-                        }
-                    end
-                    NotificationTriggered = true
-                    GT:TriggerNotification("Count")
-                end
-            end
-        end
-    end
-
-    local function goldNotification()
-        local threshold = tonumber(GT.db.profile.Notifications.Gold.threshold)
-        if value >= threshold then
-            GT.Debug("Gold Notifications Threshold Exceeded", 2, mode, id, amount, value)
-            if GT.db.profile.Notifications.Gold.interval == 1 then  --Interval
-                if GT.Notifications[id] and GT.Notifications[id].gold > 0 then
-                    if (value - GT.Notifications[id].gold) >= threshold then
-                        GT.Debug("Gold Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].gold)
-                        GT.Notifications[id].gold = math.floor(value/threshold)*threshold
-                        NotificationTriggered = true
-                        GT:TriggerNotification("Gold")
-                    end
-                else
-                    if GT.Notifications[id] then
-                        GT.Notifications[id] = {
-                            count = (GT.Notifications[id].count or 0),
-                            gold = math.floor(value/threshold)*threshold
-                        }
-                    else
-                        GT.Notifications[id] = {
-                            count = 0,
-                            gold = math.floor(value/threshold)*threshold
-                        }
-                    end
-                    NotificationTriggered = true
-                    GT:TriggerNotification("Gold")
-                end
-            end
-            if GT.db.profile.Notifications.Gold.interval == 0 then  --Exact
-                if not GT.Notifications[id] or GT.Notifications[id].gold < threshold then
-                    GT.Debug("Gold Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id].gold)
-                    if GT.Notifications[id] then
-                        GT.Notifications[id] = {
-                            count = (GT.Notifications[id].count or 0),
-                            gold = threshold
-                        }
-                    else
-                        GT.Notifications[id] = {
-                            count = 0,
-                            gold = threshold
-                        }
-                    end
-                    NotificationTriggered = true
-                    GT:TriggerNotification("Gold")
-                end
-            end
-        end
-    end]]
 
     local function NotificationCheck(notiType, buildTable)
         local threshold = tonumber(GT.db.profile.Notifications[notiType].threshold)
@@ -1143,6 +1025,7 @@ function GT:InventoryUpdate(event, dontWait)
                         end
                     end
                 end
+                GT.Debug("Inventory Update Data", 2, total, messageText)
 
                 if GT.db.profile.General.groupType > 0 then
                     if IsInRaid() then

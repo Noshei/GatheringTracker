@@ -1,32 +1,17 @@
 <Bindings>
-    <Binding name="Toggle Group Mode" header="GATHERINGTRACKER">
-        local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
-        GT.db.profile.General.groupType = not GT.db.profile.General.groupType
-        local key = GT.db.profile.General.groupType
-        local mode = "Enabled"
-        local color = "ff00ff"
-
-        if key then
-            GT.groupMode = "RAID"
-            mode = "Enabled"
-            color = "00ff00"
-        else
-            GT.groupMode = "WHISPER"
-            mode = "Disabled"
-            color = "ff0000"
-        end
-
-        if key and not IsInGroup() then
-            GT:ResetDisplay(false)
-        elseif key and IsInGroup() then
-            GT:InventoryUpdate("Group Mode 1")
-            GT:ResetDisplay(true)
-        elseif not key and IsInGroup() then
-            GT:ResetDisplay(false)
-        elseif not key and not IsInGroup() then
-            GT:InventoryUpdate("Group Mode 2")
-            GT:ResetDisplay(true)
-        end
-        ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cff"..color.."Group Mode "..mode.."|r")
+    <Binding name="Toggle Gathering Tracker" category="Gathering Tracker">
+        GatheringTracker:ToggleGatheringTracker()
+    </Binding>
+    <Binding name="Toggle Group Mode" category="Gathering Tracker">
+        GatheringTracker:ToggleGroupMode()
+    </Binding>
+    <Binding name="Toggle Count Notifications" category="Gathering Tracker">
+        GatheringTracker:ToggleCountNotifications()
+    </Binding>
+    <Binding name="Toggle Gold Notifications" category="Gathering Tracker">
+        GatheringTracker:ToggleGoldNotifications()
+    </Binding>
+    <Binding name="Clear Filters" category="Gathering Tracker">
+        GatheringTracker:ClearFilters()
     </Binding>
 </Bindings>
