@@ -887,8 +887,16 @@ function GT:CreateCustomFilterOptions()
     end
 end
 
-function GT:RefreshConfig(event)
-    GT.Debug("Refresh Config", 1, event)
+function GT:RefreshConfig(event, db, profile)
+    GT.Debug("Refresh Config", 1, event, profile, db.profile.General.enable, GT.Enabled)
+    if db.profile.General.enable and not GT.Enabled and event == "OnProfileChanged" then
+        GT.Enabled = true
+        GT:OnEnable()
+    end
+    if not db.profile.General.enable and GT.Enabled and event == "OnProfileChanged" then
+        GT.Enabled = false
+        GT:OnDisable()
+    end
     GT:RebuildIDTables()
     GT:ResetDisplay(false)
     GT:InventoryUpdate("Refresh Config", true)
