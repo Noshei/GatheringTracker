@@ -382,11 +382,17 @@ function GT:FiltersButton()
 
             GT.baseFrame.menu = menuFrame
             GT.baseFrame.filterMenu = filterMenu
+
+            --add Custom Filters to filterMenu
+            GT:CreateCustomFiltersList()
+
+            --add Profiles to filterMenu
+            GT:CreateProfilesList()
             
             filterButton:SetScript("OnClick", 
                 function (self, button, down)
                     if button == "LeftButton" then
-                        EasyMenu(filterMenu, menuFrame, "cursor", 0 , 0, "MENU");
+                        EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0 , 0, "MENU");
                     elseif button == "RightButton" then
                         GT:ClearFilters()
                     end
@@ -401,6 +407,101 @@ function GT:FiltersButton()
             GT.baseFrame.button:Hide()
         end
     end
+end
+
+function GT:CreateCustomFiltersList()
+    local customFiltersMenuList = {}
+    for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+        local itemID = tonumber(id)
+        local item = Item:CreateFromItemID(itemID)
+        --Waits for the data to be returned from the server
+        if not item:IsItemEmpty() then
+            item:ContinueOnItemLoad(function()
+                local itemName = item:GetItemName()
+                local itemDetails = {
+                    text = itemName,
+                    isNotRadio = true,
+                    keepShownOnClick = true,
+                    icon = tostring(GetItemIcon(itemID) or ""),
+                    checked = function() return GT.db.profile.CustomFiltersTable[id] end,
+                    func = function()
+                        GT.Debug("Custom Filter Item Button Clicked", 2, itemName)
+                        if GT.db.profile.CustomFiltersTable[id] == true then
+                            GT.db.profile.CustomFiltersTable[id] = false
+                        else
+                            GT.db.profile.CustomFiltersTable[id] = true 
+                        end
+
+                        GT:ResetDisplay(false)
+                        GT:RebuildIDTables()
+                        GT:InventoryUpdate("Custom Filter "..itemName.." menu clicked", true)
+                    end,
+                }
+                table.insert(customFiltersMenuList, itemDetails)
+            end)
+        end
+    end
+    table.sort(customFiltersMenuList, function(a, b) return a.text < b.text end )
+    local customFilters = {
+        text = "Custom Filters",
+        keepShownOnClick = true,
+        hasArrow = true,
+        notCheckable = 1,
+        menuList = customFiltersMenuList,
+    }
+    local position = 0
+    for index, data in ipairs(GT.baseFrame.filterMenu) do
+        if data.text == customFilters.text then
+            position = index
+        end
+    end
+    if position == 0 then
+        position = #(GT.baseFrame.filterMenu) + 1
+    end
+    GT.baseFrame.filterMenu[position] = customFilters
+end
+
+function GT:CreateProfilesList()
+    local profilesMenuList = {}
+    local profiles = GT.db:GetProfiles()
+    for _, name in ipairs(profiles) do
+        local profileDetails = {
+            text = name,
+            isNotRadio = false,
+            keepShownOnClick = false,
+            checked = function()
+                local current = GT.db:GetCurrentProfile()
+                if current == name then
+                    return true
+                else
+                    return false
+                end
+            end,
+            func = function(self, checked)
+                GT.Debug("Profile Button Clicked", 2, name, checked)
+                GT.db:SetProfile(name)
+            end,
+        }
+        table.insert(profilesMenuList, profileDetails)
+    end
+    table.sort(profilesMenuList, function(a, b) return a.text < b.text end )
+    local profiles = {
+        text = "Profiles",
+        keepShownOnClick = true,
+        hasArrow = true,
+        notCheckable = 1,
+        menuList = profilesMenuList,
+    }
+    local position = 0
+    for index, data in ipairs(GT.baseFrame.filterMenu) do
+        if data.text == profiles.text then
+            position = index
+        end
+    end
+    if position == 0 then
+        position = #(GT.baseFrame.filterMenu) + 1
+    end
+    GT.baseFrame.filterMenu[position] = profiles
 end
 
 function GT:ToggleBaseLock(key)

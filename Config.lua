@@ -625,7 +625,7 @@ local filterOptions = {
         custom = {
             type = "group",
             name = "Custom",
-            order = -1,
+            order = 1000000,
             args = {
                 customHeading = {
                     type = "description",
@@ -655,6 +655,7 @@ local filterOptions = {
                         GT:CreateCustomFilterOptions()
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Custom Filter Changed", true)
+                        GT:CreateCustomFiltersList()
                     end,
                     order = 2
                 },
@@ -664,7 +665,7 @@ local filterOptions = {
                     order = 100
                 },
             }
-        }
+        },
     }
 }
 
@@ -710,12 +711,6 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         end
 
                         GT:RebuildIDTables()
-
-                        --[[if GT.count[tostring(itemData.id)] == nil then
-                            GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." option clicked", true)
-                        else
-                            GT:ResetDisplay(true)
-                        end]]--
                         GT:ResetDisplay(false)
                         GT:InventoryUpdate("Filters "..expansion.." "..category.." "..itemData.name.." option clicked", true)
                     end,
@@ -892,12 +887,25 @@ function GT:CreateCustomFilterOptions()
     end
 end
 
+function GT:RefreshConfig(event)
+    GT.Debug("Refresh Config", 1, event)
+    GT:RebuildIDTables()
+    GT:ResetDisplay(false)
+    GT:InventoryUpdate("Refresh Config", true)
+    GT:CreateProfilesList()
+end
+
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
     GT.ElvUI = IsAddOnLoaded("ElvUI")
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
+    GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
+    GT.db.RegisterCallback(GT, "OnProfileDeleted", "CreateProfilesList")
+    GT.db.RegisterCallback(GT, "OnProfileCopied", "RefreshConfig")
+    GT.db.RegisterCallback(GT, "OnProfileReset", "RefreshConfig")
+
     if GT.db.profile.General.unlock then
         GT.db.profile.General.unlock = false
     end
