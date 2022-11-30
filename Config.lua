@@ -692,9 +692,21 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     order = itemData.order
                 }
             else
-                filterOptions.args[expansion].args[category].args[itemData.name] = {
+                filterOptions.args[expansion].args[category].args[tostring(itemData.id)] = {
                     type = "toggle",
-                    name = itemData.name,
+                    name = function()
+                        if itemData.quality then
+                            if itemData.quality == 1 then
+                                return "|cff784335" .. itemData.name .. "*"
+                            elseif itemData.quality == 2 then
+                                return "|cff96979E" .. itemData.name .. "**"
+                            elseif itemData.quality == 3 then
+                                return "|cffDCC15F" .. itemData.name .. "***"
+                            end
+                        else
+                            return itemData.name
+                        end
+                    end,
                     image = function()
                         if string.match(tostring(itemData.id), "(%a)") then
                             return itemData.icon
@@ -717,7 +729,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     order = itemData.order
                 }
                 if itemData.desc then
-                    filterOptions.args[expansion].args[category].args[itemData.name].desc = itemData.desc
+                    filterOptions.args[expansion].args[category].args[tostring(itemData.id)].desc = itemData.desc
                 end
             end
         end

@@ -310,6 +310,16 @@ function GT:FiltersButton()
                                     GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked", true)
                                 end,
                             }
+                            -- Add asterics to the name to distinguish between the different qualities
+                            if itemData.quality then
+                                if itemData.quality == 1 then
+                                    itemDetails.text = "|cff784335" .. itemDetails.text .. "*"
+                                elseif itemData.quality == 2 then
+                                    itemDetails.text = "|cff96979E" .. itemDetails.text .. "**"
+                                elseif itemData.quality == 3 then
+                                    itemDetails.text = "|cffDCC15F" .. itemDetails.text .. "***"
+                                end
+                            end
                         end
                         categoryMenuList[itemData.order] = itemDetails
                     end
@@ -792,6 +802,9 @@ end
 function GT:ResetDisplay(display)
     GT.Debug("Reset Display", 1, display)
     if display == nil then display = true end
+    if GT.Display.overlayPool then  --Release pool textures so that they dont show up on the wrong items
+        GT.Display.overlayPool:ReleaseAll()
+    end
     GT.baseFrame.container:ReleaseChildren()
     GT.Display.list = {}
     GT.Display.frames = {}
@@ -947,8 +960,10 @@ function GT:PrepareForDisplayUpdate(event)
                     
                     local iconID = GetItemIcon(id)
 
+                    local quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(tostring(id))  --Get the quality, returns nil if no quality
+
                     --call method to create frame
-                    GT:UpdateDisplay(id, text, iconID)
+                    GT:UpdateDisplay(id, text, iconID, quality)
                 end
             end
         end
@@ -1014,8 +1029,8 @@ function GT:PrepareForDisplayUpdate(event)
     end
 end
 
-function GT:UpdateDisplay(index, name, icon)
-    GT.Debug("Update Display", 3, index, name, icon)
+function GT:UpdateDisplay(index, name, icon, quality)
+    GT.Debug("Update Display", 3, index, name, icon, quality)
     if not GT.Display.frames[index] then
         if index < 999999999 then
             --create labels for items
@@ -1025,6 +1040,22 @@ function GT:UpdateDisplay(index, name, icon)
             label:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
             label:SetImage(icon)
             label:SetImageSize(GT.db.profile.General.iconWidth, GT.db.profile.General.iconHeight)
+
+            -- if quality exists add a texture to display the quality
+            if quality then
+                GT.Display.overlayPool = GT.Display.overlayPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 1, nil)
+                label.overlay = GT.Display.overlayPool:Acquire()
+                label.overlay:SetParent(label.frame)
+                if quality == 1 then
+                    label.overlay:SetAtlas("professions-icon-quality-tier1-inv", true)
+                elseif quality == 2 then
+                    label.overlay:SetAtlas("professions-icon-quality-tier2-inv", true)
+                elseif quality == 3 then
+                    label.overlay:SetAtlas("professions-icon-quality-tier3-inv", true)
+                end
+                label.overlay:SetAllPoints(label.image)
+                label.overlay:Show()
+            end
             
             table.insert(GT.Display.list, index)
             table.sort(GT.Display.list)
