@@ -805,13 +805,16 @@ function GT:ResetDisplay(display)
     if GT.Display.overlayPool then  --Release pool textures so that they dont show up on the wrong items
         GT.Display.overlayPool:ReleaseAll()
     end
+    if GT.Display.rarityPool then
+        GT.Display.rarityPool:ReleaseAll()
+    end
     GT.baseFrame.container:ReleaseChildren()
     GT.Display.list = {}
     GT.Display.frames = {}
     GT:FiltersButton()
 
     if GT.db.profile.General.enable and display and GT:GroupCheck() then
-        GT:PrepareForDisplayUpdate("Reset Diaplay")
+        GT:PrepareForDisplayUpdate("Reset Display")
     end
 end
 
@@ -901,6 +904,12 @@ function GT:PrepareForDisplayUpdate(event)
     local update = GT:CheckIfDisplayResetNeeded(GT.count)
     --release all of the container children so we can rebuild
     if not update then
+        if GT.Display.overlayPool then  --Release pool textures so that they dont show up on the wrong items
+            GT.Display.overlayPool:ReleaseAll()
+        end
+        if GT.Display.rarityPool then
+            GT.Display.rarityPool:ReleaseAll()
+        end
         GT.baseFrame.container:ReleaseChildren()
         GT.Display.list = {}
         GT.Display.frames = {}
@@ -960,10 +969,12 @@ function GT:PrepareForDisplayUpdate(event)
                     
                     local iconID = GetItemIcon(id)
 
+                    local rarity = C_Item.GetItemQualityByID(id)
+
                     local quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(tostring(id))  --Get the quality, returns nil if no quality
 
                     --call method to create frame
-                    GT:UpdateDisplay(id, text, iconID, quality)
+                    GT:UpdateDisplay(id, text, iconID, rarity, quality)
                 end
             end
         end
@@ -1029,8 +1040,8 @@ function GT:PrepareForDisplayUpdate(event)
     end
 end
 
-function GT:UpdateDisplay(index, name, icon, quality)
-    GT.Debug("Update Display", 3, index, name, icon, quality)
+function GT:UpdateDisplay(index, name, icon, rarity, quality)
+    GT.Debug("Update Display", 3, index, name, icon, rarity, quality)
     if not GT.Display.frames[index] then
         if index < 999999999 then
             --create labels for items
@@ -1043,7 +1054,7 @@ function GT:UpdateDisplay(index, name, icon, quality)
 
             -- if quality exists add a texture to display the quality
             if quality then
-                GT.Display.overlayPool = GT.Display.overlayPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 1, nil)
+                GT.Display.overlayPool = GT.Display.overlayPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 2, nil)
                 label.overlay = GT.Display.overlayPool:Acquire()
                 label.overlay:SetParent(label.frame)
                 if quality == 1 then
@@ -1055,6 +1066,22 @@ function GT:UpdateDisplay(index, name, icon, quality)
                 end
                 label.overlay:SetAllPoints(label.image)
                 label.overlay:Show()
+            end
+
+            if GT.db.profile.General.rarityBorder and rarity then
+                GT.Display.rarityPool = GT.Display.rarityPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 1, nil)
+                label.border = GT.Display.rarityPool:Acquire()
+                label.border:SetParent(label.frame)
+                local rarity = rarity or 1
+                if rarity <= 1 then
+                    label.border:SetTexture("Interface\\Common\\WhiteIconFrame")
+                else
+                    label.border:SetAtlas("bags-glow-white")
+                end
+                local R,G,B = GetItemQualityColor(rarity)
+                label.border:SetVertexColor(R, G, B, 0.8)
+                label.border:SetAllPoints(label.image)
+                label.border:Show()
             end
             
             table.insert(GT.Display.list, index)

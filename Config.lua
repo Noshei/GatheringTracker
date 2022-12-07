@@ -33,8 +33,7 @@ GT.defaults = {
             characterValue = false,
             hideOthers = false,
             displayAlias = false,
-            --rejectSharedSettings = true,
-            --shareSettings = false,
+            rarityBorder = true,
         },
         Notifications = {
             Count = {
@@ -143,25 +142,6 @@ local generalOptions = {
                     end,
                     order = 103
                 },
-                --[[shareSettings = {
-                    type = "toggle",
-                    name = "Share Settings with Group",
-                    desc  = "When selected any changed to settings or Filters will be shared with your group.  This is only available when Group Mode is Enabled.  When a party is formed or changed the party leader will share their settings.",
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.shareSettings end,
-                    set = function(_, key) GT.db.profile.General.shareSettings = key end,
-                    disabled = function() return not GT.db.profile.General.groupType end,
-                    order = 103
-                },
-                rejectSharedSettings = {
-                    type = "toggle",
-                    name = "Reject Shared Settings",
-                    desc  = "When selected shared settings will be ignored.  If you are the party leader, you can still share settings to your party.",
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.rejectSharedSettings end,
-                    set = function(_, key) GT.db.profile.General.rejectSharedSettings = key end,
-                    order = 104
-                },]]
                 displayAlias = {
                     type = "toggle",
                     name = "Display Characters Alias",
@@ -269,7 +249,7 @@ local generalOptions = {
                 },
                 header3 = {
                     type = "header",
-                    name = "Icon Size",
+                    name = "Icon",
                     order = 300
                 },
                 iconWidth = {
@@ -293,6 +273,15 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconHeight or 1 end,
                     set = function(_, key) GT.db.profile.General.iconHeight = key GT:ResetDisplay(true) end,
                     order = 302
+                },
+                rarityBorder = {
+                    type = "toggle",
+                    name = "Show Rarity Border",
+                    desc = "Will display a colored border based on item rarity.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.rarityBorder end,
+                    set = function(_, key) GT.db.profile.General.rarityBorder = key GT:ResetDisplay(true) end,
+                    order = 303
                 },
                 header4 = {
                     type = "header",
