@@ -12,6 +12,9 @@ GT.defaults = {
             enable = true,
             unlock = false,
             filtersButton = false,
+            buttonFade = false,
+            buttonAlpha = 0,
+            buttonDelay = 0.5,
             xPos = 200,
             yPos = -150,
             relativePoint = "TOPLEFT",
@@ -89,6 +92,11 @@ local generalOptions = {
                     set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
                     order = 2
                 },
+                buttonHeader = {
+                    type = "header",
+                    name = "Filter Button",
+                    order = 10
+                },
                 filtersButton = {
                     type = "toggle",
                     name = "Filters Button",
@@ -96,7 +104,46 @@ local generalOptions = {
                     width = 1.70,
                     get = function() return GT.db.profile.General.filtersButton end,
                     set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
-                    order = 3
+                    order = 11
+                },
+                buttonFade = {
+                    type = "toggle",
+                    name = "Fade Out",
+                    desc = "When Enabled the Filter Button will fade out, but will show up again on mouse over.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.buttonFade end,
+                    set = function(_, key) GT.db.profile.General.buttonFade = key GT:FiltersButtonFade() end,
+                    order = 12
+                },
+                buttonAlpha = {
+                    type = "range",
+                    name = "Fade Out Alpha",
+                    desc = "0% is not visible, 100% is fully visible.\nDefault is 0",
+                    min = 0,
+                    max = 100,
+                    step = 1,
+                    width = 1.40,
+                    get = function() return GT.db.profile.General.buttonAlpha or 0 end,
+                    set = function(_, key) GT.db.profile.General.buttonAlpha = key GT:FiltersButtonFade() end,
+                    order = 13
+                },
+                spacer1 = {
+                    type = "description",
+                    name = " ",
+                    width = 0.3,
+                    order = 14
+                },
+                buttonDelay = {
+                    type = "range",
+                    name = "Fade Out Delay",
+                    desc = "This configures how long after the mouse leaves the button before it fades out.\nDefault is 0.5.",
+                    min = 0,
+                    max = 1,
+                    step = 0.02,
+                    width = 1.40,
+                    get = function() return GT.db.profile.General.buttonDelay or 0 end,
+                    set = function(_, key) GT.db.profile.General.buttonDelay = key end,
+                    order = 15
                 },
                 header1 = {
                     type = "header",

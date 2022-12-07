@@ -118,6 +118,19 @@ function GT:wait(delay, func, ...)
         args = {...}
     }
 
+    --if delay is nil, cancel existing wait function
+    if delay == nil then
+        for _, waitEvent in pairs(waitTable) do
+            if waitEvent.func == timer.func then
+                GT.Debug("Wait Function Cancelled", 2, timer.delay, timer.func, waitEvent)
+                waitTable[waitEvent] = nil
+                return
+            end
+        end
+        GT.Debug("Wait Function: Nothing to Cancel ", 2, timer.delay, timer.func)
+        return
+    end
+
     --check if a wait timer has already been created for the called function
     for _, waitEvent in pairs(waitTable) do
         if waitEvent.func == timer.func and waitEvent.delay >= timer.delay then
@@ -130,11 +143,13 @@ function GT:wait(delay, func, ...)
 
     --create the callback function so that we can pass along arguements
     timer.callback = function()
-        GT.Debug("Wait Function Complete", 1, timer.delay, timer.func)
-        --remove wait table entry since the timer is complete
-        waitTable[timer] = nil
-        --we need to know the number of args incase we ever have a use case where we need to pass a nil arg
-        GT[timer.func](timer.object, unpack(timer.args, 1, timer.argsCount))
+        if waitTable[timer] then  --check if the wait table exists, if it dopesn't then this timer was cancelled.
+            GT.Debug("Wait Function Complete", 1, timer.delay, timer.func, waitTable[timer])
+            --remove wait table entry since the timer is complete
+            waitTable[timer] = nil
+            --we need to know the number of args incase we ever have a use case where we need to pass a nil arg
+            GT[timer.func](timer.object, unpack(timer.args, 1, timer.argsCount))
+        end
     end
 
     C_Timer.After(delay, timer.callback)
@@ -252,6 +267,7 @@ function GT:FiltersButton()
         if GT.baseFrame.button then
             GT.Debug("Show Filters Button", 1)
             GT.baseFrame.button:Show()
+            GT:FiltersButtonFade()
         else
             GT.Debug("Create Filters Button", 1)
             local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", GT.baseFrame.frame, "UIPanelButtonTemplate")
@@ -261,6 +277,7 @@ function GT:FiltersButton()
             filterButton:SetText("F")
             filterButton:EnableMouse(true)
             filterButton:RegisterForClicks("AnyDown")
+            filterButton:SetFrameStrata("BACKGROUND")
             filterButton:Show()
 
             local menuFrame = CreateFrame("Frame", "GT_baseFrame_filtersMenu", UIParent, "UIDropDownMenuTemplate")
@@ -410,11 +427,60 @@ function GT:FiltersButton()
             )
 
             GT.baseFrame.button = filterButton
+            GT:FiltersButtonFade()
         end
     else --disable setting button
         GT.Debug("Hide Filters Button", 1)
         if GT.baseFrame.button then
             GT.baseFrame.button:Hide()
+        end
+    end
+end
+
+function GT:FiltersButtonFade(setAlpha)
+    if GT.db.profile.General.filtersButton and GT.Enabled then
+        if GT.baseFrame.button then
+            if setAlpha then
+                local alpha = GT.db.profile.General.buttonAlpha / 100
+                GT.baseFrame.button:SetAlpha(alpha)
+            else
+                if GT.db.profile.General.buttonFade then
+                    if not GT.baseFrame.button.mouseOver then
+                        local mouseOver = CreateFrame("Frame", "GT_baseFrame_filterButton_mouseOver", UIParent)
+                        mouseOver:SetWidth(75)
+                        mouseOver:SetHeight(75)
+                        mouseOver:SetPoint("CENTER", GT.baseFrame.button, "CENTER")
+                        mouseOver:SetMouseClickEnabled(false)
+                        mouseOver:SetFrameStrata("LOW")
+                        GT.baseFrame.button.mouseOver = mouseOver
+                    end
+                    GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
+                    GT.baseFrame.button:LockHighlight()
+                    GT.baseFrame.button.mouseOver:SetScript("OnEnter",
+                        function(self, motion)
+                            if motion then
+                                GT.baseFrame.button:SetAlpha(1)
+                                GT:wait(nil, "FiltersButtonFade")
+                            end
+                        end
+                    )
+                    GT.baseFrame.button.mouseOver:SetScript("OnLeave",
+                        function(self, motion)
+                            if motion then
+                                GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
+                            end
+                        end
+                    )
+                    GT.baseFrame.button.mouseOver:SetMouseClickEnabled(false)
+                    GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
+                else
+                    GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
+                    GT.baseFrame.button:SetAlpha(1)
+                    GT.baseFrame.button:UnlockHighlight()
+                    GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
+                    GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)
+                end
+            end
         end
     end
 end
@@ -1327,110 +1393,3 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
         end
     end
 end
-
---[[function GT:ShareSettings(mode)
-    if GT.Enabled and GT.db.profile.General.shareSettings and GT:GroupCheck("Group") then
-        --loop through the setting categories, create a string, and send that string to the party
-        GT.Debug("Prepare to share settings", 1)
-        if mode == nil then 
-            mode = "All" 
-        end
-        GT.Debug("Send Settings Mode", 2, mode)
-        for category,categoryData in pairs(GT.db.profile) do
-            GT.Debug("Send Settings category", 2, category)
-            if mode == "All" or mode == category then
-                local messageText = tostring(category) .. ":"
-                if category == "CustomFilters" then
-                    messageText = messageText .. categoryData
-                elseif category == "Aliases" then
-                    for _, data in ipairs(categoryData) do
-                        messageText = messageText .. " " .. data.name .. "=" .. data.alias
-                    end
-                else
-                    for setting, value in pairs(categoryData) do
-                        if type(value) == "table" then
-                            local tableText = ""
-                            for _,v in ipairs(value) do
-                                tableText = tableText .. v .. ","
-                            end
-                            tableText = string.sub(tableText,0, string.len(tableText)-1)
-                            messageText = messageText .. " " .. setting .. "=" .. tableText
-                        else
-                            messageText = messageText .. " " .. setting .. "=" .. tostring(value)
-                        end
-                    end
-                end
-            GT.Debug("Send Settings", 3, messageText, GT.groupMode)
-            GT:SendCommMessage("GT_Config", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Config Message")
-            end
-        end
-    end
-end
-
-function GT:ConfigUpdateReceived(prefix, message, distribution, sender)
-    GT.Debug("Received Config Message", 3, prefix, message, sender)
-
-    if not GT.db.profile.General.rejectSharedSettings then  --ignores settings if reject option is enabled
-        if sender ~= GT.Player then  --ignores settings sent from the player
-            GT.Debug("Processing Config Message", 2, sender)
-            --determine the category so we can save the settings to the right place
-            local category = message:sub(0, string.find(message, ":")-1)
-            --remove the category from the settings
-            message = string.sub(message, string.find(message, ":")+1)
-
-            if category == "CustomFilters" then
-                GT.db.profile[category] = message
-            else
-                local str = message .. "\n"
-                str = str:gsub("%s(%S-)=", "\n%1=")
-                local messageText = {}
-
-                if category == "General" then
-                    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                        messageText[itemID] = value
-                    end
-
-                    for setting,value in pairs(messageText) do
-                        if tonumber(value) then
-                            GT.db.profile.General[setting] = tonumber(value)
-                        elseif value == "true" then
-                            GT.db.profile.General[setting] = true
-                        elseif value == "false" then
-                            GT.db.profile.General[setting] = false
-                        elseif string.find(value, ",") then
-                            GT.db.profile.General[setting] = {}
-                            for v in string.gmatch(value, "([^,]+)") do
-                                table.insert(GT.db.profile.General[setting], tonumber(v))
-                            end
-                        else
-                            GT.db.profile.General[setting] = value
-                        end
-                    end
-                elseif category == "Filters" then
-                    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                        if string.match(tostring(itemID), "(%a)") then
-                            messageText[itemID] = true
-                        else
-                            messageText[tonumber(itemID)] = true
-                        end
-                    end
-                    GT.db.profile[category] = messageText
-                elseif category == "Aliases" then
-                    for n, a in string.gmatch(str, "(%S-)=(.-)\n") do
-                        table.insert(messageText,{name = n, alias = a})
-                    end
-                    GT.db.profile[category] = messageText
-                end
-            end
-            if GT.db.profile.General.xPos ~= GT.db.defaults.profile.General.xPos or GT.db.profile.General.yPos ~= GT.db.defaults.profile.General.yPos then
-                GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
-            end
-            
-            GT:ResetDisplay(false)
-            GT:RebuildIDTables()
-            GT:InventoryUpdate("Config Update Received")
-        end
-    else
-        GT.Debug("REJECT Received Config Message", 3, prefix, message, sender)
-    end
-end]]
