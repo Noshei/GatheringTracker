@@ -2,7 +2,7 @@
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 1.4.6
+## Version: 1.4.7
 ## OptionalDeps: TradeSkillMaster
 ## SavedVariables: GatheringTrackerDB
 

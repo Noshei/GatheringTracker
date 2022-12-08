@@ -477,8 +477,10 @@ function GT:FiltersButtonFade(setAlpha)
                     GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
                     GT.baseFrame.button:SetAlpha(1)
                     GT.baseFrame.button:UnlockHighlight()
-                    GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
-                    GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)
+                    if GT.baseFrame.button.mouseOver then
+                        GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
+                        GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)
+                    end
                 end
             end
         end
