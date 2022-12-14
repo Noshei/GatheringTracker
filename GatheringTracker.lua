@@ -267,6 +267,9 @@ function GT:FiltersButton()
         if GT.baseFrame.button then
             GT.Debug("Show Filters Button", 1)
             GT.baseFrame.button:Show()
+            if GT.baseFrame.button.mouseOver then
+                GT.baseFrame.button.mouseOver:Show()
+            end
             GT:FiltersButtonFade()
         else
             GT.Debug("Create Filters Button", 1)
@@ -318,10 +321,6 @@ function GT:FiltersButton()
                                         GT.db.profile.Filters[itemData.id] = true 
                                     end
 
-                                    --[[if GT.db.profile.General.shareSettings then
-                                        GT:ShareSettings("Filters")
-                                    end]]
-
                                     GT:ResetDisplay(false)
                                     GT:RebuildIDTables()
                                     GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked", true)
@@ -356,6 +355,7 @@ function GT:FiltersButton()
                                         checked = GT.db.profile.Filters[itemData.id]
                                     else
                                         checked = false
+                                        break
                                     end
                                 end
                             end
@@ -381,9 +381,7 @@ function GT:FiltersButton()
                                     end
                                 end
                             end
-                            --[[if GT.db.profile.General.shareSettings then
-                                GT:ShareSettings("Filters")
-                            end]]
+                            GT.Debug("Category Button Clicked", 2, expansion, category, checked, count)
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
@@ -397,10 +395,56 @@ function GT:FiltersButton()
 
                 filterMenu[GT.expansions[expansion]] = {
                     text = expansion,
-                    keepShownOnClick = true,
+                    keepShownOnClick = false,
                     hasArrow = true,
-                    notCheckable = 1,
+                    isNotRadio = true,
                     menuList = expansionMenuList,
+                    checked = function()
+                        local checked = true
+                        for category, categoryData in pairs(expansionData) do
+                            for _, itemData in ipairs(categoryData) do
+                                if itemData.id ~= -1 and checked == true then
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = GT.db.profile.Filters[itemData.id]
+                                    else
+                                        checked = false
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        return checked
+                    end,
+                    func = function()
+                        GT.Debug("Expansion Button Clicked", 2, expansion)
+                        local checked = 0
+                        local count = 0
+                        for category, categoryData in pairs(expansionData) do
+                            for _, itemData in ipairs(categoryData) do
+                                if itemData.id ~= -1 then
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = checked + 1
+                                    end
+                                    GT.db.profile.Filters[itemData.id] = nil
+                                    count = count + 1
+                                end
+                            end
+                        end
+                        if checked == 0 or checked < count then
+                            for category, categoryData in pairs(expansionData) do
+                                for _, itemData in ipairs(categoryData) do
+                                    if itemData.id ~= -1 then
+                                        GT.db.profile.Filters[itemData.id] = true
+                                    end
+                                end
+                            end
+                        end
+                        GT.Debug("Expansion Button Clicked", 2, expansion, checked, count)
+
+                        GT:ResetDisplay(false)
+                        GT:RebuildIDTables()
+                        GT:InventoryUpdate(expansion.." clicked", true)
+                    end,
                 }
             end
 
@@ -433,6 +477,9 @@ function GT:FiltersButton()
         GT.Debug("Hide Filters Button", 1)
         if GT.baseFrame.button then
             GT.baseFrame.button:Hide()
+            if GT.baseFrame.button.mouseOver then
+                GT.baseFrame.button.mouseOver:Hide()
+            end
         end
     end
 end
@@ -523,10 +570,44 @@ function GT:CreateCustomFiltersList()
         table.sort(customFiltersMenuList, function(a, b) return a.text < b.text end )
         local customFilters = {
             text = "Custom Filters",
-            keepShownOnClick = true,
+            keepShownOnClick = false,
             hasArrow = true,
-            notCheckable = 1,
+            isNotRadio = true,
             menuList = customFiltersMenuList,
+            checked = function()
+                local checked = true
+                for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+                    if data == true then
+                        checked = true
+                    else
+                        checked = false
+                        break
+                    end
+                end
+                return checked
+            end,
+            func = function()
+                GT.Debug("Custom Filters Button Clicked", 2)
+                local checked = 0
+                local count = 0
+                for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+                    if data == true then
+                        checked = checked + 1
+                    end
+                    GT.db.profile.CustomFiltersTable[id] = false
+                    count = count + 1
+                end
+                if checked == 0 or checked < count then
+                    for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+                        GT.db.profile.CustomFiltersTable[id] = true
+                    end
+                end
+                GT.Debug("Custom Filters Button Clicked", 2, checked, count)
+
+                GT:ResetDisplay(false)
+                GT:RebuildIDTables()
+                GT:InventoryUpdate("Custom Filters clicked", true)
+            end,
         }
         local position = 0
 
@@ -983,7 +1064,7 @@ function GT:PrepareForDisplayUpdate(event)
         GT.Display.frames = {}
     end
 
-    for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels  ***NOTE: Why not just loop through GT.count?***
+    for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels.  We loop the ID's table to prevent displaying items that are disabled, but that we have count data for.
         GT.Debug("Prepare for Display Update: Loop ID's", 3, id)
         if GT.count[tostring(id)] then
             if string.match(tostring(id), "(%a)") then
