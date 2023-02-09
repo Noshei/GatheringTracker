@@ -127,7 +127,7 @@ local generalOptions = {
                     set = function(_, key) GT.db.profile.General.buttonAlpha = key GT:FiltersButtonFade() end,
                     order = 13
                 },
-                spacer1 = {
+                spacer2 = {
                     type = "description",
                     name = " ",
                     width = 0.3,

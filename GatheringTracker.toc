@@ -1,8 +1,8 @@
-## Interface: 100002
+## Interface: 100005
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 1.4.8
+## Version: 1.4.9
 ## OptionalDeps: TradeSkillMaster
 ## SavedVariables: GatheringTrackerDB
 
