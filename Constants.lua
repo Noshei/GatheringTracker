@@ -1160,7 +1160,8 @@ local ItemData = {
         Other = {
             {id = 190456, name = "Artisans Mettle", order = 1},
             {id = 190454, name = "Primal Chaos", order = 2},
-            {id = 193053, name = "Duck Feather", order = 3},
+            { id = 193053, name = "Duck Feather",    order = 3 },
+            { id = 204460, name = "Zaralek Glowspores", order = 4 },
         },
     },
     Other = {

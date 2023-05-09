@@ -951,6 +951,15 @@ function GT:RefreshConfig(event, db, profile)
     GT:CreateProfilesList()
 end
 
+function GatheringTracker_OnAddonCompartmentClick(addonName, button)
+    if (button == "LeftButton") then
+        GT:ToggleGatheringTracker()
+    elseif (button == "RightButton") then
+        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+    end
+end
+
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
