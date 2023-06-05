@@ -901,10 +901,12 @@ function GT:NotificationHandler(mode, id, amount, value)
         if mode == "all" and (GT.db.profile.Notifications.Gold.itemAll == 1 or GT.db.profile.Notifications.Gold.itemAll == 2) then  --All Items or Both
             NotificationCheck("Gold", false)
         end
-        if mode == "each" and (GT.db.profile.Notifications.Gold.itemAll == 0 or GT.db.profile.Notifications.Gold.itemAll == 2) then  --Each Item or Both
-            local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
-            value = math.ceil(eprice * amount)
-            NotificationCheck("Gold", false)
+        if mode == "each" and (GT.db.profile.Notifications.Gold.itemAll == 0 or GT.db.profile.Notifications.Gold.itemAll == 2) then --Each Item or Both
+            if GT.db.profile.General.tsmPrice > 0 then
+                local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
+                value = math.ceil(eprice * amount)
+                NotificationCheck("Gold", false)
+            end
         end
     end
 
@@ -919,10 +921,11 @@ function GT:NotificationHandler(mode, id, amount, value)
                         amount = data[i]
                         playerTotal = playerTotal + amount
                         NotificationCheck("Count", true)
-
-                        local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
-                        value = math.ceil(eprice * amount)
-                        NotificationCheck("Gold", true)
+                        if GT.db.profile.General.tsmPrice > 0 then
+                            local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
+                            value = math.ceil(eprice * amount)
+                            NotificationCheck("Gold", true)
+                        end
                     end
                 end
                 id = "all"
