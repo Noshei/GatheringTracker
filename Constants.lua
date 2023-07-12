@@ -232,7 +232,8 @@ local ItemData = {
             {id = 12804, name = "Powerful Mojo", order = 3},
             {id = 13926, name = "Golden Pearl", order = 4},
             {id = 12811, name = "Righteous Orb", order = 5},
-            {id = 12809, name = "Guardian Stone", order = 6},
+            { id = 12809, name = "Guardian Stone",       order = 6 },
+            { id = 207702, name = "Wartorn Scrap",        order = 7 },
         },
     },
     BC = {
