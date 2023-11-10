@@ -1057,6 +1057,7 @@ local ItemData = {
             { id = 193262, name = "Exceptional Morsel",          order = 24 },
             { id = 193255, name = "Pristine Vorquin Horn",       order = 25 },
             { id = 193256, name = "Windsong Plumage",            order = 26 },
+            { id = 210456, name = "Dreaming Antler Fragment",    order = 27 },
         },
         Meat = {
             {id = 197745, name = "Basilisk Eggs", order = 1},
@@ -1169,6 +1170,7 @@ local ItemData = {
             {id = 190454, name = "Primal Chaos", order = 2},
             { id = 193053, name = "Duck Feather",    order = 3 },
             { id = 204460, name = "Zaralek Glowspores", order = 4 },
+            { id = 208212, name = "Dreaming Essence",   order = 5 },
         },
     },
     Other = {
