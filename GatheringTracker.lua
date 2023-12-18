@@ -27,13 +27,13 @@ function GT:OnEnable()
     if GT.Enabled then
         --use this for both initial setup on UI load and when the addon is enabled from the settings
         ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 ENABLED|r")
-        
+
         --Register events for updating item details
         GT:RegisterEvent("BAG_UPDATE")
         GT:RegisterEvent("PLAYER_MONEY", "InventoryUpdate")
         GT:RegisterEvent("GROUP_ROSTER_UPDATE")
         GT:RegisterEvent("PLAYER_ENTERING_WORLD")
-        
+
         --Register addon comm's
         GT:RegisterComm("GT_Data", "DataUpdateReceived")
         --GT:RegisterComm("GT_Config", "ConfigUpdateReceived")
@@ -47,13 +47,13 @@ function GT:OnDisable()
         --Use this for disabling the addon from the settings
         --stop event tracking and turn off display
         ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cffff0000 DISABLED|r")
-        
+
         --Unregister events so that we can stop working when disabled
         GT:UnregisterEvent("BAG_UPDATE")
         GT:UnregisterEvent("PLAYER_MONEY")
         GT:UnregisterEvent("GROUP_ROSTER_UPDATE")
         GT:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        
+
         --Unregister addon comm's
         GT:UnregisterComm("GT_Data")
         --GT:UnregisterComm("GT_Config")
@@ -90,9 +90,11 @@ function GT:CheckIfDisplayResetNeeded(data)
 end
 
 function GT.Debug(text, level, ...)
-    if not GT.db.profile or GT.db.profile.General.debugOption == 0 then return end
+    if not GT.db.profile or GT.db.profile.General.debugOption == 0 then
+        return
+    end
 
-    if level == nil then 
+    if level == nil then
         level = 2
     end
 
@@ -104,7 +106,16 @@ function GT.Debug(text, level, ...)
         elseif level == 3 then
             color = "FF8080"
         end
-        ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cffff0000" .. date("%X") .. "|r |cff00a0a3" .. tostring(GT.DebugCount) .. ": |r " .. strjoin(" |cff00ff00:|r ", "|cff"..color..text.."|r", tostringall(...)))
+        ChatFrame1:AddMessage(
+            "|cffff6f00"
+                .. GT.metaData.name
+                .. ":|r |cffff0000"
+                .. date("%X")
+                .. "|r |cff00a0a3"
+                .. tostring(GT.DebugCount)
+                .. ": |r "
+                .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))
+        )
     end
 end
 
@@ -117,7 +128,7 @@ function GT:wait(delay, func, ...)
         func = func,
         argsCount = select("#", ...),
         delay = delay,
-        args = {...}
+        args = { ... },
     }
 
     --if delay is nil, cancel existing wait function
@@ -145,7 +156,7 @@ function GT:wait(delay, func, ...)
 
     --create the callback function so that we can pass along arguements
     timer.callback = function()
-        if waitTable[timer] then  --check if the wait table exists, if it dopesn't then this timer was cancelled.
+        if waitTable[timer] then --check if the wait table exists, if it dopesn't then this timer was cancelled.
             GT.Debug("Wait Function Complete", 1, timer.delay, timer.func, waitTable[timer])
             --remove wait table entry since the timer is complete
             waitTable[timer] = nil
@@ -223,7 +234,7 @@ function GT:CreateBaseFrame()
     --this creates the basic frame structure that the addon uses.
     --the backdrop is used for positioning through the addon options.
     local frame = CreateFrame("Frame", "GT_baseFrame", UIParent)
-    
+
     local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", frame, BackdropTemplateMixin and "BackdropTemplate")
     backdrop:SetWidth(300)
     backdrop:SetHeight(300)
@@ -231,14 +242,17 @@ function GT:CreateBaseFrame()
     backdrop:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = {left = 3, right = 3, top = 5, bottom = 3}})
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = { left = 3, right = 3, top = 5, bottom = 3 },
+    })
     backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
     backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
     backdrop:SetFrameStrata("FULLSCREEN_DIALOG")
-    
+
     backdrop:Hide()
-    
+
     local container = AceGUI:Create("SimpleGroup")
     container:SetLayout("Flow")
     container:SetPoint("TOPLEFT", backdrop, "TOPLEFT")
@@ -246,18 +260,18 @@ function GT:CreateBaseFrame()
     container.frame:SetFrameStrata("BACKGROUND")
     if GT.ElvUI then
         if container.frame.backdrop and container.frame.backdrop.SetBackdropBorderColor then
-            container.frame.backdrop:SetBackdropBorderColor(0,0,0,0)
-            container.frame.backdrop:SetBackdropColor(0,0,0,0)
+            container.frame.backdrop:SetBackdropBorderColor(0, 0, 0, 0)
+            container.frame.backdrop:SetBackdropColor(0, 0, 0, 0)
         elseif container.frame.SetBackdropBorderColor then
-            container.frame:SetBackdropBorderColor(0,0,0,0)
-            container.frame:SetBackdropColor(0,0,0,0)
+            container.frame:SetBackdropBorderColor(0, 0, 0, 0)
+            container.frame:SetBackdropColor(0, 0, 0, 0)
         end
     end
-    
+
     local baseFrame = {
         frame = frame,
         backdrop = backdrop,
-        container = container
+        container = container,
     }
     GT.baseFrame = baseFrame
 
@@ -320,12 +334,12 @@ function GT:FiltersButton()
                                     if GT.db.profile.Filters[itemData.id] == true then
                                         GT.db.profile.Filters[itemData.id] = nil
                                     else
-                                        GT.db.profile.Filters[itemData.id] = true 
+                                        GT.db.profile.Filters[itemData.id] = true
                                     end
 
                                     GT:ResetDisplay(false)
                                     GT:RebuildIDTables()
-                                    GT:InventoryUpdate(expansion.." "..category.." "..itemData.name.." menu clicked", true)
+                                    GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", true)
                                 end,
                             }
                             -- Add asterics to the name to distinguish between the different qualities
@@ -387,13 +401,15 @@ function GT:FiltersButton()
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate(expansion.." "..category.." clicked", true)
+                            GT:InventoryUpdate(expansion .. " " .. category .. " clicked", true)
                         end,
                     }
                     table.insert(expansionMenuList, categoryMenuData)
                 end
-                
-                table.sort(expansionMenuList, function(k1, k2) return GT.categories[k1.text] < GT.categories[k2.text] end )
+
+                table.sort(expansionMenuList, function(k1, k2)
+                    return GT.categories[k1.text] < GT.categories[k2.text]
+                end)
 
                 filterMenu[GT.expansions[expansion]] = {
                     text = expansion,
@@ -445,7 +461,7 @@ function GT:FiltersButton()
 
                         GT:ResetDisplay(false)
                         GT:RebuildIDTables()
-                        GT:InventoryUpdate(expansion.." clicked", true)
+                        GT:InventoryUpdate(expansion .. " clicked", true)
                     end,
                 }
             end
@@ -461,16 +477,14 @@ function GT:FiltersButton()
 
             --add Profiles to filterMenu
             GT:CreateProfilesList()
-            
-            filterButton:SetScript("OnClick", 
-                function (self, button, down)
-                    if button == "LeftButton" then
-                        EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0 , 0, "MENU");
-                    elseif button == "RightButton" then
-                        GT:ClearFilters()
-                    end
+
+            filterButton:SetScript("OnClick", function(self, button, down)
+                if button == "LeftButton" then
+                    EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0, 0, "MENU")
+                elseif button == "RightButton" then
+                    GT:ClearFilters()
                 end
-            )
+            end)
 
             GT.baseFrame.button = filterButton
             GT:FiltersButtonFade()
@@ -505,21 +519,17 @@ function GT:FiltersButtonFade(setAlpha)
                     end
                     GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
                     GT.baseFrame.button:LockHighlight()
-                    GT.baseFrame.button.mouseOver:SetScript("OnEnter",
-                        function(self, motion)
-                            if motion then
-                                GT.baseFrame.button:SetAlpha(1)
-                                GT:wait(nil, "FiltersButtonFade")
-                            end
+                    GT.baseFrame.button.mouseOver:SetScript("OnEnter", function(self, motion)
+                        if motion then
+                            GT.baseFrame.button:SetAlpha(1)
+                            GT:wait(nil, "FiltersButtonFade")
                         end
-                    )
-                    GT.baseFrame.button.mouseOver:SetScript("OnLeave",
-                        function(self, motion)
-                            if motion then
-                                GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
-                            end
+                    end)
+                    GT.baseFrame.button.mouseOver:SetScript("OnLeave", function(self, motion)
+                        if motion then
+                            GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
                         end
-                    )
+                    end)
                     GT.baseFrame.button.mouseOver:SetMouseClickEnabled(false)
                     GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
                 else
@@ -551,25 +561,29 @@ function GT:CreateCustomFiltersList()
                         isNotRadio = true,
                         keepShownOnClick = true,
                         icon = tostring(GetItemIcon(itemID) or ""),
-                        checked = function() return GT.db.profile.CustomFiltersTable[id] end,
+                        checked = function()
+                            return GT.db.profile.CustomFiltersTable[id]
+                        end,
                         func = function()
                             GT.Debug("Custom Filter Item Button Clicked", 2, itemName)
                             if GT.db.profile.CustomFiltersTable[id] == true then
                                 GT.db.profile.CustomFiltersTable[id] = false
                             else
-                                GT.db.profile.CustomFiltersTable[id] = true 
+                                GT.db.profile.CustomFiltersTable[id] = true
                             end
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate("Custom Filter "..itemName.." menu clicked", true)
+                            GT:InventoryUpdate("Custom Filter " .. itemName .. " menu clicked", true)
                         end,
                     }
                     table.insert(customFiltersMenuList, itemDetails)
                 end)
             end
         end
-        table.sort(customFiltersMenuList, function(a, b) return a.text < b.text end )
+        table.sort(customFiltersMenuList, function(a, b)
+            return a.text < b.text
+        end)
         local customFilters = {
             text = "Custom Filters",
             keepShownOnClick = false,
@@ -619,7 +633,7 @@ function GT:CreateCustomFiltersList()
             end
         end
         if position == 0 then
-            position = #(GT.baseFrame.filterMenu) + 1
+            position = #GT.baseFrame.filterMenu + 1
         end
         GT.baseFrame.filterMenu[position] = customFilters
     end
@@ -649,7 +663,9 @@ function GT:CreateProfilesList()
             }
             table.insert(profilesMenuList, profileDetails)
         end
-        table.sort(profilesMenuList, function(a, b) return a.text < b.text end )
+        table.sort(profilesMenuList, function(a, b)
+            return a.text < b.text
+        end)
         local profiles = {
             text = "Profiles",
             keepShownOnClick = true,
@@ -664,7 +680,7 @@ function GT:CreateProfilesList()
             end
         end
         if position == 0 then
-            position = #(GT.baseFrame.filterMenu) + 1
+            position = #GT.baseFrame.filterMenu + 1
         end
         GT.baseFrame.filterMenu[position] = profiles
     end
@@ -681,14 +697,14 @@ function GT:ToggleBaseLock(key)
         frame:EnableMouse(true)
         frame:SetScript("OnMouseDown", function(self, button)
             if button == "LeftButton" and not self.isMoving then
-                self:StartMoving();
-                self.isMoving = true;
+                self:StartMoving()
+                self.isMoving = true
             end
         end)
         frame:SetScript("OnMouseUp", function(self, button)
             if button == "LeftButton" and self.isMoving then
-                self:StopMovingOrSizing();
-                self.isMoving = false;
+                self:StopMovingOrSizing()
+                self.isMoving = false
                 local rel, _, _, xPos, yPos = self:GetPoint()
                 GT.db.profile.General.xPos = xPos
                 GT.db.profile.General.yPos = yPos
@@ -696,9 +712,9 @@ function GT:ToggleBaseLock(key)
             end
         end)
         frame:SetScript("OnHide", function(self)
-            if (self.isMoving) then
-                self:StopMovingOrSizing();
-                self.isMoving = false;
+            if self.isMoving then
+                self:StopMovingOrSizing()
+                self.isMoving = false
                 local rel, _, _, xPos, yPos = self:GetPoint()
                 GT.db.profile.General.xPos = xPos
                 GT.db.profile.General.yPos = yPos
@@ -718,7 +734,7 @@ end
 
 function GT:OptionsHide()
     if GT.baseFrame then
-        --[[This is called when the Interface Options Panel is closed.]]--
+        --[[This is called when the Interface Options Panel is closed.]]
         --locks the base frame if the options are closed without first locking it.
         if GT.db.profile.General.unlock then
             GT.db.profile.General.unlock = false
@@ -771,10 +787,10 @@ function GT:GroupCheck(mode)
             return true
         end
     elseif mode == "Solo" then
-        if not GT.db.profile.General.groupType == 1 and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
+        if not GT.db.profile.General.groupType == 1 and IsInGroup() then --if Group Mode is DISABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
+        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then --if Group Mode is DISABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
@@ -785,10 +801,10 @@ function GT:GroupCheck(mode)
         elseif GT.db.profile.General.groupType >= 1 and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
-        elseif GT.db.profile.General.groupType ~= 1 and IsInGroup() then  --if Group Mode is DISABLED and player IS in a group
+        elseif GT.db.profile.General.groupType ~= 1 and IsInGroup() then --if Group Mode is DISABLED and player IS in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
             return false
-        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then  --if Group Mode is DISABLED and player is NOT in a group
+        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then --if Group Mode is DISABLED and player is NOT in a group
             GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
             return true
         end
@@ -830,14 +846,14 @@ function GT:NotificationHandler(mode, id, amount, value)
         else
             passedValue = value
         end
-        
+
         if passedValue >= threshold then
-            GT.Debug(notiType.." Notifications Threshold Exceeded", 2, mode, id, amount, value)
-            if GT.db.profile.Notifications[notiType].interval == 1 then  --Interval
+            GT.Debug(notiType .. " Notifications Threshold Exceeded", 2, mode, id, amount, value)
+            if GT.db.profile.Notifications[notiType].interval == 1 then --Interval
                 if GT.Notifications[id] and GT.Notifications[id][notiType] > 0 then
                     if (passedValue - GT.Notifications[id][notiType]) >= threshold then
-                        GT.Debug(notiType.." Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id][notiType])
-                        GT.Notifications[id][notiType] = math.floor(passedValue/threshold)*threshold
+                        GT.Debug(notiType .. " Notifications Interval Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id][notiType])
+                        GT.Notifications[id][notiType] = math.floor(passedValue / threshold) * threshold
                         if not buildTable then
                             NotificationTriggered = true
                             GT:TriggerNotification(notiType)
@@ -847,25 +863,25 @@ function GT:NotificationHandler(mode, id, amount, value)
                     if GT.Notifications[id] then
                         if notiType == "Count" then
                             GT.Notifications[id] = {
-                                Count = math.floor(passedValue/threshold)*threshold,
-                                Gold = (GT.Notifications[id].Gold or 0)
+                                Count = math.floor(passedValue / threshold) * threshold,
+                                Gold = (GT.Notifications[id].Gold or 0),
                             }
                         else
                             GT.Notifications[id] = {
                                 Count = (GT.Notifications[id].Count or 0),
-                                Gold = math.floor(passedValue/threshold)*threshold
+                                Gold = math.floor(passedValue / threshold) * threshold,
                             }
                         end
                     else
                         if notiType == "Count" then
                             GT.Notifications[id] = {
-                                Count = math.floor(passedValue/threshold)*threshold,
-                                Gold = 0
+                                Count = math.floor(passedValue / threshold) * threshold,
+                                Gold = 0,
                             }
                         else
                             GT.Notifications[id] = {
                                 Count = 0,
-                                Gold = math.floor(passedValue/threshold)*threshold
+                                Gold = math.floor(passedValue / threshold) * threshold,
                             }
                         end
                     end
@@ -875,31 +891,31 @@ function GT:NotificationHandler(mode, id, amount, value)
                     end
                 end
             end
-            if GT.db.profile.Notifications[notiType].interval == 0 then  --Exact
+            if GT.db.profile.Notifications[notiType].interval == 0 then --Exact
                 if not GT.Notifications[id] or GT.Notifications[id][notiType] < threshold then
-                    GT.Debug(notiType.." Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id][notiType])
+                    GT.Debug(notiType .. " Notifications Exact Threshold Exceeded", 2, mode, id, amount, value, GT.Notifications[id][notiType])
                     if GT.Notifications[id] then
                         if notiType == "Count" then
                             GT.Notifications[id] = {
                                 Count = threshold,
-                                Gold = (GT.Notifications[id].Gold or 0)
+                                Gold = (GT.Notifications[id].Gold or 0),
                             }
                         else
                             GT.Notifications[id] = {
                                 Count = (GT.Notifications[id].Count or 0),
-                                Gold = threshold
+                                Gold = threshold,
                             }
                         end
                     else
                         if notiType == "Count" then
                             GT.Notifications[id] = {
                                 Count = threshold,
-                                Gold = 0
+                                Gold = 0,
                             }
                         else
                             GT.Notifications[id] = {
                                 Count = 0,
-                                Gold = threshold
+                                Gold = threshold,
                             }
                         end
                     end
@@ -913,16 +929,16 @@ function GT:NotificationHandler(mode, id, amount, value)
     end
 
     if GT.db.profile.Notifications.Count.enable then
-        if mode == "all" and (GT.db.profile.Notifications.Count.itemAll == 1 or GT.db.profile.Notifications.Count.itemAll == 2) then  --All Items or Both
+        if mode == "all" and (GT.db.profile.Notifications.Count.itemAll == 1 or GT.db.profile.Notifications.Count.itemAll == 2) then --All Items or Both
             NotificationCheck("Count", false)
         end
-        if mode == "each" and (GT.db.profile.Notifications.Count.itemAll == 0 or GT.db.profile.Notifications.Count.itemAll == 2) then  --Each Item or Both
+        if mode == "each" and (GT.db.profile.Notifications.Count.itemAll == 0 or GT.db.profile.Notifications.Count.itemAll == 2) then --Each Item or Both
             NotificationCheck("Count", false)
         end
     end
 
     if GT.db.profile.Notifications.Gold.enable and GT.tsmLoaded and GT.db.profile.General.tsmPrice > 0 then
-        if mode == "all" and (GT.db.profile.Notifications.Gold.itemAll == 1 or GT.db.profile.Notifications.Gold.itemAll == 2) then  --All Items or Both
+        if mode == "all" and (GT.db.profile.Notifications.Gold.itemAll == 1 or GT.db.profile.Notifications.Gold.itemAll == 2) then --All Items or Both
             NotificationCheck("Gold", false)
         end
         if mode == "each" and (GT.db.profile.Notifications.Gold.itemAll == 0 or GT.db.profile.Notifications.Gold.itemAll == 2) then --Each Item or Both
@@ -977,8 +993,10 @@ end
 
 function GT:ResetDisplay(display)
     GT.Debug("Reset Display", 1, display)
-    if display == nil then display = true end
-    if GT.Display.overlayPool then  --Release pool textures so that they dont show up on the wrong items
+    if display == nil then
+        display = true
+    end
+    if GT.Display.overlayPool then --Release pool textures so that they dont show up on the wrong items
         GT.Display.overlayPool:ReleaseAll()
     end
     if GT.Display.rarityPool then
@@ -1003,7 +1021,7 @@ function GT:PrepareForDisplayUpdate(event)
     GT.Display.length.totalsLength = 0
 
     GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
-    
+
     GT:SetTSMPriceSource()
 
     --create player total that is displayed at the end of each item label
@@ -1048,12 +1066,12 @@ function GT:PrepareForDisplayUpdate(event)
             Otherwise we use the length of the players total item count.]]
         GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
         if GT.db.profile.General.characterValue and GT:GroupCheck("Group") then
-            if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) >= GT.sender[i].playerLength then
-                GT.sender[i].playerLength = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue))/3) + 1
+            if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue)) / 3) >= GT.sender[i].playerLength then
+                GT.sender[i].playerLength = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue)) / 3) + 1
             end
         else
-            if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3) > GT.sender[i].playerLength  then
-                GT.sender[i].playerLength = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal))/3)
+            if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal)) / 3) > GT.sender[i].playerLength then
+                GT.sender[i].playerLength = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal)) / 3)
             end
         end
         --if gold filter is enabled check if it will be longer than the current length when we include the "g"
@@ -1071,7 +1089,7 @@ function GT:PrepareForDisplayUpdate(event)
     GT.Display.length.totalsLength = string.len(tostring(globalTotal))
     --determines text for totals row for the player columns
     for i, t in ipairs(playerTotals) do
-        globalCounts = globalCounts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (t))))
+        globalCounts = globalCounts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", t)))
     end
     GT.Debug("GT.Display.length.totalsLength", 2, GT.Display.length.totalsLength)
     GT.Debug("GT.Display.length.perItemPrice", 2, GT.Display.length.perItemPrice)
@@ -1100,7 +1118,7 @@ function GT:PrepareForDisplayUpdate(event)
                 local data = GT.count[tostring(id)]
                 local counts = ""
                 for i, v in ipairs(data) do
-                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (v))) .. ((id == "gold" and "g") or ""))
+                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", v)) .. ((id == "gold" and "g") or ""))
                 end
                 local iconID, order
                 for _, otherData in ipairs(GT.ItemData.Other.Other) do
@@ -1122,32 +1140,32 @@ function GT:PrepareForDisplayUpdate(event)
                     else
                         value = 0
                     end
-                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength  .. "s", GT:AddComas(string.format("%.0f", (value))))
+                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", value)))
                     total = total + value
                 end
-                
+
                 if total > 0 then
                     local text = counts
                     if GT:GroupCheck("Group") then
-                        text = text .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", (total))) .. "]")
+                        text = text .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", total)) .. "]")
                     end
                     if GT.db.profile.General.tsmPrice > 0 then
                         local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
                         local tprice = total * eprice
                         globalPrice = globalPrice + tprice
-                        
+
                         if GT.db.profile.General.perItemPrice then
-                            text = text .. "{" .. string.format("%-" .. (GT.Display.length.perItemPrice + 3) .. "s", GT:AddComas(string.format("%.0f", (eprice))) .. "g}")
+                            text = text .. "{" .. string.format("%-" .. (GT.Display.length.perItemPrice + 3) .. "s", GT:AddComas(string.format("%.0f", eprice)) .. "g}")
                         end
-                        
-                        text = text .. "(" .. GT:AddComas(string.format("%.0f", (tprice))) .. "g)"
+
+                        text = text .. "(" .. GT:AddComas(string.format("%.0f", tprice)) .. "g)"
                     end
-                    
+
                     local iconID = GetItemIcon(id)
 
                     local rarity = C_Item.GetItemQualityByID(id)
 
-                    local quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(tostring(id))  --Get the quality, returns nil if no quality
+                    local quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(tostring(id)) --Get the quality, returns nil if no quality
 
                     --call method to create frame
                     GT:UpdateDisplay(id, text, iconID, rarity, quality)
@@ -1156,19 +1174,18 @@ function GT:PrepareForDisplayUpdate(event)
         end
     end
 
-    
     if globalTotal > 0 then
         --create the text string for the totals row and create the widget
         local totalText = globalCounts
         local totalStack
         if GT:GroupCheck("Group") then
-            totalText = totalText.."["  .. string.format("%-"..(GT.Display.length.totalsLength + 2).."s",GT:AddComas(string.format("%.0f",(globalTotal))) .. "]")
+            totalText = totalText .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", globalTotal)) .. "]")
         end
         if GT.db.profile.General.tsmPrice > 0 then
             if GT.db.profile.General.perItemPrice then
                 totalText = totalText .. string.format("%-" .. (GT.Display.length.perItemPrice + 4) .. "s", "")
             end
-            totalText = totalText .. "(" .. GT:AddComas(string.format("%.0f", (globalPrice))) .. "g)"
+            totalText = totalText .. "(" .. GT:AddComas(string.format("%.0f", globalPrice)) .. "g)"
         end
         if totalText == "" then
             totalText = "Setup"
@@ -1181,7 +1198,7 @@ function GT:PrepareForDisplayUpdate(event)
         --create the text string for the per character value row and create widget
         local valueText = ""
         for i, senderData in ipairs(GT.sender) do
-            valueText = valueText .. string.format("%-" .. senderData.playerLength  .. "s", GT:AddComas(string.format("%.0f", (senderData.totalValue))) .. "g")
+            valueText = valueText .. string.format("%-" .. senderData.playerLength .. "s", GT:AddComas(string.format("%.0f", senderData.totalValue)) .. "g")
         end
         if valueText == "" then
             valueText = "Setup"
@@ -1277,11 +1294,9 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         local string = GT.Pools.fontStringPool:Acquire()
         string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
         if id < 999999999 then
-            string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2],
-                GT.db.profile.General.textColor[3])
+            string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
         else
-            string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2],
-                GT.db.profile.General.totalColor[3])
+            string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
         end
         string:SetHeight(height)
         local offset = 3
@@ -1304,7 +1319,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         end
         frame.text[i] = CreateTextDisplay(id, text, frameHeight, anchor)
     end
-    
+
     if totalItemCount and GT:GroupDisplayCheck() then
         local textIndex = #frame.text
         local anchor = frame.text[textIndex]
@@ -1325,7 +1340,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
         frame.text[textIndex + 1] = CreateTextDisplay(id, priceTotalItem, frameHeight, anchor)
     end
-    
+
     --pricePerItem, priceTotalItem
 
     GT.Display.Order = GT.Display.Order or {}
@@ -1377,18 +1392,18 @@ function GT:UpdateDisplay(index, name, icon, rarity, quality)
                 else
                     label.border:SetAtlas("bags-glow-white")
                 end
-                local R,G,B = GetItemQualityColor(rarity)
+                local R, G, B = GetItemQualityColor(rarity)
                 label.border:SetVertexColor(R, G, B, 0.8)
                 label.border:SetAllPoints(label.image)
                 label.border:Show()
             end
-            
+
             table.insert(GT.Display.list, index)
             table.sort(GT.Display.list)
             local position = GT:TableFind(GT.Display.list, index)
             local beforeWidget = nil
-            if GT.Display.frames[GT.Display.list[(position+1)]] then
-                beforeWidget = GT.Display.frames[GT.Display.list[(position+1)]]
+            if GT.Display.frames[GT.Display.list[(position + 1)]] then
+                beforeWidget = GT.Display.frames[GT.Display.list[(position + 1)]]
             end
             GT.Display.frames[index] = label
             if beforeWidget then
@@ -1406,16 +1421,16 @@ function GT:UpdateDisplay(index, name, icon, rarity, quality)
             label:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
             label:SetImage(icon)
             label:SetImageSize(GT.db.profile.General.iconWidth, GT.db.profile.General.iconHeight)
-            
+
             table.insert(GT.Display.list, index) --adds our index to the list table.  This table is sorted and used to determine display order
             table.sort(GT.Display.list)
             local position = GT:TableFind(GT.Display.list, index)
             local beforeWidget = nil
-            if GT.Display.frames[GT.Display.list[(position+1)]] then  --checks if there is a widget after our position
-                beforeWidget = GT.Display.frames[GT.Display.list[(position+1)]]
+            if GT.Display.frames[GT.Display.list[(position + 1)]] then --checks if there is a widget after our position
+                beforeWidget = GT.Display.frames[GT.Display.list[(position + 1)]]
             end
-            GT.Display.frames[index] = label  --adds label to the frames table so we can keep track of it later on
-            if beforeWidget then  --adds our widget to the container based on if there is another widget after us
+            GT.Display.frames[index] = label --adds label to the frames table so we can keep track of it later on
+            if beforeWidget then --adds our widget to the container based on if there is another widget after us
                 GT.baseFrame.container:AddChild(GT.Display.frames[index], beforeWidget)
             else
                 GT.baseFrame.container:AddChild(GT.Display.frames[index])
@@ -1458,12 +1473,12 @@ function GT:InventoryUpdate(event, dontWait)
             if GT:GroupCheck() and GT.Enabled then
                 local total = 0
                 local messageText = ""
-                
+
                 for i, id in ipairs(GT.IDs) do
                     local count = 0
                     if string.match(tostring(id), "(%a)") then
                         if tostring(id) == "gold" then
-                            count = math.floor((GetMoney()/10000)+0.5)
+                            count = math.floor((GetMoney() / 10000) + 0.5)
                         elseif tostring(id) == "bag" then
                             for i = 0, 4 do
                                 count = count + C_Container.GetContainerNumFreeSlots(i)
@@ -1481,7 +1496,7 @@ function GT:InventoryUpdate(event, dontWait)
                     if count > 0 then
                         total = total + count
                         messageText = messageText .. id .. "=" .. count
-                        
+
                         local size = #GT.IDs
                         if i < size then
                             messageText = messageText .. " "
@@ -1560,7 +1575,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
                 table.insert(GT.sender, senderTable)
                 senderIndex = #GT.sender
             end
-            
+
             if message == "reset" then
                 for itemID, data in pairs(GT.count) do
                     if GT.count[itemID][senderIndex] then
@@ -1594,7 +1609,7 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
 
             GT:wait(0.4, "PrepareForDisplayUpdate", "Data Update Received", true)
         end
-    elseif GT.Enabled then  --process reset messages if we are enabled but didn't pass the earlier check to display
+    elseif GT.Enabled then --process reset messages if we are enabled but didn't pass the earlier check to display
         GT.Debug("Group Check Failed but Enabled, Process reset messages only", 1)
         local SenderExists = false
         local senderIndex
