@@ -8,6 +8,8 @@ GT.Display = {}
 GT.Display.frames = {}
 GT.Display.list = {}
 GT.Display.length = {}
+GT.Display.Frames = {}
+GT.Pools = {}
 GT.DebugCount = 0
 GT.Options = {}
 GT.Notifications = {}
@@ -754,6 +756,11 @@ function GT:OptionsHide()
 end
 
 function GT:GroupCheck(mode)
+    -- this is used to determine if the addon display should be shown.
+    -- this is decided by the addon configuration and if the player is in a group in game.
+    -- within the addon this is used to decide if certain operations should happen
+    -- it is also used as a check to prevent major addon functions that are unnecessary when the display is hidden
+    -- should refactor this to be better foir the different use cases
     GT.Debug("Group Check", 2, mode, GT.db.profile.General.groupType)
     if mode == "Group" then
         if GT.db.profile.General.groupType == 1 and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
@@ -786,6 +793,23 @@ function GT:GroupCheck(mode)
             return true
         end
     end
+end
+
+function GT:GroupDisplayCheck()
+    GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
+    if GT.db.profile.General.groupType == 0 then
+        return false
+    end
+
+    if IsInGroup() == false then
+        return false
+    end
+
+    if GT.db.profile.General.hideOthers == true then
+        return false
+    end
+
+    return true
 end
 
 function GT:NotificationHandler(mode, id, amount, value)
@@ -995,8 +1019,8 @@ function GT:PrepareForDisplayUpdate(event)
                     data[i] = 0
                 end
                 local value = 0
-                if (data[i]-GT.db.profile.General.ignoreAmount) > 0 then
-                    value = data[i]-GT.db.profile.General.ignoreAmount
+                if (data[i] - GT.db.profile.General.ignoreAmount) > 0 then
+                    value = data[i] - GT.db.profile.General.ignoreAmount
                 else
                     value = 0
                 end
@@ -1035,13 +1059,13 @@ function GT:PrepareForDisplayUpdate(event)
         --if gold filter is enabled check if it will be longer than the current length when we include the "g"
         if GT.count["gold"] and GT.count["gold"][i] then
             local gold = GT.count["gold"][i] .. "g"
-            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3) > GT.sender[i].playerLength  then
-                GT.sender[i].playerLength = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold))/3)
+            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3) > GT.sender[i].playerLength then
+                GT.sender[i].playerLength = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3)
             end
         end
         playerTotals[i] = playerTotal
         globalTotal = globalTotal + playerTotal
-        GT.Debug("Display Length for "..GT.sender[i].name..":", 2, GT.sender[i].playerLength)
+        GT.Debug("Display Length for " .. GT.sender[i].name .. ":", 2, GT.sender[i].playerLength)
     end
     --set the length for the totals items column
     GT.Display.length.totalsLength = string.len(tostring(globalTotal))
@@ -1056,7 +1080,7 @@ function GT:PrepareForDisplayUpdate(event)
     local update = GT:CheckIfDisplayResetNeeded(GT.count)
     --release all of the container children so we can rebuild
     if not update then
-        if GT.Display.overlayPool then  --Release pool textures so that they dont show up on the wrong items
+        if GT.Display.overlayPool then --Release pool textures so that they dont show up on the wrong items
             GT.Display.overlayPool:ReleaseAll()
         end
         if GT.Display.rarityPool then
@@ -1067,7 +1091,7 @@ function GT:PrepareForDisplayUpdate(event)
         GT.Display.frames = {}
     end
 
-    for _, id in ipairs(GT.IDs) do  --create the data needed to create the item labels.  We loop the ID's table to prevent displaying items that are disabled, but that we have count data for.
+    for _, id in ipairs(GT.IDs) do --create the data needed to create the item labels.  We loop the ID's table to prevent displaying items that are disabled, but that we have count data for.
         GT.Debug("Prepare for Display Update: Loop ID's", 3, id)
         if GT.count[tostring(id)] then
             if string.match(tostring(id), "(%a)") then
@@ -1093,8 +1117,8 @@ function GT:PrepareForDisplayUpdate(event)
                 local total = 0
                 for i, v in ipairs(data) do
                     local value = 0
-                    if (v-GT.db.profile.General.ignoreAmount) > 0 then
-                        value = v-GT.db.profile.General.ignoreAmount
+                    if (v - GT.db.profile.General.ignoreAmount) > 0 then
+                        value = v - GT.db.profile.General.ignoreAmount
                     else
                         value = 0
                     end
@@ -1142,9 +1166,9 @@ function GT:PrepareForDisplayUpdate(event)
         end
         if GT.db.profile.General.tsmPrice > 0 then
             if GT.db.profile.General.perItemPrice then
-                totalText = totalText .. string.format("%-"..(GT.Display.length.perItemPrice + 4).."s","")
+                totalText = totalText .. string.format("%-" .. (GT.Display.length.perItemPrice + 4) .. "s", "")
             end
-            totalText = totalText.."(" .. GT:AddComas(string.format("%.0f",(globalPrice))) .. "g)"
+            totalText = totalText .. "(" .. GT:AddComas(string.format("%.0f", (globalPrice))) .. "g)"
         end
         if totalText == "" then
             totalText = "Setup"
@@ -1162,7 +1186,7 @@ function GT:PrepareForDisplayUpdate(event)
         if valueText == "" then
             valueText = "Setup"
         end
-        GT:UpdateDisplay(9999999999, valueText, 133784)  --old icon 133785
+        GT:UpdateDisplay(9999999999, valueText, 133784) --old icon 133785
     end
 
     if GT.db.profile.General.displayAlias and GT:GroupCheck("Group") then
@@ -1176,21 +1200,144 @@ function GT:PrepareForDisplayUpdate(event)
                 end
             end
             if exists > 0 then
-                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (senderData.playerLength-1))  --should the -1 be removed?  This needs more testing.
+                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (senderData.playerLength - 1)) --should the -1 be removed?  This needs more testing.
                 local extrsSpace = string.len(newText)
-                nameText = nameText..newText..string.format("%-"..(senderData.playerLength - extrsSpace).."s","")
+                nameText = nameText .. newText .. string.format("%-" .. (senderData.playerLength - extrsSpace) .. "s", "")
             else
-                local newText = string.sub(senderData.name, 0, (senderData.playerLength-1))
+                local newText = string.sub(senderData.name, 0, (senderData.playerLength - 1))
                 local extrsSpace = string.len(newText)
-                nameText = nameText..newText..string.format("%-"..(senderData.playerLength - extrsSpace).."s","")
+                nameText = nameText .. newText .. string.format("%-" .. (senderData.playerLength - extrsSpace) .. "s", "")
             end
         end
         if nameText == "" then
             nameText = "Setup"
         end
-        GT:UpdateDisplay(-9999999999, nameText, 413577)
+        GT:UpdateDisplay(-9999999999, nameText, 413577) --change to id 0 or maybe 1 if zero causes issues
     end
 end
+
+function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("CreateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalCount, pricePerItem, priceTotalItem)
+
+    if GT.Display.Frames[id] then
+        return
+    end
+
+    --Create pools
+    GT.Pools.framePool = GT.Pools.framePool or CreateFramePool("Frame", GT.baseFrame.frame)
+    GT.Pools.texturePool = GT.Pools.texturePool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND")
+    GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
+
+    local frame = GT.Pools.framePool:Acquire()
+    frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
+    frame:SetWidth(GT.db.profile.General.iconWidth)
+    frame:SetHeight(GT.db.profile.General.iconHeight + 4)
+    frame:Show()
+
+    GT.Display.Frames[id] = frame
+
+    frame.icon = GT.Pools.texturePool:Acquire()
+    frame.icon:SetDrawLayer("BACKGROUND", 0)
+    frame.icon:SetTexture(iconId)
+    frame.icon:SetPoint("LEFT", frame, "LEFT")
+    frame.icon:SetWidth(GT.db.profile.General.iconWidth)
+    frame.icon:SetHeight(GT.db.profile.General.iconHeight)
+    frame.icon:Show()
+
+    if iconQuality then
+        frame.iconQuality = GT.Pools.texturePool:Acquire()
+        frame.iconQuality:SetDrawLayer("BACKGROUND", 2)
+        if iconQuality == 1 then
+            frame.iconQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
+        elseif iconQuality == 2 then
+            frame.iconQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
+        elseif iconQuality == 3 then
+            frame.iconQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
+        end
+        frame.iconQuality:SetAllPoints(frame.icon)
+        frame.iconQuality:Show()
+    end
+
+    if GT.db.profile.General.rarityBorder and iconRarity then
+        frame.iconRarity = GT.Pools.texturePool:Acquire()
+        frame.iconRarity:SetDrawLayer("BACKGROUND", 1)
+        local rarity = iconRarity or 1
+        if rarity <= 1 then
+            frame.iconRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+        else
+            frame.iconRarity:SetAtlas("bags-glow-white")
+        end
+        local R, G, B = GetItemQualityColor(rarity)
+        frame.iconRarity:SetVertexColor(R, G, B, 0.8)
+        frame.iconRarity:SetAllPoints(frame.icon)
+        frame.iconRarity:Show()
+    end
+
+    local function CreateTextDisplay(id, text, height, anchor)
+        local string = GT.Pools.fontStringPool:Acquire()
+        string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
+        if id < 999999999 then
+            string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2],
+                GT.db.profile.General.textColor[3])
+        else
+            string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2],
+                GT.db.profile.General.totalColor[3])
+        end
+        string:SetHeight(height)
+        local offset = 3
+        if anchor ~= frame.icon then
+            offset = 8 --make spacing fraction of height?
+        end
+        string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
+        string:SetText(text)
+        string:Show()
+        return string
+    end
+
+    local frameHeight = frame:GetHeight()
+    frame.text = {}
+
+    for i, text in ipairs(displayText) do
+        local anchor = frame.icon
+        if i > 1 then
+            anchor = frame.text[i - 1]
+        end
+        frame.text[i] = CreateTextDisplay(id, text, frameHeight, anchor)
+    end
+    
+    if totalItemCount and GT:GroupDisplayCheck() then
+        local textIndex = #frame.text
+        local anchor = frame.text[textIndex]
+
+        frame.text[textIndex + 1] = CreateTextDisplay(id, totalItemCount, frameHeight, anchor)
+    end
+
+    if pricePerItem and GT:GroupDisplayCheck() then
+        local textIndex = #frame.text
+        local anchor = frame.text[textIndex]
+
+        frame.text[textIndex + 1] = CreateTextDisplay(id, pricePerItem, frameHeight, anchor)
+    end
+
+    if priceTotalItem and GT:GroupDisplayCheck() then
+        local textIndex = #frame.text
+        local anchor = frame.text[textIndex]
+
+        frame.text[textIndex + 1] = CreateTextDisplay(id, priceTotalItem, frameHeight, anchor)
+    end
+    
+    --pricePerItem, priceTotalItem
+
+    GT.Display.Order = GT.Display.Order or {}
+    table.insert(GT.Display.Order, id)
+    table.sort(GT.Display.Order)
+end
+
+--for i, id in ipairs(GT.Display.Order) do
+--    if i > 1 then
+--        GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i-1]], "BOTTOMLEFT")
+--    end
+--end
 
 function GT:UpdateDisplay(index, name, icon, rarity, quality)
     GT.Debug("Update Display", 3, index, name, icon, rarity, quality)

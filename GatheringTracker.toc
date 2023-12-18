@@ -1,4 +1,4 @@
-## Interface: 100105
+## Interface: 100200
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei

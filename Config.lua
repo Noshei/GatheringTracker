@@ -153,7 +153,7 @@ local generalOptions = {
                 groupType = {
                     type = "select",
                     name = "Group Mode",
-                    desc  = "Disabled: Hides the display when in a group\nGroup Only: Only shows the display when in a group\nGroup and Solo:Shows the display when in a group or Solo",
+                    desc = "Disabled: Hides the display when in a group\nGroup Only: Only shows the display when in a group\nGroup and Solo: Shows the display when in a group or Solo",
                     width = 1.40,
                     values = {[0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo"},
                     get = function() return GT.db.profile.General.groupType end,
@@ -171,7 +171,7 @@ local generalOptions = {
                 hideOthers = {
                     type = "toggle",
                     name = "Hide Other Party Members",
-                    desc  = "When selected only your character will be displayed when you are in a group.  Information will still be sent to and received from party members.",
+                    desc = "When selected only your character will be displayed when you are in a group.\nInformation will still be sent to and received from party members.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.hideOthers end,
                     set = function(_, key)
@@ -351,7 +351,13 @@ local generalOptions = {
                     step = 1,
                     width = 1.20,
                     get = function() return GT.db.profile.General.textSize or 1 end,
-                    set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true) end,
+                    set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true);
+                        --[[for i, frame in pairs(GT.Display.Frames) do
+                            for i, text in ipairs(frame.text) do
+                                text:SetTextHeight(key)
+                            end
+                        end]]--  --Should these options all do full resets or should we just change the settings on the fly?
+                    end,
                     order = 402
                 },
                 textFont = {
