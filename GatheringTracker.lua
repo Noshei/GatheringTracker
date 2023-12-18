@@ -36,7 +36,6 @@ function GT:OnEnable()
 
         --Register addon comm's
         GT:RegisterComm("GT_Data", "DataUpdateReceived")
-        --GT:RegisterComm("GT_Config", "ConfigUpdateReceived")
     else
         GT:OnDisable()
     end
@@ -45,7 +44,7 @@ end
 function GT:OnDisable()
     if not GT.Enabled then
         --Use this for disabling the addon from the settings
-        --stop event tracking and turn off display
+        --stop event tracking
         ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cffff0000 DISABLED|r")
 
         --Unregister events so that we can stop working when disabled
@@ -56,22 +55,49 @@ function GT:OnDisable()
 
         --Unregister addon comm's
         GT:UnregisterComm("GT_Data")
-        --GT:UnregisterComm("GT_Config")
     else
         GT:OnEnable()
     end
 end
 
-function GT:AddComas(str)
-    return #str % 3 == 0 and str:reverse():gsub("(%d%d%d)", "%1,"):reverse():sub(2) or str:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+function GT:PLAYER_ENTERING_WORLD()
+    GT.Debug("PLAYER_ENTERING_WORLD", 1)
+
+    GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", true)
+    GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
 end
 
-function GT:TableFind(list, str)
-    for i, v in ipairs(list) do
-        if str == v then
-            return i
+function GT:GROUP_ROSTER_UPDATE(event, dontWait)
+    GT.Debug("GROUP_ROSTER_UPDATE", 1, dontWait)
+
+    --Check if we need to wait on doing the update.
+    --If we do need to wait, determine if an existing wait table has already been created
+    --If we dont need to wait, do the update.
+    if dontWait then
+        if GT.db.profile.General.groupType > 0 then
+            if IsInRaid() then
+                GT.groupMode = "RAID"
+            elseif IsInGroup() then
+                GT.groupMode = "PARTY"
+            else
+                GT.groupMode = "WHISPER"
+            end
+        else
+            GT.groupMode = "WHISPER"
         end
+
+        GT.sender = {}
+        GT.count = {}
+
+        GT:ResetDisplay()
+        GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
+    else
+        GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
     end
+end
+
+function GT:BAG_UPDATE()
+    GT:InventoryUpdate("BAG_UPDATE")
 end
 
 function GT:CheckIfDisplayResetNeeded(data)
@@ -87,147 +113,6 @@ function GT:CheckIfDisplayResetNeeded(data)
         end
     end
     return true
-end
-
-function GT.Debug(text, level, ...)
-    if not GT.db.profile or GT.db.profile.General.debugOption == 0 then
-        return
-    end
-
-    if level == nil then
-        level = 2
-    end
-
-    if text and level <= GT.db.profile.General.debugOption then
-        GT.DebugCount = GT.DebugCount + 1
-        local color = "89FF9A"
-        if level == 2 then
-            color = "FFD270"
-        elseif level == 3 then
-            color = "FF8080"
-        end
-        ChatFrame1:AddMessage(
-            "|cffff6f00"
-                .. GT.metaData.name
-                .. ":|r |cffff0000"
-                .. date("%X")
-                .. "|r |cff00a0a3"
-                .. tostring(GT.DebugCount)
-                .. ": |r "
-                .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))
-        )
-    end
-end
-
-local waitTable = {}
-
-function GT:wait(delay, func, ...)
-    GT.Debug("Wait Function Called", 1, delay, func)
-    local timer = {
-        object = self,
-        func = func,
-        argsCount = select("#", ...),
-        delay = delay,
-        args = { ... },
-    }
-
-    --if delay is nil, cancel existing wait function
-    if delay == nil then
-        for _, waitEvent in pairs(waitTable) do
-            if waitEvent.func == timer.func then
-                GT.Debug("Wait Function Cancelled", 2, timer.delay, timer.func, waitEvent)
-                waitTable[waitEvent] = nil
-                return
-            end
-        end
-        GT.Debug("Wait Function: Nothing to Cancel ", 2, timer.delay, timer.func)
-        return
-    end
-
-    --check if a wait timer has already been created for the called function
-    for _, waitEvent in pairs(waitTable) do
-        if waitEvent.func == timer.func and waitEvent.delay >= timer.delay then
-            GT.Debug("Wait Function Exists", 2, timer.delay, timer.func)
-            return
-        end
-    end
-
-    waitTable[timer] = timer
-
-    --create the callback function so that we can pass along arguements
-    timer.callback = function()
-        if waitTable[timer] then --check if the wait table exists, if it dopesn't then this timer was cancelled.
-            GT.Debug("Wait Function Complete", 1, timer.delay, timer.func, waitTable[timer])
-            --remove wait table entry since the timer is complete
-            waitTable[timer] = nil
-            --we need to know the number of args incase we ever have a use case where we need to pass a nil arg
-            GT[timer.func](timer.object, unpack(timer.args, 1, timer.argsCount))
-        end
-    end
-
-    C_Timer.After(delay, timer.callback)
-end
-
-function GT:SetTSMPriceSource()
-    GT.TSM = ""
-    if GT.db.profile.General.tsmPrice == 0 then
-        GT.TSM = "none"
-    elseif GT.db.profile.General.tsmPrice == 1 then
-        GT.TSM = "DBMarket"
-    elseif GT.db.profile.General.tsmPrice == 2 then
-        GT.TSM = "DBMinBuyout"
-    elseif GT.db.profile.General.tsmPrice == 3 then
-        GT.TSM = "DBHistorical"
-    elseif GT.db.profile.General.tsmPrice == 4 then
-        GT.TSM = "DBRegionMinBuyoutAvg"
-    elseif GT.db.profile.General.tsmPrice == 5 then
-        GT.TSM = "DBRegionMarketAvg"
-    elseif GT.db.profile.General.tsmPrice == 6 then
-        GT.TSM = "DBRegionHistorical"
-    end
-end
-
-function GT:PLAYER_ENTERING_WORLD()
-    GT.Debug("PLAYER_ENTERING_WORLD", 1)
-    if GT.Enabled then
-        GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", true)
-        GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
-    end
-end
-
-function GT:GROUP_ROSTER_UPDATE(event, dontWait)
-    GT.Debug("GROUP_ROSTER_UPDATE", 1, dontWait)
-
-    --Check if we need to wait on doing the update.
-    --If we do need to wait, determine if an existing wait table has already been created
-    --If we dont need to wait, do the update.
-    if GT.Enabled then
-        if dontWait then
-            if GT.db.profile.General.groupType > 0 then
-                if IsInRaid() then
-                    GT.groupMode = "RAID"
-                elseif IsInGroup() then
-                    GT.groupMode = "PARTY"
-                else
-                    GT.groupMode = "WHISPER"
-                end
-            else
-                GT.groupMode = "WHISPER"
-            end
-
-            GT.sender = {}
-            GT.count = {}
-
-            --[[if UnitIsGroupLeader("player") then  --Only the party leader will share their settings
-                GT:ShareSettings()
-            end]]
-
-            GT:ResetDisplay()
-            GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
-        else
-            GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
-        end
-    end
 end
 
 function GT:CreateBaseFrame()
@@ -753,9 +638,6 @@ function GT:OptionsHide()
             GT.groupMode = "WHISPER"
         end
 
-        --call method to share settings with party
-        --GT:ShareSettings()
-
         --Pause Notifications to prevent spam after closing the settings
         GT.NotificationPause = true
 
@@ -809,23 +691,6 @@ function GT:GroupCheck(mode)
             return true
         end
     end
-end
-
-function GT:GroupDisplayCheck()
-    GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
-    if GT.db.profile.General.groupType == 0 then
-        return false
-    end
-
-    if IsInGroup() == false then
-        return false
-    end
-
-    if GT.db.profile.General.hideOthers == true then
-        return false
-    end
-
-    return true
 end
 
 function GT:NotificationHandler(mode, id, amount, value)
@@ -1233,6 +1098,41 @@ function GT:PrepareForDisplayUpdate(event)
     end
 end
 
+local function FramePool_Resetter(framePool, frame)
+    --[[
+        Still need to remove the frame from the GT.Display.Frames and GT.Display.Order Arrays
+        Will need to do those outside of the resetter function, as we dont have the information
+            to do it in this function.
+    ]]
+    frame:Hide()
+    frame:ClearAllPoints()
+    if frame.icon then
+        GT.Pools.texturePool:Release(frame.icon)
+        frame.icon = nil
+    end
+    if frame.iconQuality then
+        GT.Pools.texturePool:Release(frame.iconQuality)
+        frame.iconQuality = nil
+    end
+    if frame.iconRarity then
+        GT.Pools.texturePool:Release(frame.iconRarity)
+        frame.iconRarity = nil
+    end
+    if frame.text == nil then
+        return
+    end
+    for index, fontString in ipairs(frame.text) do
+        GT.Pools.fontStringPool:Release(fontString)
+    end
+    frame.text = nil
+end
+
+local function InitializePools()
+    GT.Pools.framePool = GT.Pools.framePool or CreateFramePool("Frame", GT.baseFrame.frame, nil, FramePool_Resetter)
+    GT.Pools.texturePool = GT.Pools.texturePool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND")
+    GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
+end
+
 function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
     GT.Debug("CreateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalCount, pricePerItem, priceTotalItem)
 
@@ -1240,10 +1140,9 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         return
     end
 
-    --Create pools
-    GT.Pools.framePool = GT.Pools.framePool or CreateFramePool("Frame", GT.baseFrame.frame)
-    GT.Pools.texturePool = GT.Pools.texturePool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND")
-    GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
+    InitializePools()
+
+    GT.Display.ColumnSize = GT.Display.ColumnSize or {}
 
     local frame = GT.Pools.framePool:Acquire()
     frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
@@ -1301,12 +1200,21 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         string:SetHeight(height)
         local offset = 3
         if anchor ~= frame.icon then
-            offset = 8 --make spacing fraction of height?
+            offset = 8 --make spacing fraction of height? (make this adjustable?)
         end
         string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
+        string:SetJustifyH("LEFT") --add option for this?
         string:SetText(text)
         string:Show()
         return string
+    end
+
+    local function CheckColumnSize(index, frame)
+        local width = frame:GetUnboundedStringWidth()
+        if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
+            GT.Display.ColumnSize[index] = width
+            return
+        end
     end
 
     local frameHeight = frame:GetHeight()
@@ -1318,41 +1226,44 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
             anchor = frame.text[i - 1]
         end
         frame.text[i] = CreateTextDisplay(id, text, frameHeight, anchor)
+        CheckColumnSize(i, frame.text[i])
     end
 
-    if totalItemCount and GT:GroupDisplayCheck() then
-        local textIndex = #frame.text
-        local anchor = frame.text[textIndex]
-
-        frame.text[textIndex + 1] = CreateTextDisplay(id, totalItemCount, frameHeight, anchor)
+    if totalItemCount and GT:GroupDisplayCheck() then --Should I be running group checks here or before calling the function (such as when creating the data that is passed to this function)?
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, "[" .. totalItemCount .. "]", frameHeight, frame.text[#frame.text])
+        CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
 
-    if pricePerItem and GT:GroupDisplayCheck() then
-        local textIndex = #frame.text
-        local anchor = frame.text[textIndex]
-
-        frame.text[textIndex + 1] = CreateTextDisplay(id, pricePerItem, frameHeight, anchor)
+    if pricePerItem and GT.db.profile.General.perItemPrice then
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, "{" .. pricePerItem .. "g}", frameHeight, frame.text[#frame.text])
+        CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
 
-    if priceTotalItem and GT:GroupDisplayCheck() then
-        local textIndex = #frame.text
-        local anchor = frame.text[textIndex]
-
-        frame.text[textIndex + 1] = CreateTextDisplay(id, priceTotalItem, frameHeight, anchor)
+    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, "(" .. priceTotalItem .. "g)", frameHeight, frame.text[#frame.text])
+        CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
-
-    --pricePerItem, priceTotalItem
 
     GT.Display.Order = GT.Display.Order or {}
     table.insert(GT.Display.Order, id)
     table.sort(GT.Display.Order)
 end
 
---for i, id in ipairs(GT.Display.Order) do
---    if i > 1 then
---        GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i-1]], "BOTTOMLEFT")
---    end
---end
+function GT:AllignRows()
+    for i, id in ipairs(GT.Display.Order) do
+        if i > 1 then
+            GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i - 1]], "BOTTOMLEFT")
+        end
+    end
+end
+
+function GT:AllignColumns()
+    for i, id in ipairs(GT.Display.Order) do
+        for index, string in ipairs(GT.Display.Frames[id].text) do
+            string:SetWidth(GT.Display.ColumnSize[index])
+        end
+    end
+end
 
 function GT:UpdateDisplay(index, name, icon, rarity, quality)
     GT.Debug("Update Display", 3, index, name, icon, rarity, quality)
@@ -1460,10 +1371,6 @@ function GT:RebuildIDTables()
             end
         end
     end
-end
-
-function GT:BAG_UPDATE()
-    GT:InventoryUpdate("BAG_UPDATE")
 end
 
 function GT:InventoryUpdate(event, dontWait)
