@@ -6,7 +6,7 @@ end
 
 function GT:TableFind(list, str)
     for i, v in ipairs(list) do
-        if str == v then
+        if tostring(str) == tostring(v) then
             return i
         end
     end

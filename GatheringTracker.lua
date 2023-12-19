@@ -878,6 +878,137 @@ function GT:ResetDisplay(display)
     end
 end
 
+function GT:PrepareDataForDisplay(event)
+    GT.Debug("Prepare Data for Display", 1, event)
+    local playerTotals = {}
+    local itemTotals = {}
+    local aliases = {}
+    local totalItems = 0
+    local totalPrice = 0
+
+    GT:SetTSMPriceSource()
+
+    for senderIndex, senderData in ipairs(GT.sender) do
+        for itemID, itemCount in pairs(senderData.inventoryData) do
+            if string.match(itemID, "(%d)") then --checks if itemID is numeric
+                local calculatedItemCount = 0
+
+                calculatedItemCount = itemCount - GT.db.profile.General.ignoreAmount
+                if calculatedItemCount < 0 then
+                    calculatedItemCount = 0
+                end
+
+                itemTotals.countTotal = itemTotals.countTotal or {}
+                itemTotals.countTotal[itemID] = itemTotals.countTotal[itemID] or 0
+                itemTotals.countTotal[itemID] = itemTotals.countTotal[itemID] + calculatedItemCount
+
+                playerTotals.countTotal = playerTotals.countTotal or {}
+                playerTotals.countTotal[senderIndex] = playerTotals.countTotal[senderIndex] or 0
+                playerTotals.countTotal[senderIndex] = playerTotals.countTotal[senderIndex] + calculatedItemCount
+
+                totalItems = totalItems + calculatedItemCount
+
+                local pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+                local totalItemValue = calculatedItemCount * pricePerItem
+
+                itemTotals.valueTotal = itemTotals.valueTotal or {}
+                itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] or 0
+                itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] + totalItemValue
+
+                playerTotals.valueTotal = playerTotals.valueTotal or {}
+                playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] or 0
+                playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] + totalItemValue
+
+                totalPrice = totalPrice + totalItemValue
+            end
+        end
+
+        if GT.db.profile.General.displayAlias then
+            if #GT.db.profile.Aliases > 0 then
+                for index, aliasData in ipairs(GT.db.profile.Aliases) do
+                    if aliasData.name == senderData.name then
+                        aliases[senderIndex] = aliasData.alias
+                    end
+                end
+                if aliases[senderIndex] == nil then
+                    aliases[senderIndex] = senderData.name
+                end
+            else
+                aliases[senderIndex] = senderData.name
+            end
+        end
+    end
+
+    GT.testPlayerTotals = playerTotals
+    GT.testItemTotals = itemTotals
+    GT.testAliases = aliases
+
+    for itemID, itemData in pairs(GT.InventoryData) do
+        GT.Debug("Prepare Data for Display", 1, itemID)
+        if string.match(itemID, "(%a)") then
+            local index = 0
+            for i, otherData in ipairs(GT.ItemData.Other.Other) do
+                if otherData.id == itemID then
+                    index = i
+                end
+            end
+            GT:CreateDisplayFrame(
+                GT.ItemData.Other.Other[index].order,
+                GT.ItemData.Other.Other[index].icon,
+                nil,
+                nil,
+                itemData
+            )
+        else
+            --CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+            GT:CreateDisplayFrame(
+                tonumber(itemID),
+                GetItemIcon(tonumber(itemID)),
+                C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
+                C_Item.GetItemQualityByID(itemID),
+                itemData,
+                itemTotals.countTotal[itemID],
+                (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000,
+                itemTotals.valueTotal[itemID]
+            )
+        end
+    end
+
+    GT:CreateDisplayFrame(
+        9999999998,
+        133647,
+        nil,
+        nil,
+        playerTotals.countTotal,
+        totalItems,
+        "",
+        totalPrice
+    )
+
+    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() then
+        for index, value in ipairs(playerTotals.valueTotal) do
+            playerTotals.valueTotal[index] = tostring(math.ceil(value - 0.5)) .. "g"
+        end
+        GT:CreateDisplayFrame(
+            9999999999,
+            133784,
+            nil,
+            nil,
+            playerTotals.valueTotal
+        )
+    end
+
+    if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() then
+        GT:CreateDisplayFrame(
+            0,
+            413577,
+            nil,
+            nil,
+            aliases
+        )
+    end
+end
+
 function GT:PrepareForDisplayUpdate(event)
     GT.Debug("Prepare for Display Update", 1, event)
     local globalPrice = 0
@@ -887,6 +1018,7 @@ function GT:PrepareForDisplayUpdate(event)
     GT.Display.length.totalsLength = 0
 
     GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
+    --Why am I doing this set point?
 
     GT:SetTSMPriceSource()
 
@@ -961,7 +1093,7 @@ function GT:PrepareForDisplayUpdate(event)
     GT.Debug("GT.Display.length.perItemPrice", 2, GT.Display.length.perItemPrice)
 
     --call method to determine if we need to reset or can update
-    local update = GT:CheckIfDisplayResetNeeded(GT.InventoryData)
+    local update = GT:CheckIfDisplayResetNeeded(GT.InventoryData) --probably dont need with new methods, but need way to remove items that should be displayed.
     --release all of the container children so we can rebuild
     if not update then
         if GT.Display.overlayPool then --Release pool textures so that they dont show up on the wrong items
@@ -1148,7 +1280,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     local frame = GT.Pools.framePool:Acquire()
     frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
     frame:SetWidth(GT.db.profile.General.iconWidth)
-    frame:SetHeight(GT.db.profile.General.iconHeight + 4)
+    frame:SetHeight(GT.db.profile.General.iconHeight + 3)
     frame:Show()
 
     GT.Display.Frames[id] = frame
@@ -1226,22 +1358,33 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         if i > 1 then
             anchor = frame.text[i - 1]
         end
+        if type(text) == "number" then
+            text = math.ceil(text - 0.5)
+        else
+            text = text
+        end
         frame.text[i] = CreateTextDisplay(id, text, frameHeight, anchor)
         CheckColumnSize(i, frame.text[i])
     end
 
     if totalItemCount and GT:GroupDisplayCheck() then --Should I be running group checks here or before calling the function (such as when creating the data that is passed to this function)?
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, "[" .. totalItemCount .. "]", frameHeight, frame.text[#frame.text])
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
 
     if pricePerItem and GT.db.profile.General.perItemPrice then
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, "{" .. pricePerItem .. "g}", frameHeight, frame.text[#frame.text])
+        local text = ""
+        if type(pricePerItem) == "number" then
+            text = "{" .. math.ceil(pricePerItem - 0.5) .. "g}"
+        else
+            text = ""
+        end
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, text, frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, "(" .. priceTotalItem .. "g)", frameHeight, frame.text[#frame.text])
+        frame.text[#frame.text + 1] = CreateTextDisplay(id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
     end
 
@@ -1526,7 +1669,7 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
     if not SenderExists then
         local senderTable = {
             name = sender,
-            totalValue = 0,
+            totalValue = 0, --can be removed once mvoed to new data display function
             inventoryData = {},
         }
         table.insert(GT.sender, senderTable)
@@ -1539,10 +1682,12 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
     local messageText = {}
 
     for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-        messageText[itemID] = value
-        GT.InventoryData[itemID] = GT.InventoryData[itemID] or {}
-        GT.InventoryData[itemID][senderIndex] = tonumber(value)
-        GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+        if GT:TableFind(GT.IDs, itemID) then
+            messageText[itemID] = value
+            GT.InventoryData[itemID] = GT.InventoryData[itemID] or {}
+            GT.InventoryData[itemID][senderIndex] = tonumber(value)
+            GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+        end
     end
 
     --loop existing counts to update, set to 0 if not in message
