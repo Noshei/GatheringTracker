@@ -4,6 +4,7 @@ local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 local GT = GatheringTracker
 GT.sender = {}
 GT.count = {}
+GT.InventoryData = {}
 GT.Display = {}
 GT.Display.frames = {}
 GT.Display.list = {}
@@ -35,7 +36,7 @@ function GT:OnEnable()
         GT:RegisterEvent("PLAYER_ENTERING_WORLD")
 
         --Register addon comm's
-        GT:RegisterComm("GT_Data", "DataUpdateReceived")
+        GT:RegisterComm("GT_Data", "DataMessageReceived")
     else
         GT:OnDisable()
     end
@@ -63,7 +64,7 @@ end
 function GT:PLAYER_ENTERING_WORLD()
     GT.Debug("PLAYER_ENTERING_WORLD", 1)
 
-    GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", true)
+    GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
     GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
 end
 
@@ -87,10 +88,10 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
         end
 
         GT.sender = {}
-        GT.count = {}
+        GT.InventoryData = {}
 
         GT:ResetDisplay()
-        GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
+        GT:InventoryUpdate("GROUP_ROSTER_UPDATE", false)
     else
         GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
     end
@@ -224,7 +225,7 @@ function GT:FiltersButton()
 
                                     GT:ResetDisplay(false)
                                     GT:RebuildIDTables()
-                                    GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", true)
+                                    GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
                                 end,
                             }
                             -- Add asterics to the name to distinguish between the different qualities
@@ -286,7 +287,7 @@ function GT:FiltersButton()
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate(expansion .. " " .. category .. " clicked", true)
+                            GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                         end,
                     }
                     table.insert(expansionMenuList, categoryMenuData)
@@ -346,7 +347,7 @@ function GT:FiltersButton()
 
                         GT:ResetDisplay(false)
                         GT:RebuildIDTables()
-                        GT:InventoryUpdate(expansion .. " clicked", true)
+                        GT:InventoryUpdate(expansion .. " clicked", false)
                     end,
                 }
             end
@@ -459,7 +460,7 @@ function GT:CreateCustomFiltersList()
 
                             GT:ResetDisplay(false)
                             GT:RebuildIDTables()
-                            GT:InventoryUpdate("Custom Filter " .. itemName .. " menu clicked", true)
+                            GT:InventoryUpdate("Custom Filter " .. itemName .. " menu clicked", false)
                         end,
                     }
                     table.insert(customFiltersMenuList, itemDetails)
@@ -507,7 +508,7 @@ function GT:CreateCustomFiltersList()
 
                 GT:ResetDisplay(false)
                 GT:RebuildIDTables()
-                GT:InventoryUpdate("Custom Filters clicked", true)
+                GT:InventoryUpdate("Custom Filters clicked", false)
             end,
         }
         local position = 0
@@ -642,8 +643,8 @@ function GT:OptionsHide()
         GT.NotificationPause = true
 
         --Do an inventory update if we dont have any information
-        if #GT.count == 0 then
-            GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", true)
+        if #GT.InventoryData == 0 then
+            GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", false)
         end
 
         --determine if a full or partial reset is needed after closing the Interface Options
@@ -820,7 +821,7 @@ function GT:NotificationHandler(mode, id, amount, value)
         for i = 1, table.getn(GT.sender) do
             if GT.sender[1].name == GT.Player then
                 local playerTotal = 0
-                for itemID, data in pairs(GT.count) do
+                for itemID, data in pairs(GT.InventoryData) do
                     if GT:TableFind(GT.IDs, tonumber(itemID)) then
                         id = tonumber(itemID)
                         amount = data[i]
@@ -896,7 +897,7 @@ function GT:PrepareForDisplayUpdate(event)
         local playerTotal = 0
         GT.sender[i].totalValue = 0
         GT.sender[i].playerLength = 0
-        for itemID, data in pairs(GT.count) do
+        for itemID, data in pairs(GT.InventoryData) do
             if GT:TableFind(GT.IDs, tonumber(itemID)) then
                 if not data[i] then
                     data[i] = 0
@@ -940,8 +941,8 @@ function GT:PrepareForDisplayUpdate(event)
             end
         end
         --if gold filter is enabled check if it will be longer than the current length when we include the "g"
-        if GT.count["gold"] and GT.count["gold"][i] then
-            local gold = GT.count["gold"][i] .. "g"
+        if GT.InventoryData["gold"] and GT.InventoryData["gold"][i] then
+            local gold = GT.InventoryData["gold"][i] .. "g"
             if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3) > GT.sender[i].playerLength then
                 GT.sender[i].playerLength = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3)
             end
@@ -960,7 +961,7 @@ function GT:PrepareForDisplayUpdate(event)
     GT.Debug("GT.Display.length.perItemPrice", 2, GT.Display.length.perItemPrice)
 
     --call method to determine if we need to reset or can update
-    local update = GT:CheckIfDisplayResetNeeded(GT.count)
+    local update = GT:CheckIfDisplayResetNeeded(GT.InventoryData)
     --release all of the container children so we can rebuild
     if not update then
         if GT.Display.overlayPool then --Release pool textures so that they dont show up on the wrong items
@@ -976,11 +977,11 @@ function GT:PrepareForDisplayUpdate(event)
 
     for _, id in ipairs(GT.IDs) do --create the data needed to create the item labels.  We loop the ID's table to prevent displaying items that are disabled, but that we have count data for.
         GT.Debug("Prepare for Display Update: Loop ID's", 3, id)
-        if GT.count[tostring(id)] then
+        if GT.InventoryData[tostring(id)] then
             if string.match(tostring(id), "(%a)") then
                 GT.Debug("Prepare for Display Update: Process Gold and Bags", 3, id)
                 --If the ID includes any letters, we need to handle it differently
-                local data = GT.count[tostring(id)]
+                local data = GT.InventoryData[tostring(id)]
                 local counts = ""
                 for i, v in ipairs(data) do
                     counts = counts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", v)) .. ((id == "gold" and "g") or ""))
@@ -995,7 +996,7 @@ function GT:PrepareForDisplayUpdate(event)
                 GT:UpdateDisplay(order, counts, iconID)
             else
                 GT.Debug("Prepare for Display Update: Process Normal Items", 3, id)
-                local data = GT.count[tostring(id)]
+                local data = GT.InventoryData[tostring(id)]
                 local counts = ""
                 local total = 0
                 for i, v in ipairs(data) do
@@ -1341,7 +1342,7 @@ function GT:UpdateDisplay(index, name, icon, rarity, quality)
                 beforeWidget = GT.Display.frames[GT.Display.list[(position + 1)]]
             end
             GT.Display.frames[index] = label --adds label to the frames table so we can keep track of it later on
-            if beforeWidget then --adds our widget to the container based on if there is another widget after us
+            if beforeWidget then             --adds our widget to the container based on if there is another widget after us
                 GT.baseFrame.container:AddChild(GT.Display.frames[index], beforeWidget)
             else
                 GT.baseFrame.container:AddChild(GT.Display.frames[index])
@@ -1373,7 +1374,56 @@ function GT:RebuildIDTables()
     end
 end
 
-function GT:InventoryUpdate(event, dontWait)
+function GT:InventoryUpdate(event, wait)
+    GT.Debug("InventoryUpdate", 1, event, wait)
+    if wait then
+        GT:wait(0.1, "InventoryUpdate", "InventoryUpdate", false)
+        return
+    end
+    if event == nil then
+        local traceback = debugstack()
+        GT.Debug(traceback, 1, event)
+        return
+    end
+    if GT:CheckModeStatus() == false then
+        GT.Debug("InventoryUpdate: CheckModeStatus", 2, GT:CheckModeStatus())
+        return
+    end
+
+    local totalUpdates = 0 --do we still need total?  Was used for reset message before but I think I can do that better on its own.
+    local updateMessage = ""
+
+    for index, id in ipairs(GT.IDs) do
+        local itemCount = 0
+        if tostring(id) == "gold" then
+            count = math.floor((GetMoney() / 10000) + 0.5)
+        elseif tostring(id) == "bag" then
+            for bagIndex = 0, 4 do
+                count = count + C_Container.GetContainerNumFreeSlots(bagIndex)
+            end
+        else
+            count = GetItemCount(id, GT.db.profile.General.includeBank, false)
+        end
+
+        if count > 0 then
+            totalUpdates = totalUpdates + 1
+            updateMessage = updateMessage .. id .. "=" .. count .. " "
+        end
+    end
+    GT.Debug("Inventory Update Data", 2, totalUpdates, updateMessage)
+
+    GT:SetChatType()
+
+    if GT.groupMode == "WHISPER" then
+        GT.Debug("Sent Solo Message", 2, updateMessage, GT.groupMode, UnitName("player"))
+        GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
+    else
+        GT.Debug("Sent Group Message", 2, updateMessage, GT.groupMode)
+        GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
+    end
+end
+
+--[[function GT:InventoryUpdateOld(event, dontWait)
     GT.Debug("InventoryUpdate", 1, event, dontWait)
     if dontWait then
         if event ~= nil then
@@ -1449,9 +1499,64 @@ function GT:InventoryUpdate(event, dontWait)
     else
         GT:wait(0.1, "InventoryUpdate", "InventoryUpdate", true)
     end
+end]]
+
+function GT:DataMessageReceived(prefix, message, distribution, sender)
+    GT.Debug("Data Message Received", 3, prefix, message, distribution, sender)
+
+    if GT:CheckModeStatus() == false then
+        GT.Debug("DataMessageReceived: CheckModeStatus", 2, GT:CheckModeStatus())
+        return
+    end
+    if GT.db.profile.General.hideOthers and sender ~= GT.Player then
+        GT.Debug("DataMessageReceived: hideOthers", 2, GT.db.profile.General.hideOthers, GT.Player)
+        return
+    end
+
+    GT.Debug("Data Message Starting Processing", 1)
+
+    local senderIndex = ""
+    local SenderExists = false
+    for index, data in ipairs(GT.sender) do
+        if data.name == sender then
+            SenderExists = true
+            senderIndex = index
+        end
+    end
+    if not SenderExists then
+        local senderTable = {
+            name = sender,
+            totalValue = 0,
+            inventoryData = {},
+        }
+        table.insert(GT.sender, senderTable)
+        senderIndex = #GT.sender
+    end
+
+    --create messageText table
+    local str = " " .. message .. "\n"
+    str = str:gsub("%s(%S-)=", "\n%1=")
+    local messageText = {}
+
+    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
+        messageText[itemID] = value
+        GT.InventoryData[itemID] = GT.InventoryData[itemID] or {}
+        GT.InventoryData[itemID][senderIndex] = tonumber(value)
+        GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+    end
+
+    --loop existing counts to update, set to 0 if not in message
+    for itemID, data in pairs(GT.InventoryData) do
+        if not messageText[itemID] then
+            GT.InventoryData[itemID][senderIndex] = 0
+            GT.sender[senderIndex].inventoryData[itemID] = 0
+        end
+    end
+
+    GT:wait(0.4, "PrepareForDisplayUpdate", "Data Message Received", true)
 end
 
-function GT:DataUpdateReceived(prefix, message, distribution, sender)
+--[[function GT:DataUpdateReceived(prefix, message, distribution, sender)
     GT.Debug("Data Update Received", 3, prefix, message, sender)
     --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
     if GT:GroupCheck() and GT.Enabled then
@@ -1547,4 +1652,4 @@ function GT:DataUpdateReceived(prefix, message, distribution, sender)
             end
         end
     end
-end
+end]]

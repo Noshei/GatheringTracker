@@ -31,13 +31,13 @@ function GT.Debug(text, level, ...)
         end
         ChatFrame1:AddMessage(
             "|cffff6f00"
-                .. GT.metaData.name
-                .. ":|r |cffff0000"
-                .. date("%X")
-                .. "|r |cff00a0a3"
-                .. tostring(GT.DebugCount)
-                .. ": |r "
-                .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))
+            .. GT.metaData.name
+            .. ":|r |cffff0000"
+            .. date("%X")
+            .. "|r |cff00a0a3"
+            .. tostring(GT.DebugCount)
+            .. ": |r "
+            .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))
         )
     end
 end
@@ -124,5 +124,38 @@ function GT:GroupDisplayCheck()
         return false
     end
 
+    return true
+end
+
+function GT:SetChatType()
+    local soloMode = GT.db.profile.General.groupType == 0 or GT.db.profile.General.groupType == 2
+    local groupMode = GT.db.profile.General.groupType > 0
+    if IsInGroup() == false and soloMode then
+        GT.groupMode = "WHISPER"
+        return
+    end
+    if IsInRaid() and groupMode then
+        GT.groupMode = "RAID"
+        return
+    end
+    if IsInGroup() and groupMode then
+        GT.groupMode = "PARTY"
+        return
+    end
+end
+
+function GT:CheckModeStatus()
+    local soloMode = GT.db.profile.General.groupType == 0
+    local groupMode = GT.db.profile.General.groupType == 1
+    GT.Debug("CheckModeStatus", 2, soloMode, groupMode, IsInGroup())
+    if GT.db.profile.General.groupType == 2 then --group mode set to Both
+        return true
+    end
+    if soloMode == IsInGroup() then --group mode Disabled and we are IN a group
+        return false
+    end
+    if groupMode ~= IsInGroup() then
+        return false
+    end
     return true
 end
