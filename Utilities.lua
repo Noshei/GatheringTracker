@@ -159,3 +159,32 @@ function GT:CheckModeStatus()
     end
     return true
 end
+
+local function GetUnitFullName(UnitId)
+    name, realm = UnitNameUnmodified(UnitId)
+    local fullName = name
+    if realm then
+        fullName = fullName .. "-" .. realm
+    end
+    return fullName
+end
+
+local function GetGroupList()
+    local plist = {}
+    if IsInRaid() then
+        for i = 1, 40 do
+            local fullName = GetUnitFullName('raid' .. i)
+            if fullName then
+                table.insert(plist, fullName)
+            end
+        end
+    elseif IsInGroup() then
+        for i = 1, 4 do
+            local fullName = GetUnitFullName('party' .. i)
+            if fullName then
+                table.insert(plist, fullName)
+            end
+        end
+    end
+    return plist
+end

@@ -1,5 +1,5 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
-local Config = GT:NewModule("Config","AceEvent-3.0")
+local Config = GT:NewModule("Config", "AceEvent-3.0")
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
@@ -20,10 +20,10 @@ GT.defaults = {
             relativePoint = "TOPLEFT",
             iconWidth = 27,
             iconHeight = 27,
-            textColor = {1, 1, 1},
+            textColor = { 1, 1, 1 },
             textSize = 20,
             textFont = "Fira Mono Medium",
-            totalColor = {0.098, 1, 0.078},
+            totalColor = { 0.098, 1, 0.078 },
             totalSize = 20,
             totalFont = "Fira Mono Medium",
             groupType = 0,
@@ -79,7 +79,7 @@ local generalOptions = {
                     desc = "Uncheck to disable the addon, this will effectively turn off the addon.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.enable end,
-                    set = function(_, key) 
+                    set = function(_, key)
                         GT:ToggleGatheringTracker()
                     end,
                     order = 1
@@ -89,7 +89,10 @@ local generalOptions = {
                     name = "Unlock Frame",
                     width = 1.70,
                     get = function() return GT.db.profile.General.unlock end,
-                    set = function(_, key) GT.db.profile.General.unlock = key GT:ToggleBaseLock(key) end,
+                    set = function(_, key)
+                        GT.db.profile.General.unlock = key
+                        GT:ToggleBaseLock(key)
+                    end,
                     order = 2
                 },
                 buttonHeader = {
@@ -103,7 +106,10 @@ local generalOptions = {
                     desc = "Left Click shows filters menu.\nRight Click clears all filters.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.filtersButton end,
-                    set = function(_, key) GT.db.profile.General.filtersButton = key GT:FiltersButton() end,
+                    set = function(_, key)
+                        GT.db.profile.General.filtersButton = key
+                        GT:FiltersButton()
+                    end,
                     order = 11
                 },
                 buttonFade = {
@@ -112,7 +118,10 @@ local generalOptions = {
                     desc = "When Enabled the Filter Button will fade out, but will show up again on mouse over.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.buttonFade end,
-                    set = function(_, key) GT.db.profile.General.buttonFade = key GT:FiltersButtonFade() end,
+                    set = function(_, key)
+                        GT.db.profile.General.buttonFade = key
+                        GT:FiltersButtonFade()
+                    end,
                     order = 12
                 },
                 buttonAlpha = {
@@ -124,7 +133,10 @@ local generalOptions = {
                     step = 1,
                     width = 1.40,
                     get = function() return GT.db.profile.General.buttonAlpha or 0 end,
-                    set = function(_, key) GT.db.profile.General.buttonAlpha = key GT:FiltersButtonFade() end,
+                    set = function(_, key)
+                        GT.db.profile.General.buttonAlpha = key
+                        GT:FiltersButtonFade()
+                    end,
                     order = 13
                 },
                 spacer2 = {
@@ -155,7 +167,7 @@ local generalOptions = {
                     name = "Group Mode",
                     desc = "Disabled: Hides the display when in a group\nGroup Only: Only shows the display when in a group\nGroup and Solo: Shows the display when in a group or Solo",
                     width = 1.40,
-                    values = {[0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo"},
+                    values = { [0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo" },
                     get = function() return GT.db.profile.General.groupType end,
                     set = function(_, key)
                         GT:ToggleGroupMode(key)
@@ -177,7 +189,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.hideOthers = key
                         if key then
-                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members",true)
+                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", true)
                         end
                     end,
                     disabled = function()
@@ -192,7 +204,7 @@ local generalOptions = {
                 displayAlias = {
                     type = "toggle",
                     name = "Display Characters Alias",
-                    desc  = "When selected the character aliases will be displayed above their count column.",
+                    desc = "When selected the character aliases will be displayed above their count column.",
                     width = 1.70,
                     image = function() return 413577 end,
                     get = function() return GT.db.profile.General.displayAlias end,
@@ -209,7 +221,7 @@ local generalOptions = {
                 characterValue = {
                     type = "toggle",
                     name = "Display Per Character Value",
-                    desc  = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
+                    desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
                     width = 1.70,
                     image = function() return 133784 end,
                     get = function() return GT.db.profile.General.characterValue end,
@@ -240,15 +252,16 @@ local generalOptions = {
                     name = "TSM Price Source",
                     desc = "Select the desired TSM price source, or none to disable price information.  TSM is required for this option to be enabled.",
                     width = 1.70,
-                    values = {[0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical"},
+                    values = { [0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical" },
                     get = function() return GT.db.profile.General.tsmPrice end,
-                    set = function(_, key) 
+                    set = function(_, key)
                         GT.db.profile.General.tsmPrice = key
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
                         end
-                        GT:ResetDisplay(true) end,
-                    disabled = function() 
+                        GT:ResetDisplay(true)
+                    end,
+                    disabled = function()
                         if not GT.tsmLoaded then
                             return true
                         else
@@ -263,8 +276,11 @@ local generalOptions = {
                     desc = "If selected the price for 1 of each item will be displayed",
                     width = 1.70,
                     get = function() return GT.db.profile.General.perItemPrice end,
-                    set = function(_, key) GT.db.profile.General.perItemPrice = key GT:ResetDisplay(true) end,
-                    disabled = function() 
+                    set = function(_, key)
+                        GT.db.profile.General.perItemPrice = key
+                        GT:ResetDisplay(true)
+                    end,
+                    disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
                             return true
                         else
@@ -282,7 +298,10 @@ local generalOptions = {
                     step = 1,
                     width = 1.70,
                     get = function() return GT.db.profile.General.ignoreAmount or 1 end,
-                    set = function(_, key) GT.db.profile.General.ignoreAmount = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.ignoreAmount = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 203
                 },
                 includeBank = {
@@ -291,7 +310,10 @@ local generalOptions = {
                     desc = "If selected displayed values will include items in your bank.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.includeBank end,
-                    set = function(_, key) GT.db.profile.General.includeBank = key GT:InventoryUpdate("Include Bank", true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.includeBank = key
+                        GT:InventoryUpdate("Include Bank", true)
+                    end,
                     order = 204
                 },
                 header3 = {
@@ -307,7 +329,10 @@ local generalOptions = {
                     step = 1,
                     width = 1.70,
                     get = function() return GT.db.profile.General.iconWidth or 1 end,
-                    set = function(_, key) GT.db.profile.General.iconWidth = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.iconWidth = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 301
                 },
                 iconHeight = {
@@ -318,7 +343,10 @@ local generalOptions = {
                     step = 1,
                     width = 1.70,
                     get = function() return GT.db.profile.General.iconHeight or 1 end,
-                    set = function(_, key) GT.db.profile.General.iconHeight = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.iconHeight = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 302
                 },
                 rarityBorder = {
@@ -327,7 +355,10 @@ local generalOptions = {
                     desc = "Will display a colored border based on item rarity.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.rarityBorder end,
-                    set = function(_, key) GT.db.profile.General.rarityBorder = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.rarityBorder = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 303
                 },
                 header4 = {
@@ -339,8 +370,14 @@ local generalOptions = {
                     type = "color",
                     name = "Text Color",
                     hasAlpha = false,
-                    get = function() local c = GT.db.profile.General.textColor return c[1], c[2], c[3] or 1,1,1 end,
-                    set = function(_,r,g,b) GT.db.profile.General.textColor = {r,g,b} GT:ResetDisplay(true) end,
+                    get = function()
+                        local c = GT.db.profile.General.textColor
+                        return c[1], c[2], c[3] or 1, 1, 1
+                    end,
+                    set = function(_, r, g, b)
+                        GT.db.profile.General.textColor = { r, g, b }
+                        GT:ResetDisplay(true)
+                    end,
                     order = 401
                 },
                 textSize = {
@@ -351,12 +388,15 @@ local generalOptions = {
                     step = 1,
                     width = 1.20,
                     get = function() return GT.db.profile.General.textSize or 1 end,
-                    set = function(_, key) GT.db.profile.General.textSize = key GT:ResetDisplay(true);
+                    set = function(_, key)
+                        GT.db.profile.General.textSize = key
+                        GT:ResetDisplay(true);
                         --[[for i, frame in pairs(GT.Display.Frames) do
                             for i, text in ipairs(frame.text) do
                                 text:SetTextHeight(key)
                             end
-                        end]]--  --Should these options all do full resets or should we just change the settings on the fly?
+                        end]]
+                        --Should these options all do full resets or should we just change the settings on the fly?
                     end,
                     order = 402
                 },
@@ -367,15 +407,24 @@ local generalOptions = {
                     dialogControl = 'LSM30_Font',
                     values = media:HashTable("font"),
                     get = function() return GT.db.profile.General.textFont end,
-                    set = function(_, key) GT.db.profile.General.textFont = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.textFont = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 403
                 },
                 totalColor = {
                     type = "color",
                     name = "Total Color",
                     hasAlpha = false,
-                    get = function() local c = GT.db.profile.General.totalColor return c[1], c[2], c[3] or 1,1,1 end,
-                    set = function(_,r,g,b,a) GT.db.profile.General.totalColor = {r,g,b,a} GT:ResetDisplay(true) end,
+                    get = function()
+                        local c = GT.db.profile.General.totalColor
+                        return c[1], c[2], c[3] or 1, 1, 1
+                    end,
+                    set = function(_, r, g, b, a)
+                        GT.db.profile.General.totalColor = { r, g, b, a }
+                        GT:ResetDisplay(true)
+                    end,
                     order = 404
                 },
                 totalSize = {
@@ -386,7 +435,10 @@ local generalOptions = {
                     step = 1,
                     width = 1.20,
                     get = function() return GT.db.profile.General.totalSize or 1 end,
-                    set = function(_, key) GT.db.profile.General.totalSize = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.totalSize = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 405
                 },
                 totalFont = {
@@ -396,7 +448,10 @@ local generalOptions = {
                     dialogControl = 'LSM30_Font',
                     values = media:HashTable("font"),
                     get = function() return GT.db.profile.General.totalFont end,
-                    set = function(_, key) GT.db.profile.General.totalFont = key GT:ResetDisplay(true) end,
+                    set = function(_, key)
+                        GT.db.profile.General.totalFont = key
+                        GT:ResetDisplay(true)
+                    end,
                     order = 406
                 },
             },
@@ -417,7 +472,7 @@ local generalOptions = {
                     desc = "Check to enable Count notification.\n\nRequires TSM.",
                     width = "full",
                     get = function() return GT.db.profile.Notifications.Count.enable end,
-                    set = function(_, key) 
+                    set = function(_, key)
                         GT:ToggleCountNotifications()
                     end,
                     order = 2
@@ -429,7 +484,7 @@ local generalOptions = {
                     width = 1.40,
                     dialogControl = "LSM30_Sound",
                     values = media:HashTable("sound"),
-                    get = function()return GT.db.profile.Notifications.Count.sound end,
+                    get = function() return GT.db.profile.Notifications.Count.sound end,
                     set = function(_, key) GT.db.profile.Notifications.Count.sound = key end,
                     disabled = function() return not GT.db.profile.Notifications.Count.enable end,
                     order = 3
@@ -445,11 +500,11 @@ local generalOptions = {
                     name = "Count Threshold",
                     width = "Normal",
                     usage = "Enter threshold for alert\n\nDefault: 100",
-                    validate = function(_, key) 
-                        if not (string.match(key, "[%d]+") or key == '') then 
-                            return false 
+                    validate = function(_, key)
+                        if not (string.match(key, "[%d]+") or key == '') then
+                            return false
                         end
-                        return true 
+                        return true
                     end,
                     get = function() return GT.db.profile.Notifications.Count.threshold end,
                     set = function(_, key)
@@ -466,8 +521,8 @@ local generalOptions = {
                     name = "Notify for each item, all items, or both",
                     desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
                     width = 1.40,
-                    values = {[0] = "Each Item", [1] = "All Items", [2] = "Both"},
-                    get = function()return GT.db.profile.Notifications.Count.itemAll end,
+                    values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
+                    get = function() return GT.db.profile.Notifications.Count.itemAll end,
                     set = function(_, key) GT.db.profile.Notifications.Count.itemAll = key end,
                     disabled = function() return not GT.db.profile.Notifications.Count.enable end,
                     order = 6
@@ -481,10 +536,11 @@ local generalOptions = {
                 countInterval = {
                     type = "select",
                     name = "Exact or Interval",
-                    desc = "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    desc =
+                    "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
                     width = 1.40,
-                    values = {[0] = "Exact", [1] = "Interval"},
-                    get = function()return GT.db.profile.Notifications.Count.interval end,
+                    values = { [0] = "Exact", [1] = "Interval" },
+                    get = function() return GT.db.profile.Notifications.Count.interval end,
                     set = function(_, key) GT.db.profile.Notifications.Count.interval = key end,
                     disabled = function() return not GT.db.profile.Notifications.Count.enable end,
                     order = 8
@@ -502,7 +558,7 @@ local generalOptions = {
                     desc = "Check to enable gold notification.\n\nRequires TSM.",
                     width = "full",
                     get = function() return GT.db.profile.Notifications.Gold.enable end,
-                    set = function(_, key) 
+                    set = function(_, key)
                         GT:ToggleGoldNotifications()
                     end,
                     disabled = function()
@@ -521,7 +577,7 @@ local generalOptions = {
                     width = 1.40,
                     dialogControl = "LSM30_Sound",
                     values = media:HashTable("sound"),
-                    get = function()return GT.db.profile.Notifications.Gold.sound end,
+                    get = function() return GT.db.profile.Notifications.Gold.sound end,
                     set = function(_, key) GT.db.profile.Notifications.Gold.sound = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
@@ -547,11 +603,11 @@ local generalOptions = {
                     name = "Gold Threshold",
                     width = "Normal",
                     usage = "Enter threshold for alert in gold value\n\nDefault: 1000",
-                    validate = function(_, key) 
-                        if not (string.match(key, "[%d]+") or key == '') then 
-                            return false 
+                    validate = function(_, key)
+                        if not (string.match(key, "[%d]+") or key == '') then
+                            return false
                         end
-                        return true 
+                        return true
                     end,
                     get = function() return GT.db.profile.Notifications.Gold.threshold end,
                     set = function(_, key)
@@ -578,8 +634,8 @@ local generalOptions = {
                     name = "Notify for each item, all items, or both",
                     desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
                     width = 1.40,
-                    values = {[0] = "Each Item", [1] = "All Items", [2] = "Both"},
-                    get = function()return GT.db.profile.Notifications.Gold.itemAll end,
+                    values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
+                    get = function() return GT.db.profile.Notifications.Gold.itemAll end,
                     set = function(_, key) GT.db.profile.Notifications.Gold.itemAll = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
@@ -603,10 +659,11 @@ local generalOptions = {
                 goldInterval = {
                     type = "select",
                     name = "Exact or Interval",
-                    desc = "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    desc =
+                    "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
                     width = 1.40,
-                    values = {[0] = "Exact", [1] = "Interval"},
-                    get = function()return GT.db.profile.Notifications.Gold.interval end,
+                    values = { [0] = "Exact", [1] = "Interval" },
+                    get = function() return GT.db.profile.Notifications.Gold.interval end,
                     set = function(_, key) GT.db.profile.Notifications.Gold.interval = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
@@ -638,12 +695,12 @@ local generalOptions = {
                     name = "Debug",
                     desc = "This is for debugging the addon, do NOT enable, it is spammy.",
                     width = 1.70,
-                    values = {[0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)"},
+                    values = { [0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)" },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
                             GT.db.profile.General.debugOption = 0
                         end
-                        return GT.db.profile.General.debugOption 
+                        return GT.db.profile.General.debugOption
                     end,
                     set = function(_, key) GT.db.profile.General.debugOption = key end,
                     order = 10001
@@ -683,7 +740,7 @@ local filterOptions = {
                     usage = "Please only enter item ID's (aka numbers)",
                     --validate = function(_, key) if string.match(key, "[^%d\n]+") then return false end return true end,
                     get = function() return GT.db.profile.CustomFilters end,
-                    set = function(_, key) 
+                    set = function(_, key)
                         GT.db.profile.CustomFilters = key
                         local tempFilterTable = {}
                         for itemID in string.gmatch(GT.db.profile.CustomFilters, "[%d]+") do
@@ -728,7 +785,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
         }
         for _, itemData in ipairs(categoryData) do
             if itemData.id == -1 then
-                filterOptions.args[expansion].args[category].args[expansion.." "..itemData.name] = {
+                filterOptions.args[expansion].args[category].args[expansion .. " " .. itemData.name] = {
                     type = "header",
                     name = itemData.name,
                     order = itemData.order
@@ -757,16 +814,16 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         end
                     end,
                     get = function() return GT.db.profile.Filters[itemData.id] end,
-                    set = function(_, key) 
-                        if key then 
-                            GT.db.profile.Filters[itemData.id] = key 
-                        else 
+                    set = function(_, key)
+                        if key then
+                            GT.db.profile.Filters[itemData.id] = key
+                        else
                             GT.db.profile.Filters[itemData.id] = nil
                         end
 
                         GT:RebuildIDTables()
                         GT:ResetDisplay(false)
-                        GT:InventoryUpdate("Filters "..expansion.." "..category.." "..itemData.name.." option clicked", true)
+                        GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
                     order = itemData.order
                 }
@@ -787,7 +844,8 @@ local aliasOptions = {
     args = {
         aliasHeading = {
             type = "description",
-            name = "Input desired character aliases below.\n\nIf enabled, the alias will be displayed above each character column.\n\nIt is recommended that the first character of each alias be distinct, as in some situations only the first character of an alias will be displayed.\n",
+            name =
+            "Input desired character aliases below.\n\nIf enabled, the alias will be displayed above each character column.\n\nIt is recommended that the first character of each alias be distinct, as in some situations only the first character of an alias will be displayed.\n",
             width = "full",
             fontSize = "medium",
             order = 1
@@ -804,7 +862,10 @@ local aliasOptions = {
             name = "Character Name",
             width = "Normal",
             usage = "Enter character name",
-            validate = function(_, key) if string.match(key, "[%p%s%d]+") then return false end return true end,
+            validate = function(_, key)
+                if string.match(key, "[%p%s%d]+") then return false end
+                return true
+            end,
             get = function() return tempAliasCharacter end,
             set = function(_, key)
                 tempAliasCharacter = key
@@ -851,12 +912,12 @@ local aliasOptions = {
                                 GT:UpdateAliases()
                             end
                         else
-                            local aliasTable = {name = tempAliasCharacter, alias = tempAliasName}
+                            local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
                             table.insert(GT.db.profile.Aliases, aliasTable)
                             GT:UpdateAliases()
                         end
                     else
-                        local aliasTable = {name = tempAliasCharacter, alias = tempAliasName}
+                        local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
                         table.insert(GT.db.profile.Aliases, aliasTable)
                         GT:UpdateAliases()
                     end
@@ -889,7 +950,7 @@ function GT:UpdateAliases(removeCharacter)
         for index, aliasInfo in ipairs(GT.db.profile.Aliases) do
             aliasOptions.args[aliasInfo.name] = {
                 type = "description",
-                name = aliasInfo.name.." = "..aliasInfo.alias,
+                name = aliasInfo.name .. " = " .. aliasInfo.alias,
                 fontSize = "large",
                 order = (1000 + index)
             }
@@ -919,23 +980,23 @@ function GT:CreateCustomFilterOptions()
                         name = itemName,
                         image = function() return GetItemIcon(tonumber(id)) end,
                         get = function() return GT.db.profile.CustomFiltersTable[id] end,
-                        set = function(_, key) 
-                            if key then 
-                                GT.db.profile.CustomFiltersTable[id] = key 
+                        set = function(_, key)
+                            if key then
+                                GT.db.profile.CustomFiltersTable[id] = key
                             else
                                 GT.db.profile.CustomFiltersTable[id] = false
                             end
 
                             GT:RebuildIDTables()
                             GT:ResetDisplay(false)
-                            GT:InventoryUpdate("Filters Custom "..itemName.." option clicked", true)
+                            GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
                         end,
                         order = (id + 1000)
                     }
                     AceConfigRegistry:NotifyChange("GT/Filter")
                 end)
             else
-                ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r "..id.." is not a valid item ID")
+                ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r " .. id .. " is not a valid item ID")
             end
         end
     end
@@ -1010,7 +1071,7 @@ function Config:OnInitialize()
     AceConfigRegistry:RegisterOptionsTable("GT/Filter", filterOptions)
     GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
     GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
-    
+
     AceConfigRegistry:RegisterOptionsTable("GT/Alias", aliasOptions)
     GT.Options.Alias = AceConfigDialog:AddToBlizOptions("GT/Alias", "Alias", GT.metaData.name)
     GT.Options.Alias:SetScript("OnHide", GT.OptionsHide)
@@ -1026,7 +1087,7 @@ function Config:OnInitialize()
         InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
         InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
     end
-    
+
     SLASH_GatheringTracker1 = "/gatheringtracker"
     SLASH_GatheringTracker2 = "/gt"
     SlashCmdList.GatheringTracker = openOptions
@@ -1053,21 +1114,11 @@ function Config:OnInitialize()
         GT:OnDisable()
     end
 
-    if GT.db.profile.General.groupType > 0 then
-        if IsInRaid() then
-            GT.groupMode = "RAID"
-        elseif IsInGroup() then
-            GT.groupMode = "PARTY"
-        else
-            GT.groupMode = "WHISPER"
-        end
-    else
-        GT.groupMode = "WHISPER"
-    end
+    GT:SetChatType()
 
     --Pause Notifications to prevent spam after reloading the UI
     GT.NotificationPause = true
-    
+
     GT:RebuildIDTables()
     GT:CreateBaseFrame("Config:OnInitialize")
 end
