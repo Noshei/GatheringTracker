@@ -11,6 +11,7 @@ GT.Display.list = {}
 GT.Display.length = {}
 GT.Display.Frames = {}
 GT.Pools = {}
+GT.PlayerEnteringWorld = true
 GT.DebugCount = 0
 GT.Options = {}
 GT.Notifications = {}
@@ -98,7 +99,9 @@ function GT:GROUP_ROSTER_UPDATE(event, dontWait)
 end
 
 function GT:BAG_UPDATE()
-    GT:InventoryUpdate("BAG_UPDATE")
+    if GT.PlayerEnteringWorld == false then
+        GT:InventoryUpdate("BAG_UPDATE")
+    end
 end
 
 function GT:CheckIfDisplayResetNeeded(data)
@@ -1678,6 +1681,9 @@ function GT:InventoryUpdate(event, wait)
     if GT:CheckModeStatus() == false then
         GT.Debug("InventoryUpdate: CheckModeStatus", 2, GT:CheckModeStatus())
         return
+    end
+    if GT.PlayerEnteringWorld == true then
+        GT.PlayerEnteringWorld = false
     end
 
     local totalUpdates = 0 --do we still need total?  Was used for reset message before but I think I can do that better on its own.
