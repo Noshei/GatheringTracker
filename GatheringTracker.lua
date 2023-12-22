@@ -880,6 +880,9 @@ end
 
 function GT:PrepareDataForDisplay(event)
     GT.Debug("Prepare Data for Display", 1, event)
+
+    GT.Display.ColumnSize = {}
+
     local playerTotals = {}
     local itemTotals = {}
     local aliases = {}
@@ -923,19 +926,17 @@ function GT:PrepareDataForDisplay(event)
             end
         end
 
-        if GT.db.profile.General.displayAlias then
-            if #GT.db.profile.Aliases > 0 then
-                for index, aliasData in ipairs(GT.db.profile.Aliases) do
-                    if aliasData.name == senderData.name then
-                        aliases[senderIndex] = aliasData.alias
-                    end
+        if GT.db.profile.General.displayAlias and #GT.db.profile.Aliases > 0 then
+            for index, aliasData in ipairs(GT.db.profile.Aliases) do
+                if aliasData.name == senderData.name then
+                    aliases[senderIndex] = aliasData.alias
                 end
-                if aliases[senderIndex] == nil then
-                    aliases[senderIndex] = senderData.name
-                end
-            else
+            end
+            if aliases[senderIndex] == nil then
                 aliases[senderIndex] = senderData.name
             end
+        elseif GT.db.profile.General.displayAlias and #GT.db.profile.Aliases == 0 then
+            aliases[senderIndex] = senderData.name
         end
     end
 
@@ -952,7 +953,7 @@ function GT:PrepareDataForDisplay(event)
                     index = i
                 end
             end
-            GT:CreateDisplayFrame(
+            GT:InitiateFrameProcess(
                 GT.ItemData.Other.Other[index].order,
                 GT.ItemData.Other.Other[index].icon,
                 nil,
@@ -960,8 +961,7 @@ function GT:PrepareDataForDisplay(event)
                 itemData
             )
         else
-            --CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-            GT:CreateDisplayFrame(
+            GT:InitiateFrameProcess(
                 tonumber(itemID),
                 GetItemIcon(tonumber(itemID)),
                 C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
@@ -974,7 +974,7 @@ function GT:PrepareDataForDisplay(event)
         end
     end
 
-    GT:CreateDisplayFrame(
+    GT:InitiateFrameProcess(
         9999999998,
         133647,
         nil,
@@ -989,7 +989,7 @@ function GT:PrepareDataForDisplay(event)
         for index, value in ipairs(playerTotals.valueTotal) do
             playerTotals.valueTotal[index] = tostring(math.ceil(value - 0.5)) .. "g"
         end
-        GT:CreateDisplayFrame(
+        GT:InitiateFrameProcess(
             9999999999,
             133784,
             nil,
@@ -999,12 +999,38 @@ function GT:PrepareDataForDisplay(event)
     end
 
     if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() then
-        GT:CreateDisplayFrame(
+        GT:InitiateFrameProcess(
             0,
             413577,
             nil,
             nil,
             aliases
+        )
+    end
+end
+
+function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("InitiateFrameProcess", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+
+    if GT.Display.Frames[id] then
+        GT:UpdateDisplayFrame(id,
+            iconId,
+            iconQuality,
+            iconRarity,
+            displayText,
+            totalItemCount,
+            pricePerItem,
+            priceTotalItem
+        )
+    else
+        GT:CreateDisplayFrame(id,
+            iconId,
+            iconQuality,
+            iconRarity,
+            displayText,
+            totalItemCount,
+            pricePerItem,
+            priceTotalItem
         )
     end
 end
@@ -1258,6 +1284,15 @@ local function FramePool_Resetter(framePool, frame)
         GT.Pools.fontStringPool:Release(fontString)
     end
     frame.text = nil
+    if frame.totalItemCount then
+        frame.totalItemCount = nil
+    end
+    if frame.pricePerItem then
+        frame.pricePerItem = nil
+    end
+    if frame.priceTotalItem then
+        frame.priceTotalItem = nil
+    end
 end
 
 local function InitializePools()
@@ -1266,22 +1301,159 @@ local function InitializePools()
     GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
 end
 
-function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("CreateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalCount, pricePerItem, priceTotalItem)
+local function CreateTextDisplay(frame, id, text, type, height, anchor)
+    local string = GT.Pools.fontStringPool:Acquire()
+    string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
+    if id < 999999999 then
+        string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
+    else
+        string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
+    end
+    string:SetHeight(height)
+    local offset = 3
+    if anchor ~= frame.icon then
+        offset = 8 --make spacing fraction of height? (make this adjustable?)
+    end
+    string.textType = type
+    string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
+    string:SetJustifyH("LEFT") --add option for this?
+    string:SetText(text)
+    string:Show()
+    return string
+end
 
-    if GT.Display.Frames[id] then
+local function CheckColumnSize(index, frame)
+    GT.Debug("Check Column Size", 2, index, frame:GetText())
+    local width = frame:GetUnboundedStringWidth()
+    if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
+        GT.Display.ColumnSize[index] = nil
+        GT.Display.ColumnSize[index] = width
         return
     end
+end
+
+local function InsertDisplayColumn(itemFrame, index, columnFrame)
+    GT.Debug("Insert Display Column", 2, index)
+    table.insert(itemFrame.text, index, columnFrame)
+    for textIndex, textFrame in ipairs(itemFrame.text) do
+        if textFrame.textType == "totalItemCount" then
+            itemFrame.totalItemCount = textIndex
+        end
+        if textFrame.textType == "pricePerItem" then
+            itemFrame.pricePerItem = textIndex
+        end
+        if textFrame.textType == "priceTotalItem" then
+            itemFrame.priceTotalItem = textIndex
+        end
+    end
+end
+
+local function SetAnchor(frame)
+    for textIndex, textFrame in ipairs(frame.text) do
+        local offset = 8
+        local anchor = {}
+        if textIndex == 1 then
+            offset = 3
+            anchor = frame.icon
+        else
+            anchor = frame.text[textIndex - 1]
+        end
+        textFrame:ClearAllPoints()
+        textFrame:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
+    end
+end
+
+function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("UpdateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+
+    local frame = GT.Display.Frames[id]
+    local frameHeight = frame:GetHeight()
+
+    for textIndex, text in ipairs(displayText) do
+        if type(text) == "number" then
+            text = math.ceil(text - 0.5)
+        else
+            text = text
+        end
+        if textIndex <= frame.displayedCharacters then
+            frame.text[textIndex]:SetText(text)
+            CheckColumnSize(textIndex, frame.text[textIndex])
+        else
+            local anchor = frame.icon
+            if textIndex > 1 then
+                anchor = frame.text[textIndex - 1]
+            end
+            local textString = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
+            InsertDisplayColumn(frame, textIndex, textString)
+            CheckColumnSize(textIndex, frame.text[textIndex])
+        end
+    end
+    frame.displayedCharacters = #displayText
+
+    --need to add options to create frames for the following 3
+
+    if totalItemCount and GT:GroupDisplayCheck() then
+        if frame.totalItemCount then
+            frame.text[frame.totalItemCount]:SetText("[" .. math.ceil(totalItemCount - 0.5) .. "]")
+            CheckColumnSize(frame.totalItemCount, frame.text[frame.totalItemCount])
+        else
+            local index = #displayText + 1
+            local textString = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#displayText])
+            InsertDisplayColumn(frame, index, textString)
+            CheckColumnSize(index, frame.text[index])
+        end
+    end
+
+    if pricePerItem and GT.db.profile.General.perItemPrice then
+        local text = ""
+        if type(pricePerItem) == "number" then
+            text = "{" .. math.ceil(pricePerItem - 0.5) .. "g}"
+        else
+            text = ""
+        end
+        if frame.pricePerItem then
+            frame.text[frame.pricePerItem]:SetText(text)
+            CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem])
+        else
+            local index = 0
+            if frame.priceTotalItem then
+                index = #frame.text
+            else
+                index = #frame.text + 1
+            end
+            local textString = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[index - 1])
+            InsertDisplayColumn(frame, index, textString)
+            CheckColumnSize(index, frame.text[index])
+        end
+    end
+
+    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
+        if frame.priceTotalItem then
+            frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
+            CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
+        else
+            local index = #frame.text + 1
+            local textString = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[index - 1])
+            InsertDisplayColumn(frame, index, textString)
+            CheckColumnSize(index, frame.text[index])
+        end
+    end
+
+    SetAnchor(frame)
+end
+
+function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("CreateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
 
     InitializePools()
-
-    GT.Display.ColumnSize = GT.Display.ColumnSize or {}
 
     local frame = GT.Pools.framePool:Acquire()
     frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
     frame:SetWidth(GT.db.profile.General.iconWidth)
     frame:SetHeight(GT.db.profile.General.iconHeight + 3)
     frame:Show()
+
+    frame.displayedCharacters = #displayText
 
     GT.Display.Frames[id] = frame
 
@@ -1322,34 +1494,6 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         frame.iconRarity:Show()
     end
 
-    local function CreateTextDisplay(id, text, height, anchor)
-        local string = GT.Pools.fontStringPool:Acquire()
-        string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-        if id < 999999999 then
-            string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
-        else
-            string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
-        end
-        string:SetHeight(height)
-        local offset = 3
-        if anchor ~= frame.icon then
-            offset = 8 --make spacing fraction of height? (make this adjustable?)
-        end
-        string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
-        string:SetJustifyH("LEFT") --add option for this?
-        string:SetText(text)
-        string:Show()
-        return string
-    end
-
-    local function CheckColumnSize(index, frame)
-        local width = frame:GetUnboundedStringWidth()
-        if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
-            GT.Display.ColumnSize[index] = width
-            return
-        end
-    end
-
     local frameHeight = frame:GetHeight()
     frame.text = {}
 
@@ -1363,13 +1507,14 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         else
             text = text
         end
-        frame.text[i] = CreateTextDisplay(id, text, frameHeight, anchor)
+        frame.text[i] = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
         CheckColumnSize(i, frame.text[i])
     end
 
     if totalItemCount and GT:GroupDisplayCheck() then --Should I be running group checks here or before calling the function (such as when creating the data that is passed to this function)?
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", frameHeight, frame.text[#frame.text])
+        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
+        frame.totalItemCount = #frame.text
     end
 
     if pricePerItem and GT.db.profile.General.perItemPrice then
@@ -1379,13 +1524,15 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         else
             text = ""
         end
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, text, frameHeight, frame.text[#frame.text])
+        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
+        frame.pricePerItem = #frame.text
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
-        frame.text[#frame.text + 1] = CreateTextDisplay(id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", frameHeight, frame.text[#frame.text])
+        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[#frame.text])
         CheckColumnSize(#frame.text, frame.text[#frame.text])
+        frame.priceTotalItem = #frame.text
     end
 
     GT.Display.Order = GT.Display.Order or {}
