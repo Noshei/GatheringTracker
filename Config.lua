@@ -189,7 +189,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.hideOthers = key
                         if key then
-                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", true)
+                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", false)
                         end
                     end,
                     disabled = function()
@@ -695,7 +695,7 @@ local generalOptions = {
                     name = "Debug",
                     desc = "This is for debugging the addon, do NOT enable, it is spammy.",
                     width = 1.70,
-                    values = { [0] = "Off", [1] = "Limited", [2] = "Full", [3] = "Everything (Very Spammy)" },
+                    values = { [0] = "Off", [1] = "Limites", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)" },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
                             GT.db.profile.General.debugOption = 0

@@ -28,6 +28,8 @@ function GT.Debug(text, level, ...)
             color = "FFD270"
         elseif level == 3 then
             color = "FF8080"
+        elseif level == 4 then
+            color = "E300DB"
         end
         ChatFrame1:AddMessage(
             "|cffff6f00"
@@ -160,7 +162,7 @@ function GT:CheckModeStatus()
     return true
 end
 
-local function GetUnitFullName(UnitId)
+function GT:GetUnitFullName(UnitId)
     name, realm = UnitNameUnmodified(UnitId)
     local fullName = name
     if realm then
@@ -169,22 +171,25 @@ local function GetUnitFullName(UnitId)
     return fullName
 end
 
-local function GetGroupList()
+function GT:GetGroupList()
     local plist = {}
     if IsInRaid() then
         for i = 1, 40 do
-            local fullName = GetUnitFullName('raid' .. i)
+            local fullName = GT:GetUnitFullName('raid' .. i)
             if fullName then
                 table.insert(plist, fullName)
             end
         end
     elseif IsInGroup() then
         for i = 1, 4 do
-            local fullName = GetUnitFullName('party' .. i)
+            local fullName = GT:GetUnitFullName('party' .. i)
             if fullName then
                 table.insert(plist, fullName)
             end
         end
+    end
+    if #plist == 0 then
+        return nil
     end
     return plist
 end

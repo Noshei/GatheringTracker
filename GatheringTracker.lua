@@ -69,39 +69,84 @@ function GT:PLAYER_ENTERING_WORLD()
     GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
 end
 
-function GT:GROUP_ROSTER_UPDATE(event, dontWait)
-    GT.Debug("GROUP_ROSTER_UPDATE", 1, dontWait)
+function GT:GROUP_ROSTER_UPDATE(event, wait)
+    GT.Debug("GROUP_ROSTER_UPDATE", 1, wait)
 
     --Check if we need to wait on doing the update.
     --If we do need to wait, determine if an existing wait table has already been created
     --If we dont need to wait, do the update.
-    if dontWait then
-        if GT.db.profile.General.groupType > 0 then
-            if IsInRaid() then
-                GT.groupMode = "RAID"
-            elseif IsInGroup() then
-                GT.groupMode = "PARTY"
-            else
-                GT.groupMode = "WHISPER"
-            end
-        else
-            GT.groupMode = "WHISPER"
-        end
 
-        GT.sender = {}
-        GT.InventoryData = {}
-
-        GT:ResetDisplay()
-        GT:InventoryUpdate("GROUP_ROSTER_UPDATE", false)
-    else
-        GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", true)
+    if wait then
+        GT:wait(2, "GROUP_ROSTER_UPDATE", "GROUP_ROSTER_UPDATE", false)
+        return
     end
+
+    GT:SetChatType()
+
+    GT:CheckForPlayersLeavingGroup()
+    GT:InventoryUpdate("GROUP_ROSTER_UPDATE", false)
+    --GT:PrepareDataForDisplay("GROUP_ROSTER_UPDATE")
+
+    --[[GT.sender = {}
+    GT.InventoryData = {}
+
+    GT:ResetDisplay()
+    GT:InventoryUpdate("GROUP_ROSTER_UPDATE", false)]]
 end
 
 function GT:BAG_UPDATE()
     if GT.PlayerEnteringWorld == false then
         GT:InventoryUpdate("BAG_UPDATE")
     end
+end
+
+function GT:CheckForPlayersLeavingGroup()
+    GT.Debug("Check For Players Leaving Group", 2)
+    if #GT.sender <= 1 then
+        return
+    end
+    local groupList = GT:GetGroupList()
+
+    for senderIndex, sender in ipairs(GT.sender) do
+        if not (sender.name == GT.Player) then
+            if groupList == nil then
+                GT:RemoveSender(senderIndex)
+            elseif not GT:TableFind(groupList, sender.name) then
+                GT:RemoveSender(senderIndex)
+            end
+        end
+    end
+    if groupList == nil then
+        table.remove(GT.Display.ColumnSize, 2)
+        if GT.db.profile.General.characterValue and GT.Display.Frames[9999999999] then
+            GT:RemoveDiaplayRow(9999999999)
+        end
+        if GT.db.profile.General.displayAlias and GT.Display.Frames[0] then
+            GT:RemoveDiaplayRow(0)
+        end
+    end
+end
+
+function GT:RemoveSender(senderIndex)
+    GT.Debug("Remove Sender", 2, senderIndex)
+    for itemID, itemFrame in pairs(GT.Display.Frames) do
+        GT.Pools.fontStringPool:Release(itemFrame.text[senderIndex])
+        GT:AddRemoveDisplayCell("remove", itemFrame, senderIndex)
+        itemFrame.displayedCharacters = itemFrame.displayedCharacters - 1
+
+        if itemFrame.displayedCharacters == 1 then
+            GT.Pools.fontStringPool:Release(itemFrame.text[2])
+            GT:AddRemoveDisplayCell("remove", itemFrame, 2)
+            itemFrame.totalItemCount = nil
+        end
+
+        GT:SetAnchor(itemFrame)
+    end
+    for itemID, inventoryData in pairs(GT.InventoryData) do
+        table.remove(inventoryData, senderIndex)
+    end
+    table.remove(GT.Display.ColumnSize, senderIndex)
+    table.remove(GT.sender, senderIndex)
 end
 
 function GT:CheckIfDisplayResetNeeded(data)
@@ -861,7 +906,7 @@ function GT:TriggerNotification(alertType)
 end
 
 function GT:ResetDisplay(display)
-    GT.Debug("Reset Display", 1, display)
+    --[[GT.Debug("Reset Display", 1, display)
     if display == nil then
         display = true
     end
@@ -877,8 +922,8 @@ function GT:ResetDisplay(display)
     GT:FiltersButton()
 
     if GT.db.profile.General.enable and display and GT:GroupCheck() then
-        GT:PrepareForDisplayUpdate("Reset Display")
-    end
+        --GT:PrepareForDisplayUpdate("Reset Display")
+    end]]
 end
 
 function GT:PrepareDataForDisplay(event)
@@ -1010,10 +1055,13 @@ function GT:PrepareDataForDisplay(event)
             aliases
         )
     end
+
+    GT:AllignRows()
+    GT:AllignColumns()
 end
 
 function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("InitiateFrameProcess", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("InitiateFrameProcess", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
 
     if GT.Display.Frames[id] then
         GT:UpdateDisplayFrame(id,
@@ -1035,228 +1083,6 @@ function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayTex
             pricePerItem,
             priceTotalItem
         )
-    end
-end
-
-function GT:PrepareForDisplayUpdate(event)
-    GT.Debug("Prepare for Display Update", 1, event)
-    local globalPrice = 0
-    local globalCounts = ""
-    local globalTotal = 0
-    GT.Display.length.perItemPrice = 0
-    GT.Display.length.totalsLength = 0
-
-    GT.baseFrame.backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
-    --Why am I doing this set point?
-
-    GT:SetTSMPriceSource()
-
-    --create player total that is displayed at the end of each item label
-    --any new itemIDs that were added will be set to 0 for all other characters.
-    local playerTotals = {}
-    for i = 1, table.getn(GT.sender) do
-        local playerTotal = 0
-        GT.sender[i].totalValue = 0
-        GT.sender[i].playerLength = 0
-        for itemID, data in pairs(GT.InventoryData) do
-            if GT:TableFind(GT.IDs, tonumber(itemID)) then
-                if not data[i] then
-                    data[i] = 0
-                end
-                local value = 0
-                if (data[i] - GT.db.profile.General.ignoreAmount) > 0 then
-                    value = data[i] - GT.db.profile.General.ignoreAmount
-                else
-                    value = 0
-                end
-                playerTotal = playerTotal + value
-                if GT.db.profile.General.tsmPrice > 0 then
-                    local price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
-                    local totalPrice = value * price
-                    GT.sender[i].totalValue = GT.sender[i].totalValue + totalPrice
-                    --Calculate length for Per Item Price column
-                    if string.len(tostring(math.ceil(price))) > GT.Display.length.perItemPrice then
-                        GT.Display.length.perItemPrice = string.len(tostring(math.ceil(price)))
-                    end
-                end
-            end
-        end
-
-        --if sender is player, call NotificationHandler
-        if GT.sender[i].name == GT.Player and not GT.NotificationPause then
-            GT.Debug("Trigger Notification Handler for all", 2)
-            GT:NotificationHandler("all", "all", playerTotal, GT.sender[i].totalValue)
-        end
-
-        --[[Determines the length of the player column.
-            If we are in a group and Per Character Value is enabled we use the length of the players total value
-            Otherwise we use the length of the players total item count.]]
-        GT.sender[i].totalValue = tonumber(string.format("%.0f", GT.sender[i].totalValue))
-        if GT.db.profile.General.characterValue and GT:GroupCheck("Group") then
-            if string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue)) / 3) >= GT.sender[i].playerLength then
-                GT.sender[i].playerLength = string.len(tostring(GT.sender[i].totalValue)) + math.ceil(string.len(tostring(GT.sender[i].totalValue)) / 3) + 1
-            end
-        else
-            if string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal)) / 3) > GT.sender[i].playerLength then
-                GT.sender[i].playerLength = string.len(tostring(playerTotal)) + math.ceil(string.len(tostring(playerTotal)) / 3)
-            end
-        end
-        --if gold filter is enabled check if it will be longer than the current length when we include the "g"
-        if GT.InventoryData["gold"] and GT.InventoryData["gold"][i] then
-            local gold = GT.InventoryData["gold"][i] .. "g"
-            if string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3) > GT.sender[i].playerLength then
-                GT.sender[i].playerLength = string.len(tostring(gold)) + math.ceil(string.len(tostring(gold)) / 3)
-            end
-        end
-        playerTotals[i] = playerTotal
-        globalTotal = globalTotal + playerTotal
-        GT.Debug("Display Length for " .. GT.sender[i].name .. ":", 2, GT.sender[i].playerLength)
-    end
-    --set the length for the totals items column
-    GT.Display.length.totalsLength = string.len(tostring(globalTotal))
-    --determines text for totals row for the player columns
-    for i, t in ipairs(playerTotals) do
-        globalCounts = globalCounts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", t)))
-    end
-    GT.Debug("GT.Display.length.totalsLength", 2, GT.Display.length.totalsLength)
-    GT.Debug("GT.Display.length.perItemPrice", 2, GT.Display.length.perItemPrice)
-
-    --call method to determine if we need to reset or can update
-    local update = GT:CheckIfDisplayResetNeeded(GT.InventoryData) --probably dont need with new methods, but need way to remove items that should be displayed.
-    --release all of the container children so we can rebuild
-    if not update then
-        if GT.Display.overlayPool then --Release pool textures so that they dont show up on the wrong items
-            GT.Display.overlayPool:ReleaseAll()
-        end
-        if GT.Display.rarityPool then
-            GT.Display.rarityPool:ReleaseAll()
-        end
-        GT.baseFrame.container:ReleaseChildren()
-        GT.Display.list = {}
-        GT.Display.frames = {}
-    end
-
-    for _, id in ipairs(GT.IDs) do --create the data needed to create the item labels.  We loop the ID's table to prevent displaying items that are disabled, but that we have count data for.
-        GT.Debug("Prepare for Display Update: Loop ID's", 3, id)
-        if GT.InventoryData[tostring(id)] then
-            if string.match(tostring(id), "(%a)") then
-                GT.Debug("Prepare for Display Update: Process Gold and Bags", 3, id)
-                --If the ID includes any letters, we need to handle it differently
-                local data = GT.InventoryData[tostring(id)]
-                local counts = ""
-                for i, v in ipairs(data) do
-                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", v)) .. ((id == "gold" and "g") or ""))
-                end
-                local iconID, order
-                for _, otherData in ipairs(GT.ItemData.Other.Other) do
-                    if otherData.id == id then
-                        iconID = otherData.icon
-                        order = otherData.order * -1
-                    end
-                end
-                GT:UpdateDisplay(order, counts, iconID)
-            else
-                GT.Debug("Prepare for Display Update: Process Normal Items", 3, id)
-                local data = GT.InventoryData[tostring(id)]
-                local counts = ""
-                local total = 0
-                for i, v in ipairs(data) do
-                    local value = 0
-                    if (v - GT.db.profile.General.ignoreAmount) > 0 then
-                        value = v - GT.db.profile.General.ignoreAmount
-                    else
-                        value = 0
-                    end
-                    counts = counts .. string.format("%-" .. GT.sender[i].playerLength .. "s", GT:AddComas(string.format("%.0f", value)))
-                    total = total + value
-                end
-
-                if total > 0 then
-                    local text = counts
-                    if GT:GroupCheck("Group") then
-                        text = text .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", total)) .. "]")
-                    end
-                    if GT.db.profile.General.tsmPrice > 0 then
-                        local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
-                        local tprice = total * eprice
-                        globalPrice = globalPrice + tprice
-
-                        if GT.db.profile.General.perItemPrice then
-                            text = text .. "{" .. string.format("%-" .. (GT.Display.length.perItemPrice + 3) .. "s", GT:AddComas(string.format("%.0f", eprice)) .. "g}")
-                        end
-
-                        text = text .. "(" .. GT:AddComas(string.format("%.0f", tprice)) .. "g)"
-                    end
-
-                    local iconID = GetItemIcon(id)
-
-                    local rarity = C_Item.GetItemQualityByID(id)
-
-                    local quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(tostring(id)) --Get the quality, returns nil if no quality
-
-                    --call method to create frame
-                    GT:UpdateDisplay(id, text, iconID, rarity, quality)
-                end
-            end
-        end
-    end
-
-    if globalTotal > 0 then
-        --create the text string for the totals row and create the widget
-        local totalText = globalCounts
-        local totalStack
-        if GT:GroupCheck("Group") then
-            totalText = totalText .. "[" .. string.format("%-" .. (GT.Display.length.totalsLength + 2) .. "s", GT:AddComas(string.format("%.0f", globalTotal)) .. "]")
-        end
-        if GT.db.profile.General.tsmPrice > 0 then
-            if GT.db.profile.General.perItemPrice then
-                totalText = totalText .. string.format("%-" .. (GT.Display.length.perItemPrice + 4) .. "s", "")
-            end
-            totalText = totalText .. "(" .. GT:AddComas(string.format("%.0f", globalPrice)) .. "g)"
-        end
-        if totalText == "" then
-            totalText = "Setup"
-        end
-        GT:UpdateDisplay(9999999998, totalText, 133647)
-    end
-
-    --This is for the character gathered value row
-    if GT.db.profile.General.characterValue and GT:GroupCheck("Group") then
-        --create the text string for the per character value row and create widget
-        local valueText = ""
-        for i, senderData in ipairs(GT.sender) do
-            valueText = valueText .. string.format("%-" .. senderData.playerLength .. "s", GT:AddComas(string.format("%.0f", senderData.totalValue)) .. "g")
-        end
-        if valueText == "" then
-            valueText = "Setup"
-        end
-        GT:UpdateDisplay(9999999999, valueText, 133784) --old icon 133785
-    end
-
-    if GT.db.profile.General.displayAlias and GT:GroupCheck("Group") then
-        --create the text string for the alias row and create the widget
-        local nameText = ""
-        for i, senderData in ipairs(GT.sender) do
-            local exists = 0
-            for index, aliases in pairs(GT.db.profile.Aliases) do
-                if aliases.name == senderData.name then
-                    exists = index
-                end
-            end
-            if exists > 0 then
-                local newText = string.sub(GT.db.profile.Aliases[exists].alias, 0, (senderData.playerLength - 1)) --should the -1 be removed?  This needs more testing.
-                local extrsSpace = string.len(newText)
-                nameText = nameText .. newText .. string.format("%-" .. (senderData.playerLength - extrsSpace) .. "s", "")
-            else
-                local newText = string.sub(senderData.name, 0, (senderData.playerLength - 1))
-                local extrsSpace = string.len(newText)
-                nameText = nameText .. newText .. string.format("%-" .. (senderData.playerLength - extrsSpace) .. "s", "")
-            end
-        end
-        if nameText == "" then
-            nameText = "Setup"
-        end
-        GT:UpdateDisplay(-9999999999, nameText, 413577) --change to id 0 or maybe 1 if zero causes issues
     end
 end
 
@@ -1326,7 +1152,7 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
 end
 
 local function CheckColumnSize(index, frame)
-    GT.Debug("Check Column Size", 2, index, frame:GetText())
+    GT.Debug("Check Column Size", 3, index, frame:GetText())
     local width = frame:GetUnboundedStringWidth()
     if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
         GT.Display.ColumnSize[index] = nil
@@ -1335,9 +1161,14 @@ local function CheckColumnSize(index, frame)
     end
 end
 
-local function InsertDisplayColumn(itemFrame, index, columnFrame)
-    GT.Debug("Insert Display Column", 2, index)
-    table.insert(itemFrame.text, index, columnFrame)
+function GT:AddRemoveDisplayCell(actionType, itemFrame, index, columnFrame)
+    GT.Debug("Add Remove Display Cell", 3, actionType, index)
+    if actionType == "add" then
+        table.insert(itemFrame.text, index, columnFrame)
+    elseif actionType == "remove" then
+        table.remove(itemFrame.text, index)
+    end
+
     for textIndex, textFrame in ipairs(itemFrame.text) do
         if textFrame.textType == "totalItemCount" then
             itemFrame.totalItemCount = textIndex
@@ -1351,7 +1182,14 @@ local function InsertDisplayColumn(itemFrame, index, columnFrame)
     end
 end
 
-local function SetAnchor(frame)
+function GT:RemoveDiaplayRow(itemID --[[int]])
+    GT.Pools.framePool:Release(GT.Display.Frames[itemID])
+    local order = GT:TableFind(GT.Display.Order, itemID)
+    table.remove(GT.Display.Order, order)
+    GT.Display.Frames[itemID] = nil
+end
+
+function GT:SetAnchor(frame)
     for textIndex, textFrame in ipairs(frame.text) do
         local offset = 8
         local anchor = {}
@@ -1367,7 +1205,7 @@ local function SetAnchor(frame)
 end
 
 function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("UpdateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("UpdateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
 
     local frame = GT.Display.Frames[id]
     local frameHeight = frame:GetHeight()
@@ -1387,7 +1225,7 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
                 anchor = frame.text[textIndex - 1]
             end
             local textString = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
-            InsertDisplayColumn(frame, textIndex, textString)
+            GT:AddRemoveDisplayCell("add", frame, textIndex, textString)
             CheckColumnSize(textIndex, frame.text[textIndex])
         end
     end
@@ -1402,7 +1240,7 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         else
             local index = #displayText + 1
             local textString = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#displayText])
-            InsertDisplayColumn(frame, index, textString)
+            GT:AddRemoveDisplayCell("add", frame, index, textString)
             CheckColumnSize(index, frame.text[index])
         end
     end
@@ -1425,7 +1263,7 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
                 index = #frame.text + 1
             end
             local textString = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[index - 1])
-            InsertDisplayColumn(frame, index, textString)
+            GT:AddRemoveDisplayCell("add", frame, index, textString)
             CheckColumnSize(index, frame.text[index])
         end
     end
@@ -1437,16 +1275,16 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         else
             local index = #frame.text + 1
             local textString = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[index - 1])
-            InsertDisplayColumn(frame, index, textString)
+            GT:AddRemoveDisplayCell("add", frame, index, textString)
             CheckColumnSize(index, frame.text[index])
         end
     end
 
-    SetAnchor(frame)
+    GT:SetAnchor(frame)
 end
 
 function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("CreateDisplayFrame", 3, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("CreateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
 
     InitializePools()
 
@@ -1559,95 +1397,6 @@ function GT:AllignColumns()
     end
 end
 
-function GT:UpdateDisplay(index, name, icon, rarity, quality)
-    GT.Debug("Update Display", 3, index, name, icon, rarity, quality)
-    if not GT.Display.frames[index] then
-        if index < 999999999 then
-            --create labels for items
-            local label = AceGUI:Create("Label")
-            label:SetText(name)
-            label:SetColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
-            label:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-            label:SetImage(icon)
-            label:SetImageSize(GT.db.profile.General.iconWidth, GT.db.profile.General.iconHeight)
-
-            -- if quality exists add a texture to display the quality
-            if quality then
-                GT.Display.overlayPool = GT.Display.overlayPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 2, nil)
-                label.overlay = GT.Display.overlayPool:Acquire()
-                label.overlay:SetParent(label.frame)
-                if quality == 1 then
-                    label.overlay:SetAtlas("professions-icon-quality-tier1-inv", true)
-                elseif quality == 2 then
-                    label.overlay:SetAtlas("professions-icon-quality-tier2-inv", true)
-                elseif quality == 3 then
-                    label.overlay:SetAtlas("professions-icon-quality-tier3-inv", true)
-                end
-                label.overlay:SetAllPoints(label.image)
-                label.overlay:Show()
-            end
-
-            if GT.db.profile.General.rarityBorder and rarity then
-                GT.Display.rarityPool = GT.Display.rarityPool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND", 1, nil)
-                label.border = GT.Display.rarityPool:Acquire()
-                label.border:SetParent(label.frame)
-                local rarity = rarity or 1
-                if rarity <= 1 then
-                    label.border:SetTexture("Interface\\Common\\WhiteIconFrame")
-                else
-                    label.border:SetAtlas("bags-glow-white")
-                end
-                local R, G, B = GetItemQualityColor(rarity)
-                label.border:SetVertexColor(R, G, B, 0.8)
-                label.border:SetAllPoints(label.image)
-                label.border:Show()
-            end
-
-            table.insert(GT.Display.list, index)
-            table.sort(GT.Display.list)
-            local position = GT:TableFind(GT.Display.list, index)
-            local beforeWidget = nil
-            if GT.Display.frames[GT.Display.list[(position + 1)]] then
-                beforeWidget = GT.Display.frames[GT.Display.list[(position + 1)]]
-            end
-            GT.Display.frames[index] = label
-            if beforeWidget then
-                GT.baseFrame.container:AddChild(GT.Display.frames[index], beforeWidget)
-            else
-                GT.baseFrame.container:AddChild(GT.Display.frames[index])
-            end
-            GT.Display.frames[index]:SetFullWidth(true)
-            GT.baseFrame.container:DoLayout()
-        else
-            --create totals label, may also use for additional labels that are not based on items (i.e. player total price)
-            local label = AceGUI:Create("Label")
-            label:SetText(name)
-            label:SetColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
-            label:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
-            label:SetImage(icon)
-            label:SetImageSize(GT.db.profile.General.iconWidth, GT.db.profile.General.iconHeight)
-
-            table.insert(GT.Display.list, index) --adds our index to the list table.  This table is sorted and used to determine display order
-            table.sort(GT.Display.list)
-            local position = GT:TableFind(GT.Display.list, index)
-            local beforeWidget = nil
-            if GT.Display.frames[GT.Display.list[(position + 1)]] then --checks if there is a widget after our position
-                beforeWidget = GT.Display.frames[GT.Display.list[(position + 1)]]
-            end
-            GT.Display.frames[index] = label --adds label to the frames table so we can keep track of it later on
-            if beforeWidget then             --adds our widget to the container based on if there is another widget after us
-                GT.baseFrame.container:AddChild(GT.Display.frames[index], beforeWidget)
-            else
-                GT.baseFrame.container:AddChild(GT.Display.frames[index])
-            end
-            GT.Display.frames[index]:SetFullWidth(true)
-            GT.baseFrame.container:DoLayout()
-        end
-    else
-        --update the text of existing labels
-        GT.Display.frames[index]:SetText(name)
-    end
-end
 
 function GT:RebuildIDTables()
     GT.Debug("Rebuild ID Table", 1)
@@ -1719,84 +1468,6 @@ function GT:InventoryUpdate(event, wait)
     end
 end
 
---[[function GT:InventoryUpdateOld(event, dontWait)
-    GT.Debug("InventoryUpdate", 1, event, dontWait)
-    if dontWait then
-        if event ~= nil then
-            if GT:GroupCheck() and GT.Enabled then
-                local total = 0
-                local messageText = ""
-
-                for i, id in ipairs(GT.IDs) do
-                    local count = 0
-                    if string.match(tostring(id), "(%a)") then
-                        if tostring(id) == "gold" then
-                            count = math.floor((GetMoney() / 10000) + 0.5)
-                        elseif tostring(id) == "bag" then
-                            for i = 0, 4 do
-                                count = count + C_Container.GetContainerNumFreeSlots(i)
-                            end
-                        end
-                    else
-                        count = (GetItemCount(id, GT.db.profile.General.includeBank, false))
-                        if event and event == "InventoryUpdate" then
-                            GT.Debug("Trigger Notification Handler for each", 2)
-                            GT.NotificationPause = false
-                            GT:NotificationHandler("each", id, count)
-                        end
-                    end
-
-                    if count > 0 then
-                        total = total + count
-                        messageText = messageText .. id .. "=" .. count
-
-                        local size = #GT.IDs
-                        if i < size then
-                            messageText = messageText .. " "
-                        end
-                    end
-                end
-                GT.Debug("Inventory Update Data", 2, total, messageText)
-
-                if GT.db.profile.General.groupType > 0 then
-                    if IsInRaid() then
-                        GT.groupMode = "RAID"
-                    elseif IsInGroup() then
-                        GT.groupMode = "PARTY"
-                    else
-                        GT.groupMode = "WHISPER"
-                    end
-                else
-                    GT.groupMode = "WHISPER"
-                end
-
-                if total > 0 then
-                    if GT.groupMode == "WHISPER" then
-                        GT.Debug("Sent Solo Message", 2, messageText, GT.groupMode, UnitName("player"))
-                        GT:SendCommMessage("GT_Data", messageText, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
-                    else
-                        GT.Debug("Sent Group Message", 2, messageText, GT.groupMode)
-                        GT:SendCommMessage("GT_Data", messageText, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
-                    end
-                elseif total == 0 then
-                    if GT.groupMode == "WHISPER" then
-                        GT:SendCommMessage("GT_Data", "reset", GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Reset Message")
-                    else
-                        GT:SendCommMessage("GT_Data", "reset", GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Reset Message")
-                    end
-                end
-            else
-                GT.Debug("Disabled or Group Check Failed, No Message Sent", 2)
-            end
-        else
-            local traceback = debugstack()
-            GT.Debug(traceback, 1, event)
-        end
-    else
-        GT:wait(0.1, "InventoryUpdate", "InventoryUpdate", true)
-    end
-end]]
-
 function GT:DataMessageReceived(prefix, message, distribution, sender)
     GT.Debug("Data Message Received", 3, prefix, message, distribution, sender)
 
@@ -1851,103 +1522,5 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
         end
     end
 
-    GT:wait(0.4, "PrepareForDisplayUpdate", "Data Message Received", true)
+    GT:wait(0.4, "PrepareDataForDisplay", "Data Message Received", true)
 end
-
---[[function GT:DataUpdateReceived(prefix, message, distribution, sender)
-    GT.Debug("Data Update Received", 3, prefix, message, sender)
-    --only process received messages if we are endabled and are in a group with group mode on or are solo with group mode off
-    if GT:GroupCheck() and GT.Enabled then
-        if (GT.db.profile.General.hideOthers and sender == GT.Player) or not GT.db.profile.General.hideOthers then
-            --if hideOthers is Checked and sender is Player
-            --or
-            --if hideOthers is NOT checked
-            GT.Debug("Data Update Being Processed", 1)
-            --determine sender index or add sender if they dont exist
-            local SenderExists = false
-            local senderIndex
-            for index, data in ipairs(GT.sender) do
-                if data.name == sender then
-                    SenderExists = true
-                    senderIndex = index
-                end
-            end
-            if not SenderExists then
-                local senderTable = {
-                    name = sender,
-                    inGroup = false,
-                    totalValue = 0,
-                }
-                if UnitInParty(sender) or UnitInRaid(sender) then
-                    senderTable.inGroup = true
-                end
-
-                table.insert(GT.sender, senderTable)
-                senderIndex = #GT.sender
-            end
-
-            if message == "reset" then
-                for itemID, data in pairs(GT.count) do
-                    if GT.count[itemID][senderIndex] then
-                        GT.count[itemID][senderIndex] = 0
-                    end
-                end
-            else
-                --create messageText table
-                local str = " " .. message .. "\n"
-                str = str:gsub("%s(%S-)=", "\n%1=")
-                local messageText = {}
-                for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-                    messageText[itemID] = value
-
-                    --add message data to counts
-                    if GT.count[itemID] then
-                        GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
-                    else
-                        GT.count[itemID] = {}
-                        GT.count[itemID][senderIndex] = tonumber(messageText[itemID])
-                    end
-                end
-
-                --loop existing counts to update, set to 0 if not in message
-                for itemID, data in pairs(GT.count) do
-                    if not messageText[itemID] then
-                        GT.count[itemID][senderIndex] = 0
-                    end
-                end
-            end
-
-            GT:wait(0.4, "PrepareForDisplayUpdate", "Data Update Received", true)
-        end
-    elseif GT.Enabled then --process reset messages if we are enabled but didn't pass the earlier check to display
-        GT.Debug("Group Check Failed but Enabled, Process reset messages only", 1)
-        local SenderExists = false
-        local senderIndex
-        for index, data in ipairs(GT.sender) do
-            if data.name == sender then
-                SenderExists = true
-                senderIndex = index
-            end
-        end
-        if not SenderExists then
-            local senderTable = {
-                name = sender,
-                inGroup = false,
-                totalValue = 0,
-            }
-            if UnitInParty(sender) or UnitInRaid(sender) then
-                senderTable.inGroup = true
-            end
-
-            table.insert(GT.sender, senderTable)
-            senderIndex = #GT.sender
-        end
-        if message == "reset" then
-            for itemID, data in pairs(GT.count) do
-                if GT.count[itemID][senderIndex] then
-                    GT.count[itemID][senderIndex] = 0
-                end
-            end
-        end
-    end
-end]]
