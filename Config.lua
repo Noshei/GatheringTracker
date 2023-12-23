@@ -1006,6 +1006,7 @@ function GT:RefreshConfig(event, db, profile)
         GT:OnDisable()
     end
     GT:RebuildIDTables()
+    GT:ClearDisplay()
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateProfilesList()
 end

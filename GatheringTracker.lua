@@ -6,9 +6,6 @@ GT.sender = {}
 GT.count = {}
 GT.InventoryData = {}
 GT.Display = {}
-GT.Display.frames = {}
-GT.Display.list = {}
-GT.Display.length = {}
 GT.Display.Frames = {}
 GT.Pools = {}
 GT.PlayerEnteringWorld = true
@@ -140,21 +137,6 @@ function GT:RemoveSender(senderIndex)
     end
     table.remove(GT.Display.ColumnSize, senderIndex)
     table.remove(GT.sender, senderIndex)
-end
-
-function GT:CheckIfDisplayResetNeeded(data)
-    --checks if any items need to be removed from the display.
-    --if an item needs to be removed from the display a full reset is required
-    for _, itemData in pairs(data) do
-        local total = 0
-        for _, v in ipairs(itemData) do
-            total = total + v
-        end
-        if total == 0 then
-            return false
-        end
-    end
-    return true
 end
 
 function GT:CreateBaseFrame()
@@ -677,17 +659,7 @@ function GT:OptionsHide()
             GT:ToggleBaseLock(false)
         end
 
-        if GT.db.profile.General.groupType > 0 then
-            if IsInRaid() then
-                GT.groupMode = "RAID"
-            elseif IsInGroup() then
-                GT.groupMode = "PARTY"
-            else
-                GT.groupMode = "WHISPER"
-            end
-        else
-            GT.groupMode = "WHISPER"
-        end
+        GT:SetChatType()
 
         --Pause Notifications to prevent spam after closing the settings
         GT.NotificationPause = true
@@ -695,46 +667,6 @@ function GT:OptionsHide()
         --Do an inventory update if we dont have any information
         if #GT.InventoryData == 0 then
             GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", false)
-        end
-    end
-end
-
-function GT:GroupCheck(mode)
-    -- this is used to determine if the addon display should be shown.
-    -- this is decided by the addon configuration and if the player is in a group in game.
-    -- within the addon this is used to decide if certain operations should happen
-    -- it is also used as a check to prevent major addon functions that are unnecessary when the display is hidden
-    -- should refactor this to be better foir the different use cases
-    GT.Debug("Group Check", 2, mode, GT.db.profile.General.groupType)
-    if mode == "Group" then
-        if GT.db.profile.General.groupType == 1 and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
-            return false
-        elseif GT.db.profile.General.groupType >= 1 and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
-            return true
-        end
-    elseif mode == "Solo" then
-        if not GT.db.profile.General.groupType == 1 and IsInGroup() then --if Group Mode is DISABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
-            return false
-        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then --if Group Mode is DISABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
-            return true
-        end
-    elseif mode == nil then
-        if GT.db.profile.General.groupType == 1 and not IsInGroup() then --if Group Mode is ENABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
-            return false
-        elseif GT.db.profile.General.groupType >= 1 and IsInGroup() then --if Group Mode is ENABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
-            return true
-        elseif GT.db.profile.General.groupType ~= 1 and IsInGroup() then --if Group Mode is DISABLED and player IS in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, false)
-            return false
-        elseif GT.db.profile.General.groupType ~= 1 and not IsInGroup() then --if Group Mode is DISABLED and player is NOT in a group
-            GT.Debug("Group Check Result", 2, mode, GT.db.profile.General.groupType, true)
-            return true
         end
     end
 end
@@ -902,6 +834,16 @@ function GT:TriggerNotification(alertType)
     end
 end
 
+function GT:ClearDisplay()
+    for itemID, itemFrame in pairs(GT.Display.Frames) do
+        GT:RemoveDiaplayRow(itemID)
+    end
+    GT.InventoryData = {}
+    GT.sender = {}
+    GT.Display.ColumnSize = {}
+    GT.Display.Order = {}
+end
+
 function GT:RemoveDisabledItemData(key, itemID)
     GT.Debug("Remove Disabled Item Data", 3, key, itemID)
     if key then
@@ -1036,17 +978,20 @@ function GT:PrepareDataForDisplay(event)
             )
         end
     end
-
-    GT:InitiateFrameProcess(
-        9999999998,
-        133647,
-        nil,
-        nil,
-        playerTotals.countTotal,
-        totalItems,
-        "",
-        totalPrice
-    )
+    if playerTotals.countTotal and GT:SumTable(playerTotals.countTotal) > 0 then
+        GT:InitiateFrameProcess(
+            9999999998,
+            133647,
+            nil,
+            nil,
+            playerTotals.countTotal,
+            totalItems,
+            "",
+            totalPrice
+        )
+    elseif GT.Display.Frames[9999999998] then
+        GT:RemoveDiaplayRow(9999999998)
+    end
 
     if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() then
         for index, value in ipairs(playerTotals.valueTotal) do
@@ -1118,6 +1063,7 @@ local function FramePool_Resetter(framePool, frame)
         frame.iconQuality = nil
     end
     if frame.iconRarity then
+        frame.iconRarity:SetVertexColor(1, 1, 1, 1)
         GT.Pools.texturePool:Release(frame.iconRarity)
         frame.iconRarity = nil
     end
