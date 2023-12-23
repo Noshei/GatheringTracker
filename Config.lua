@@ -258,8 +258,9 @@ local generalOptions = {
                         GT.db.profile.General.tsmPrice = key
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
+                            --Need Update: need to remove column(s)
                         end
-                        GT:ResetDisplay(true)
+                        --Need Update: need to add column
                     end,
                     disabled = function()
                         if not GT.tsmLoaded then
@@ -278,7 +279,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.perItemPrice end,
                     set = function(_, key)
                         GT.db.profile.General.perItemPrice = key
-                        GT:ResetDisplay(true)
+                        --Need Update: need to add/remove column
                     end,
                     disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
@@ -300,7 +301,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.ignoreAmount or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.ignoreAmount = key
-                        GT:ResetDisplay(true)
+                        --Need Update: need to do inventory update most likely
                     end,
                     order = 203
                 },
@@ -331,7 +332,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconWidth or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.iconWidth = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this without remaking
                     end,
                     order = 301
                 },
@@ -345,7 +346,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconHeight or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.iconHeight = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this without remaking
                     end,
                     order = 302
                 },
@@ -357,7 +358,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.rarityBorder end,
                     set = function(_, key)
                         GT.db.profile.General.rarityBorder = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 303
                 },
@@ -376,7 +377,7 @@ local generalOptions = {
                     end,
                     set = function(_, r, g, b)
                         GT.db.profile.General.textColor = { r, g, b }
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 401
                 },
@@ -390,13 +391,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.textSize or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.textSize = key
-                        GT:ResetDisplay(true);
-                        --[[for i, frame in pairs(GT.Display.Frames) do
-                            for i, text in ipairs(frame.text) do
-                                text:SetTextHeight(key)
-                            end
-                        end]]
-                        --Should these options all do full resets or should we just change the settings on the fly?
+                        --Need Update: should add function to update this
                     end,
                     order = 402
                 },
@@ -409,7 +404,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.textFont end,
                     set = function(_, key)
                         GT.db.profile.General.textFont = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 403
                 },
@@ -423,7 +418,7 @@ local generalOptions = {
                     end,
                     set = function(_, r, g, b, a)
                         GT.db.profile.General.totalColor = { r, g, b, a }
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 404
                 },
@@ -437,7 +432,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.totalSize or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.totalSize = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 405
                 },
@@ -450,7 +445,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.totalFont end,
                     set = function(_, key)
                         GT.db.profile.General.totalFont = key
-                        GT:ResetDisplay(true)
+                        --Need Update: should add function to update this
                     end,
                     order = 406
                 },
@@ -807,7 +802,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         end
                     end,
                     image = function()
-                        if string.match(tostring(itemData.id), "(%a)") then
+                        if itemData.id <= #GT.ItemData.Other.Other then
                             return itemData.icon
                         else
                             return GetItemIcon(tonumber(itemData.id))
@@ -822,7 +817,6 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         end
 
                         GT:RebuildIDTables()
-                        GT:ResetDisplay(false)
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
                     order = itemData.order
@@ -988,7 +982,6 @@ function GT:CreateCustomFilterOptions()
                             end
 
                             GT:RebuildIDTables()
-                            GT:ResetDisplay(false)
                             GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
                         end,
                         order = (id + 1000)
@@ -1013,7 +1006,6 @@ function GT:RefreshConfig(event, db, profile)
         GT:OnDisable()
     end
     GT:RebuildIDTables()
-    GT:ResetDisplay(false)
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateProfilesList()
 end
@@ -1024,6 +1016,32 @@ function GatheringTracker_OnAddonCompartmentClick(addonName, button)
     elseif (button == "RightButton") then
         InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
         InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+    end
+end
+
+local function UpdateChangedorRemovedSavedVariables()
+    --Change debug to int instead of bool
+    if type(GT.db.profile.General.debugOption) == "boolean" then
+        GT.db.profile.General.debugOption = 0
+    end
+
+    --Change groupType to int from bool
+    if type(GT.db.profile.General.groupType) == "boolean" then
+        if GT.db.profile.General.groupType then
+            GT.db.profile.General.groupType = 1
+        else
+            GT.db.profile.General.groupType = 0
+        end
+    end
+
+    if GT.db.profile.Filters["gold"] then
+        GT.db.profile.Filters["gold"] = nil
+        GT.db.profile.Filters[1] = true
+    end
+
+    if GT.db.profile.Filters["bag"] then
+        GT.db.profile.Filters["bag"] = nil
+        GT.db.profile.Filters[2] = true
     end
 end
 
@@ -1050,19 +1068,7 @@ function Config:OnInitialize()
         GT:SetTSMPriceSource()
     end
 
-    --Change debug to int instead of bool
-    if type(GT.db.profile.General.debugOption) == "boolean" then
-        GT.db.profile.General.debugOption = 0
-    end
-
-    --Change groupType to int from bool
-    if type(GT.db.profile.General.groupType) == "boolean" then
-        if GT.db.profile.General.groupType then
-            GT.db.profile.General.groupType = 1
-        else
-            GT.db.profile.General.groupType = 0
-        end
-    end
+    UpdateChangedorRemovedSavedVariables()
 
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
     GT.Options.Main = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)

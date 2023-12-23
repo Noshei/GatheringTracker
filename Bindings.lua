@@ -11,7 +11,7 @@ function GT:ToggleGatheringTracker()
     elseif not key then
         GT:OnDisable()
     end
-    GT:ResetDisplay(true)
+    --GT:ResetDisplay(true)
 end
 
 function GT:ToggleGroupMode(settingKey)
@@ -61,7 +61,7 @@ function GT:ToggleGroupMode(settingKey)
         GT:ResetDisplay(true)
     end
 
-    ChatFrame1:AddMessage("|cffff6f00"..GT.metaData.name..":|r |cff"..color.."Group Mode "..mode.."|r")
+    ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r |cff" .. color .. "Group Mode " .. mode .. "|r")
 end
 
 function GT:ToggleCountNotifications()
@@ -80,14 +80,13 @@ function GT:ClearFilters()
     --disables all enabled filters
     GT.Debug("Clear Filters", 1)
 
-    for id,value in pairs(GT.db.profile.Filters) do
+    for id, value in pairs(GT.db.profile.Filters) do
         GT.db.profile.Filters[id] = nil
     end
-    for id,value in pairs(GT.db.profile.CustomFiltersTable) do
+    for id, value in pairs(GT.db.profile.CustomFiltersTable) do
         GT.db.profile.CustomFiltersTable[id] = false
     end
 
-    GT:ResetDisplay(false)
     GT:RebuildIDTables()
     GT:InventoryUpdate("Clear Filters", true)
 end

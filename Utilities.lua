@@ -193,3 +193,11 @@ function GT:GetGroupList()
     end
     return plist
 end
+
+function GT:SumTable(table)
+    local sum = 0
+    for index, number in ipairs(table) do
+        sum = sum + number
+    end
+    return sum
+end
