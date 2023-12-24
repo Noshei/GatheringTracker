@@ -120,7 +120,18 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.buttonFade end,
                     set = function(_, key)
                         GT.db.profile.General.buttonFade = key
-                        GT:FiltersButtonFade()
+                        local alpha = GT.db.profile.General.buttonAlpha
+                        if not key then
+                            alpha = 100
+                        end
+                        GT:FiltersButtonFade(alpha)
+                    end,
+                    disabled = function()
+                        if GT.db.profile.General.filtersButton then
+                            return false
+                        else
+                            return true
+                        end
                     end,
                     order = 12
                 },
@@ -135,7 +146,18 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.buttonAlpha or 0 end,
                     set = function(_, key)
                         GT.db.profile.General.buttonAlpha = key
-                        GT:FiltersButtonFade()
+                        GT:FiltersButtonFade(key)
+                    end,
+                    disabled = function()
+                        if GT.db.profile.General.filtersButton then
+                            if GT.db.profile.General.buttonFade then
+                                return false
+                            else
+                                return true
+                            end
+                        else
+                            return true
+                        end
                     end,
                     order = 13
                 },
@@ -155,6 +177,17 @@ local generalOptions = {
                     width = 1.40,
                     get = function() return GT.db.profile.General.buttonDelay or 0 end,
                     set = function(_, key) GT.db.profile.General.buttonDelay = key end,
+                    disabled = function()
+                        if GT.db.profile.General.filtersButton then
+                            if GT.db.profile.General.buttonFade then
+                                return false
+                            else
+                                return true
+                            end
+                        else
+                            return true
+                        end
+                    end,
                     order = 15
                 },
                 header1 = {
@@ -208,7 +241,14 @@ local generalOptions = {
                     width = 1.70,
                     image = function() return 413577 end,
                     get = function() return GT.db.profile.General.displayAlias end,
-                    set = function(_, key) GT.db.profile.General.displayAlias = key end,
+                    set = function(_, key)
+                        GT.db.profile.General.displayAlias = key
+                        if not key then
+                            GT:RemoveDiaplayRow(0)
+                            GT:AllignRows()
+                        end
+                        GT:InventoryUpdate("Toggle Characters Alias", false)
+                    end,
                     disabled = function()
                         if GT.db.profile.General.groupType == 0 then
                             return true
@@ -225,7 +265,13 @@ local generalOptions = {
                     width = 1.70,
                     image = function() return 133784 end,
                     get = function() return GT.db.profile.General.characterValue end,
-                    set = function(_, key) GT.db.profile.General.characterValue = key end,
+                    set = function(_, key)
+                        GT.db.profile.General.characterValue = key
+                        if not key then
+                            GT:RemoveDiaplayRow(9999999999)
+                        end
+                        GT:InventoryUpdate("Toggle Per Character Value", false)
+                    end,
                     disabled = function()
                         if GT.db.profile.General.groupType == 0 then
                             return true

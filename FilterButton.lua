@@ -211,7 +211,8 @@ function GT:FiltersButton()
     GT:FiltersButtonFade()
 end
 
-function GT:FiltersButtonFade(setAlpha)
+function GT:FiltersButtonFade(alpha)
+    GT.Debug("Filters Button Fade", 2, alpha)
     if not GT.Enabled then
         return
     end
@@ -221,8 +222,11 @@ function GT:FiltersButtonFade(setAlpha)
     if not GT.baseFrame.button then
         return
     end
-    if setAlpha then
-        local alpha = GT.db.profile.General.buttonAlpha / 100
+    if alpha then
+        local alpha = alpha / 100
+        if not GT.db.profile.General.buttonFade then
+            alpha = 1
+        end
         GT.baseFrame.button:SetAlpha(alpha)
         return
     end
@@ -247,11 +251,11 @@ function GT:FiltersButtonFade(setAlpha)
         end)
         GT.baseFrame.button.mouseOver:SetScript("OnLeave", function(self, motion)
             if motion then
-                GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
+                GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", GT.db.profile.General.buttonAlpha)
             end
         end)
         GT.baseFrame.button.mouseOver:SetMouseClickEnabled(false)
-        GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", true)
+        GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", GT.db.profile.General.buttonAlpha)
     else
         GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
         GT.baseFrame.button:SetAlpha(1)

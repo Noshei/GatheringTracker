@@ -7,11 +7,13 @@ function GT:ToggleGatheringTracker()
     GT.Enabled = key
     if key then
         GT:OnEnable()
+        GT:FiltersButton()
         GT:InventoryUpdate("Toggle Gathering Tracker", true)
     elseif not key then
         GT:OnDisable()
+        GT:ClearDisplay()
+        GT:FiltersButton()
     end
-    --GT:ResetDisplay(true)
 end
 
 function GT:ToggleGroupMode(settingKey)
@@ -29,36 +31,25 @@ function GT:ToggleGroupMode(settingKey)
     local mode = "Enabled"
     local color = "ff00ff"
 
+    GT:SetChatType()
+
     if key > 0 then
-        if IsInRaid() then
-            GT.groupMode = "RAID"
-            mode = "Enabled"
-            color = "00ff00"
-        elseif IsInGroup() then
-            GT.groupMode = "PARTY"
+        if IsInRaid() or IsInGroup() then
             mode = "Enabled"
             color = "00ff00"
         else
-            GT.groupMode = "WHISPER"
             mode = "Enabled, but you aren't in a group"
             color = "ff0000"
         end
     else
-        GT.groupMode = "WHISPER"
         mode = "Disabled"
         color = "ff0000"
     end
 
-    if key == 1 and not IsInGroup() then
-        GT:ResetDisplay(false)
-    elseif key >= 1 and IsInGroup() then
-        GT:InventoryUpdate("Group Mode 1", true)
-        GT:ResetDisplay(true)
-    elseif key ~= 1 and IsInGroup() then
-        GT:ResetDisplay(false)
-    elseif key ~= 1 and not IsInGroup() then
-        GT:InventoryUpdate("Group Mode 2", true)
-        GT:ResetDisplay(true)
+    if GT:CheckModeStatus() then
+        GT:InventoryUpdate("Group Mode Toggle", true)
+    else
+        GT:ClearDisplay()
     end
 
     ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r |cff" .. color .. "Group Mode " .. mode .. "|r")

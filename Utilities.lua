@@ -149,14 +149,14 @@ end
 function GT:CheckModeStatus()
     local soloMode = GT.db.profile.General.groupType == 0
     local groupMode = GT.db.profile.General.groupType == 1
-    GT.Debug("CheckModeStatus", 2, soloMode, groupMode, IsInGroup())
+    GT.Debug("Check Mode Status", 2, soloMode, groupMode, IsInGroup())
     if GT.db.profile.General.groupType == 2 then --group mode set to Both
         return true
     end
     if soloMode == IsInGroup() then --group mode Disabled and we are IN a group
         return false
     end
-    if groupMode ~= IsInGroup() then
+    if groupMode ~= IsInGroup() then --group mode Enabled and we are NOT in a group
         return false
     end
     return true

@@ -97,6 +97,10 @@ function GT:CheckForPlayersLeavingGroup()
     end
     local groupList = GT:GetGroupList()
 
+    if GT.db.profile.General.hideOthers then
+        groupList = nil
+    end
+
     for senderIndex, sender in ipairs(GT.sender) do
         if not (sender.name == GT.Player) then
             if groupList == nil then
@@ -560,7 +564,7 @@ function GT:PrepareDataForDisplay(event)
         GT:RemoveDiaplayRow(9999999998)
     end
 
-    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() then
+    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and playerTotals.valueTotal then
         for index, value in ipairs(playerTotals.valueTotal) do
             playerTotals.valueTotal[index] = tostring(math.ceil(value - 0.5)) .. "g"
         end
@@ -573,7 +577,7 @@ function GT:PrepareDataForDisplay(event)
         )
     end
 
-    if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() then
+    if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() and aliases then
         GT:InitiateFrameProcess(
             0,
             413577,
@@ -1012,7 +1016,7 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
         return
     end
     if GT.db.profile.General.hideOthers and sender ~= GT.Player then
-        GT.Debug("DataMessageReceived: hideOthers", 2, GT.db.profile.General.hideOthers, GT.Player)
+        GT.Debug("DataMessageReceived: hideOthers", 2, GT.db.profile.General.hideOthers, sender, GT.Player)
         return
     end
 
