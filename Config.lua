@@ -1005,8 +1005,19 @@ function GT:RefreshConfig(event, db, profile)
         GT.Enabled = false
         GT:OnDisable()
     end
+
+    GT.baseFrame.backdrop:ClearAllPoints()
+    GT.baseFrame.backdrop:SetPoint(
+        GT.db.profile.General.relativePoint,
+        UIParent,
+        GT.db.profile.General.relativePoint,
+        GT.db.profile.General.xPos,
+        GT.db.profile.General.yPos
+    )
+
     GT:RebuildIDTables()
     GT:ClearDisplay()
+    GT:FiltersButton()
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateProfilesList()
 end

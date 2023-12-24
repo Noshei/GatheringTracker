@@ -11,6 +11,7 @@
 embeds.xml
 GatheringTracker.lua
 Utilities.lua
+FilterButton.lua
 Constants.lua
 Config.lua
 Bindings.lua
