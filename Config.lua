@@ -304,9 +304,22 @@ local generalOptions = {
                         GT.db.profile.General.tsmPrice = key
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
-                            --Need Update: need to remove column(s)
+                            for itemID, itemFrame in pairs(GT.Display.Frames) do
+                                local cellsToRemove = #itemFrame.text - itemFrame.displayedCharacters
+                                for iterator = 1, cellsToRemove, 1 do
+                                    GT.Pools.fontStringPool:Release(itemFrame.text[#itemFrame.text])
+                                    GT:AddRemoveDisplayCell("remove", itemFrame, #itemFrame.text)
+                                end
+                                itemFrame.pricePerItem = nil
+                                itemFrame.priceTotalItem = nil
+                            end
+                            local cellsToRemove = #GT.Display.ColumnSize - #GT.sender
+                            for iterator = 1, cellsToRemove, 1 do
+                                table.remove(GT.Display.ColumnSize, #GT.Display.ColumnSize)
+                            end
+                        else
+                            GT:PrepareDataForDisplay("TSM Price Source Option Changed")
                         end
-                        --Need Update: need to add column
                     end,
                     disabled = function()
                         if not GT.tsmLoaded then
@@ -325,7 +338,23 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.perItemPrice end,
                     set = function(_, key)
                         GT.db.profile.General.perItemPrice = key
-                        --Need Update: need to add/remove column
+                        if not key then
+                            local columnToRemove
+                            for itemID, itemFrame in pairs(GT.Display.Frames) do
+                                if itemFrame.pricePerItem then
+                                    columnToRemove = columnToRemove or itemFrame.pricePerItem
+
+                                    GT.Pools.fontStringPool:Release(itemFrame.text[columnToRemove])
+                                    GT:AddRemoveDisplayCell("remove", itemFrame, columnToRemove)
+
+                                    itemFrame.pricePerItem = nil
+                                    GT:SetAnchor(itemFrame)
+                                end
+                            end
+                            table.remove(GT.Display.ColumnSize, columnToRemove)
+                        else
+                            GT:PrepareDataForDisplay("Display Per Item Price Enabled")
+                        end
                     end,
                     disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
@@ -344,10 +373,10 @@ local generalOptions = {
                     max = 100,
                     step = 1,
                     width = 1.70,
-                    get = function() return GT.db.profile.General.ignoreAmount or 1 end,
+                    get = function() return GT.db.profile.General.ignoreAmount or 0 end,
                     set = function(_, key)
                         GT.db.profile.General.ignoreAmount = key
-                        --Need Update: need to do inventory update most likely
+                        GT:InventoryUpdate("Ignore Amount Changed", true)
                     end,
                     order = 203
                 },
@@ -378,7 +407,9 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconWidth or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.iconWidth = key
-                        --Need Update: should add function to update this without remaking
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            itemFrame.icon:SetWidth(GT.db.profile.General.iconWidth)
+                        end
                     end,
                     order = 301
                 },
@@ -392,7 +423,17 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconHeight or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.iconHeight = key
-                        --Need Update: should add function to update this without remaking
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            itemFrame.icon:SetHeight(GT.db.profile.General.iconHeight)
+
+                            local frameHeight = GT.db.profile.General.iconHeight + 3
+
+                            if frameHeight < itemFrame.text[1]:GetStringHeight() then
+                                itemFrame:SetHeight(itemFrame.text[1]:GetStringHeight() + 3)
+                            else
+                                itemFrame:SetHeight(frameHeight)
+                            end
+                        end
                     end,
                     order = 302
                 },
@@ -404,7 +445,23 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.rarityBorder end,
                     set = function(_, key)
                         GT.db.profile.General.rarityBorder = key
-                        --Need Update: should add function to update this
+
+                        if key then
+                            for itemID, itemFrame in pairs(GT.Display.Frames) do
+                                if itemID > 2 and itemID < 9999999998 then
+                                    local iconRarity = C_Item.GetItemQualityByID(itemID)
+                                    GT:CreateRarityBorder(itemFrame, iconRarity)
+                                end
+                            end
+                        else
+                            for itemID, itemFrame in pairs(GT.Display.Frames) do
+                                if itemFrame.iconRarity then
+                                    itemFrame.iconRarity:SetVertexColor(1, 1, 1, 1)
+                                    GT.Pools.texturePool:Release(itemFrame.iconRarity)
+                                    itemFrame.iconRarity = nil
+                                end
+                            end
+                        end
                     end,
                     order = 303
                 },
@@ -423,7 +480,13 @@ local generalOptions = {
                     end,
                     set = function(_, r, g, b)
                         GT.db.profile.General.textColor = { r, g, b }
-                        --Need Update: should add function to update this
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID < 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetVertexColor(unpack(GT.db.profile.General.textColor))
+                                end
+                            end
+                        end
                     end,
                     order = 401
                 },
@@ -436,8 +499,31 @@ local generalOptions = {
                     width = 1.20,
                     get = function() return GT.db.profile.General.textSize or 1 end,
                     set = function(_, key)
+                        if key < GT.db.profile.General.textSize then
+                            GT.Display.ColumnSize = {}
+                        end
                         GT.db.profile.General.textSize = key
-                        --Need Update: should add function to update this
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID < 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+
+                                local frameHeight = GT.db.profile.General.iconHeight + 3
+
+                                if frameHeight < itemFrame.text[1]:GetStringHeight() then
+                                    itemFrame:SetHeight(itemFrame.text[1]:GetStringHeight() + 3)
+                                else
+                                    itemFrame:SetHeight(frameHeight)
+                                end
+                            else
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            end
+                        end
+                        GT:AllignColumns()
                     end,
                     order = 402
                 },
@@ -450,7 +536,20 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.textFont end,
                     set = function(_, key)
                         GT.db.profile.General.textFont = key
-                        --Need Update: should add function to update this
+                        GT.Display.ColumnSize = {}
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID < 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            else
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            end
+                        end
+                        GT:AllignColumns()
                     end,
                     order = 403
                 },
@@ -462,9 +561,15 @@ local generalOptions = {
                         local c = GT.db.profile.General.totalColor
                         return c[1], c[2], c[3] or 1, 1, 1
                     end,
-                    set = function(_, r, g, b, a)
-                        GT.db.profile.General.totalColor = { r, g, b, a }
-                        --Need Update: should add function to update this
+                    set = function(_, r, g, b)
+                        GT.db.profile.General.totalColor = { r, g, b }
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID >= 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetVertexColor(unpack(GT.db.profile.General.totalColor[1]))
+                                end
+                            end
+                        end
                     end,
                     order = 404
                 },
@@ -477,8 +582,31 @@ local generalOptions = {
                     width = 1.20,
                     get = function() return GT.db.profile.General.totalSize or 1 end,
                     set = function(_, key)
+                        if key < GT.db.profile.General.totalSize then
+                            GT.Display.ColumnSize = {}
+                        end
                         GT.db.profile.General.totalSize = key
-                        --Need Update: should add function to update this
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID >= 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+
+                                local frameHeight = GT.db.profile.General.iconHeight + 3
+
+                                if frameHeight < itemFrame.text[1]:GetStringHeight() then
+                                    itemFrame:SetHeight(itemFrame.text[1]:GetStringHeight() + 3)
+                                else
+                                    itemFrame:SetHeight(frameHeight)
+                                end
+                            else
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            end
+                        end
+                        GT:AllignColumns()
                     end,
                     order = 405
                 },
@@ -491,7 +619,20 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.totalFont end,
                     set = function(_, key)
                         GT.db.profile.General.totalFont = key
-                        --Need Update: should add function to update this
+                        GT.Display.ColumnSize = {}
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            if itemID >= 9999999998 then
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    textFrame:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            else
+                                for textIndex, textFrame in ipairs(itemFrame.text) do
+                                    GT:CheckColumnSize(textIndex, textFrame)
+                                end
+                            end
+                        end
+                        GT:AllignColumns()
                     end,
                     order = 406
                 },

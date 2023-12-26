@@ -440,14 +440,19 @@ function GT:RemoveDisabledItemData(key, itemID)
     end
 end
 
-function GT:PrepareDataForDisplay(event)
-    GT.Debug("Prepare Data for Display", 1, event)
+function GT:PrepareDataForDisplay(event, wait)
+    GT.Debug("Prepare Data for Display", 1, event, wait)
+    if wait then
+        GT:wait(0.1, "PrepareDataForDisplay", "PrepareDataForDisplay", false)
+        return
+    end
 
     GT.Display.ColumnSize = {}
 
     local playerTotals = {}
     local itemTotals = {}
     local aliases = {}
+    local pricePerItem = {}
     local totalItems = 0
     local totalPrice = 0
 
@@ -455,13 +460,15 @@ function GT:PrepareDataForDisplay(event)
 
     for senderIndex, senderData in ipairs(GT.sender) do
         for itemID, itemCount in pairs(senderData.inventoryData) do
-            if itemID > #GT.ItemData.Other.Other then --checks if itemID is numeric
+            if itemID > #GT.ItemData.Other.Other then
                 local calculatedItemCount = 0
 
                 calculatedItemCount = itemCount - GT.db.profile.General.ignoreAmount
                 if calculatedItemCount < 0 then
                     calculatedItemCount = 0
                 end
+
+                GT.InventoryData[itemID][senderIndex] = calculatedItemCount
 
                 itemTotals.countTotal = itemTotals.countTotal or {}
                 itemTotals.countTotal[itemID] = itemTotals.countTotal[itemID] or 0
@@ -473,18 +480,22 @@ function GT:PrepareDataForDisplay(event)
 
                 totalItems = totalItems + calculatedItemCount
 
-                local pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
-                local totalItemValue = calculatedItemCount * pricePerItem
-
                 itemTotals.valueTotal = itemTotals.valueTotal or {}
-                itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] or 0
-                itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] + totalItemValue
 
                 playerTotals.valueTotal = playerTotals.valueTotal or {}
-                playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] or 0
-                playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] + totalItemValue
 
-                totalPrice = totalPrice + totalItemValue
+                if GT.tsmLoaded then
+                    pricePerItem[itemID] = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+                    local totalItemValue = calculatedItemCount * pricePerItem[itemID]
+
+                    itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] or 0
+                    itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] + totalItemValue
+
+                    playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] or 0
+                    playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] + totalItemValue
+
+                    totalPrice = totalPrice + totalItemValue
+                end
             end
         end
 
@@ -523,12 +534,6 @@ function GT:PrepareDataForDisplay(event)
     for itemID, itemData in pairs(GT.InventoryData) do
         GT.Debug("Prepare Data for Display", 1, itemID)
         if itemID <= #GT.ItemData.Other.Other then
-            --[[local index = 0
-            for i, otherData in ipairs(GT.ItemData.Other.Other) do
-                if otherData.id == itemID then
-                    index = i
-                end
-            end]]
             GT:InitiateFrameProcess(
                 itemID,
                 GT.ItemData.Other.Other[itemID].icon,
@@ -544,7 +549,7 @@ function GT:PrepareDataForDisplay(event)
                 C_Item.GetItemQualityByID(itemID),
                 itemData,
                 itemTotals.countTotal[itemID],
-                (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000,
+                pricePerItem[itemID],
                 itemTotals.valueTotal[itemID]
             )
         end
@@ -664,10 +669,11 @@ end
 
 local function CreateTextDisplay(frame, id, text, type, height, anchor)
     local string = GT.Pools.fontStringPool:Acquire()
-    string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-    if id < 999999999 then
+    if id < 9999999998 then
+        string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
         string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
     else
+        string:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
         string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
     end
     string:SetHeight(height)
@@ -676,6 +682,7 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
         offset = 8 --make spacing fraction of height? (make this adjustable?)
     end
     string.textType = type
+
     string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
     string:SetJustifyH("LEFT") --add option for this?
     string:SetText(text)
@@ -683,11 +690,9 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
     return string
 end
 
-local function CheckColumnSize(index, frame)
-    GT.Debug("Check Column Size", 3, index, frame:GetText())
+function GT:CheckColumnSize(index, frame)
     local width = frame:GetUnboundedStringWidth()
     if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
-        GT.Display.ColumnSize[index] = nil
         GT.Display.ColumnSize[index] = width
         return
     end
@@ -738,7 +743,7 @@ function GT:SetAnchor(frame)
 end
 
 function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("UpdateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+    GT.Debug("UpdateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, unpack(displayText), totalItemCount, pricePerItem, priceTotalItem)
 
     if displayText == nil then
         return
@@ -750,12 +755,10 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     for textIndex, text in ipairs(displayText) do
         if type(text) == "number" then
             text = math.ceil(text - 0.5)
-        else
-            text = text
         end
         if textIndex <= frame.displayedCharacters then
             frame.text[textIndex]:SetText(text)
-            CheckColumnSize(textIndex, frame.text[textIndex])
+            GT:CheckColumnSize(textIndex, frame.text[textIndex])
         else
             local anchor = frame.icon
             if textIndex > 1 then
@@ -763,7 +766,7 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
             end
             local textString = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
             GT:AddRemoveDisplayCell("add", frame, textIndex, textString)
-            CheckColumnSize(textIndex, frame.text[textIndex])
+            GT:CheckColumnSize(textIndex, frame.text[textIndex])
         end
     end
     frame.displayedCharacters = #displayText
@@ -771,12 +774,12 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     if totalItemCount and GT:GroupDisplayCheck() then
         if frame.totalItemCount then
             frame.text[frame.totalItemCount]:SetText("[" .. math.ceil(totalItemCount - 0.5) .. "]")
-            CheckColumnSize(frame.totalItemCount, frame.text[frame.totalItemCount])
+            GT:CheckColumnSize(frame.totalItemCount, frame.text[frame.totalItemCount])
         else
             local index = #displayText + 1
             local textString = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#displayText])
             GT:AddRemoveDisplayCell("add", frame, index, textString)
-            CheckColumnSize(index, frame.text[index])
+            GT:CheckColumnSize(index, frame.text[index])
         end
     end
 
@@ -789,7 +792,7 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         end
         if frame.pricePerItem then
             frame.text[frame.pricePerItem]:SetText(text)
-            CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem])
+            GT:CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem])
         else
             local index = 0
             if frame.priceTotalItem then
@@ -799,23 +802,48 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
             end
             local textString = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[index - 1])
             GT:AddRemoveDisplayCell("add", frame, index, textString)
-            CheckColumnSize(index, frame.text[index])
+            GT:CheckColumnSize(index, frame.text[index])
         end
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
         if frame.priceTotalItem then
             frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
-            CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
+            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
         else
             local index = #frame.text + 1
             local textString = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[index - 1])
             GT:AddRemoveDisplayCell("add", frame, index, textString)
-            CheckColumnSize(index, frame.text[index])
+            GT:CheckColumnSize(index, frame.text[index])
         end
     end
 
     GT:SetAnchor(frame)
+end
+
+function GT:CreateRarityBorder(frame, iconRarity)
+    if not GT.db.profile.General.rarityBorder then
+        return
+    end
+    if not frame then
+        return
+    end
+    if not iconRarity then
+        return
+    end
+
+    frame.iconRarity = GT.Pools.texturePool:Acquire()
+    frame.iconRarity:SetDrawLayer("BACKGROUND", 1)
+    local rarity = iconRarity or 1
+    if rarity <= 1 then
+        frame.iconRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+    else
+        frame.iconRarity:SetAtlas("bags-glow-white")
+    end
+    local R, G, B = GetItemQualityColor(rarity)
+    frame.iconRarity:SetVertexColor(R, G, B, 0.8)
+    frame.iconRarity:SetAllPoints(frame.icon)
+    frame.iconRarity:Show()
 end
 
 function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
@@ -859,20 +887,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         frame.iconQuality:Show()
     end
 
-    if GT.db.profile.General.rarityBorder and iconRarity then
-        frame.iconRarity = GT.Pools.texturePool:Acquire()
-        frame.iconRarity:SetDrawLayer("BACKGROUND", 1)
-        local rarity = iconRarity or 1
-        if rarity <= 1 then
-            frame.iconRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
-        else
-            frame.iconRarity:SetAtlas("bags-glow-white")
-        end
-        local R, G, B = GetItemQualityColor(rarity)
-        frame.iconRarity:SetVertexColor(R, G, B, 0.8)
-        frame.iconRarity:SetAllPoints(frame.icon)
-        frame.iconRarity:Show()
-    end
+    GT:CreateRarityBorder(frame, iconRarity)
 
     local frameHeight = frame:GetHeight()
     frame.text = {}
@@ -888,12 +903,12 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
             text = text
         end
         frame.text[i] = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
-        CheckColumnSize(i, frame.text[i])
+        GT:CheckColumnSize(i, frame.text[i])
     end
 
     if totalItemCount and GT:GroupDisplayCheck() then --Should I be running group checks here or before calling the function (such as when creating the data that is passed to this function)?
         frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#frame.text])
-        CheckColumnSize(#frame.text, frame.text[#frame.text])
+        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
         frame.totalItemCount = #frame.text
     end
 
@@ -905,14 +920,18 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
             text = ""
         end
         frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[#frame.text])
-        CheckColumnSize(#frame.text, frame.text[#frame.text])
+        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
         frame.pricePerItem = #frame.text
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
         frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[#frame.text])
-        CheckColumnSize(#frame.text, frame.text[#frame.text])
+        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
         frame.priceTotalItem = #frame.text
+    end
+
+    if frameHeight < frame.text[1]:GetStringHeight() then
+        frame:SetHeight(frame.text[1]:GetStringHeight())
     end
 
     GT.Display.Order = GT.Display.Order or {}
