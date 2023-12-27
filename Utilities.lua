@@ -201,3 +201,29 @@ function GT:SumTable(table)
     end
     return sum
 end
+
+function GT:RebuildIDTables()
+    GT.Debug("Rebuild ID Table", 1)
+    GT.IDs = {}
+    for key, value in pairs(GT.db.profile.Filters) do
+        table.insert(GT.IDs, key)
+    end
+    if GT.db.profile.CustomFiltersTable then
+        for itemID, value in pairs(GT.db.profile.CustomFiltersTable) do
+            if value then
+                itemID = tonumber(itemID)
+                if not GT.db.profile.Filters[itemID] then
+                    table.insert(GT.IDs, itemID)
+                end
+            end
+        end
+    end
+end
+
+function GT:CheckColumnSize(index, frame)
+    local width = frame:GetUnboundedStringWidth()
+    if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
+        GT.Display.ColumnSize[index] = width
+        return
+    end
+end

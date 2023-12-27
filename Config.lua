@@ -222,7 +222,10 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.hideOthers = key
                         if key then
+                            GT:ClearDisplay()
                             GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", false)
+                        else
+                            GT:InventoryUpdate("Toggle Hide Other Party Members", false)
                         end
                     end,
                     disabled = function()
@@ -243,6 +246,9 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.displayAlias end,
                     set = function(_, key)
                         GT.db.profile.General.displayAlias = key
+                        if not GT:GroupDisplayCheck() then
+                            return
+                        end
                         if not key then
                             GT:RemoveDiaplayRow(0)
                             GT:AllignRows()
@@ -267,6 +273,9 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.characterValue end,
                     set = function(_, key)
                         GT.db.profile.General.characterValue = key
+                        if not GT:GroupDisplayCheck() then
+                            return
+                        end
                         if not key then
                             GT:RemoveDiaplayRow(9999999999)
                         end
@@ -651,7 +660,7 @@ local generalOptions = {
                 countEnable = {
                     type = "toggle",
                     name = "Enable Count Notification",
-                    desc = "Check to enable Count notification.\n\nRequires TSM.",
+                    desc = "Check to enable Count notification.",
                     width = "full",
                     get = function() return GT.db.profile.Notifications.Count.enable end,
                     set = function(_, key)
