@@ -696,6 +696,11 @@ function GT:PrepareDataForDisplay(event, wait)
         elseif GT.db.profile.General.displayAlias and #GT.db.profile.Aliases == 0 then
             aliases[senderIndex] = senderData.name
         end
+
+        if senderData.name == GT.Player and not GT.NotificationPause then
+            GT.Debug("Trigger Notification Handler for all", 2)
+            GT:NotificationHandler("all", "all", playerTotals.countTotal[senderIndex], playerTotals.valueTotal[senderIndex])
+        end
     end
 
     for itemID, itemData in pairs(GT.InventoryData) do
@@ -816,6 +821,12 @@ function GT:InventoryUpdate(event, wait)
 
         if itemCount > 0 then
             updateMessage = updateMessage .. id .. "=" .. itemCount .. " "
+        end
+
+        if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") then
+            GT.Debug("Trigger Notification Handler for each", 2)
+            GT.NotificationPause = false
+            GT:NotificationHandler("each", id, itemCount)
         end
     end
     GT.Debug("Inventory Update Data", 2, updateMessage)
