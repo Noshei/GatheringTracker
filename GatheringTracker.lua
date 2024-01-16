@@ -519,7 +519,8 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     local frame = GT.Pools.framePool:Acquire()
     frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
     frame:SetWidth(GT.db.profile.General.iconWidth)
-    frame:SetHeight(GT.db.profile.General.iconHeight + 3)
+    local frameHeight = math.max(GT.db.profile.General.iconHeight, GT.db.profile.General.totalSize)
+    frame:SetHeight(frameHeight + 3)
     frame:Show()
 
     frame.displayedCharacters = #displayText
@@ -550,7 +551,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     GT:CreateRarityBorder(frame, iconRarity)
 
-    local frameHeight = frame:GetHeight()
+    frameHeight = frame:GetHeight()
     frame.text = {}
 
     for i, text in ipairs(displayText) do
@@ -589,10 +590,6 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[#frame.text])
         GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
         frame.priceTotalItem = #frame.text
-    end
-
-    if frameHeight < frame.text[1]:GetStringHeight() then
-        frame:SetHeight(frame.text[1]:GetStringHeight())
     end
 
     GT.Display.Order = GT.Display.Order or {}

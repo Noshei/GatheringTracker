@@ -519,13 +519,8 @@ local generalOptions = {
                                     GT:CheckColumnSize(textIndex, textFrame)
                                 end
 
-                                local frameHeight = GT.db.profile.General.iconHeight + 3
-
-                                if frameHeight < itemFrame.text[1]:GetStringHeight() then
-                                    itemFrame:SetHeight(itemFrame.text[1]:GetStringHeight() + 3)
-                                else
-                                    itemFrame:SetHeight(frameHeight)
-                                end
+                                local frameHeight = math.max(GT.db.profile.General.iconHeight, key)
+                                itemFrame:SetHeight(frameHeight + 3)
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     GT:CheckColumnSize(textIndex, textFrame)
@@ -602,13 +597,8 @@ local generalOptions = {
                                     GT:CheckColumnSize(textIndex, textFrame)
                                 end
 
-                                local frameHeight = GT.db.profile.General.iconHeight + 3
-
-                                if frameHeight < itemFrame.text[1]:GetStringHeight() then
-                                    itemFrame:SetHeight(itemFrame.text[1]:GetStringHeight() + 3)
-                                else
-                                    itemFrame:SetHeight(frameHeight)
-                                end
+                                local frameHeight = math.max(GT.db.profile.General.iconHeight, key)
+                                itemFrame:SetHeight(frameHeight + 3)
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     GT:CheckColumnSize(textIndex, textFrame)
@@ -1213,9 +1203,9 @@ function GT:RefreshConfig(event, db, profile)
 
     GT:RebuildIDTables()
     GT:ClearDisplay()
-    GT:FiltersButton()
+    GT:FiltersButton(true)
     GT:InventoryUpdate("Refresh Config", true)
-    GT:CreateProfilesList()
+    GT:CreateCustomFilterOptions()
 end
 
 function GatheringTracker_OnAddonCompartmentClick(addonName, button)

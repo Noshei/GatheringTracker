@@ -23,7 +23,7 @@ function GT:ToggleFilterButton(show)
     end
 end
 
-function GT:FiltersButton()
+function GT:FiltersButton(profileChanged)
     if not GT.db.profile.General.filtersButton then
         GT:ToggleFilterButton(false)
         return
@@ -31,6 +31,13 @@ function GT:FiltersButton()
     if not GT.Enabled then
         GT:ToggleFilterButton(false)
         return
+    end
+    if profileChanged then
+        --add Custom Filters to filterMenu
+        GT:CreateCustomFiltersList()
+
+        --add Profiles to filterMenu
+        GT:CreateProfilesList()
     end
     if GT.baseFrame.button then
         GT:ToggleFilterButton(true)
