@@ -79,5 +79,5 @@ function GT:ClearFilters()
     end
 
     GT:RebuildIDTables()
-    GT:InventoryUpdate("Clear Filters", true)
+    GT:ClearDisplay()
 end
