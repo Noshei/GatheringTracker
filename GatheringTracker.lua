@@ -696,7 +696,15 @@ function GT:PrepareDataForDisplay(event, wait)
 
         if senderData.name == GT.Player and not GT.NotificationPause then
             GT.Debug("Trigger Notification Handler for all", 2)
-            GT:NotificationHandler("all", "all", playerTotals.countTotal[senderIndex], playerTotals.valueTotal[senderIndex])
+            local countTotal = 0
+            local valueTotal = 0
+            if playerTotals and playerTotals.countTotal and playerTotals.countTotal[senderIndex] then
+                countTotal = playerTotals.countTotal[senderIndex]
+            end
+            if playerTotals and playerTotals.valueTotal and playerTotals.valueTotal[senderIndex] then
+                valueTotal = playerTotals.valueTotal[senderIndex]
+            end
+            GT:NotificationHandler("all", "all", countTotal, valueTotal)
         end
     end
 
