@@ -703,10 +703,7 @@ function GT:PrepareDataForDisplay(event, wait)
     for itemID, itemData in pairs(GT.InventoryData) do
         GT.Debug("Check for Items to remove from Display", 4, itemID)
         if GT:SumTable(itemData) == 0 then
-            GT.InventoryData[itemID] = nil
-            if GT.Display.Frames[tonumber(itemID)] then
-                GT:RemoveDiaplayRow(tonumber(itemID))
-            end
+            GT:RemoveDisabledItemData(flase, itemID)
         end
         if not (#itemData == #GT.sender) then
             local diff = #GT.sender - #itemData
