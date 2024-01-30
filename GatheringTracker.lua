@@ -204,7 +204,6 @@ function GT:RemoveDisabledItemData(key, itemID)
     if key then
         return
     end
-    local itemID = tostring(itemID)
 
     if GT.InventoryData[itemID] then
         GT.Debug("Remove Disabled Item Data: remove Inventory", 3, key, itemID)
@@ -218,8 +217,8 @@ function GT:RemoveDisabledItemData(key, itemID)
         end
     end
 
-    if GT.Display.Frames[tonumber(itemID)] then
-        GT:RemoveDiaplayRow(tonumber(itemID))
+    if GT.Display.Frames[itemID] then
+        GT:RemoveDiaplayRow(itemID)
         GT:AllignRows()
     end
 end
@@ -643,6 +642,7 @@ function GT:PrepareDataForDisplay(event, wait)
     for senderIndex, senderData in ipairs(GT.sender) do
         for itemID, itemCount in pairs(senderData.inventoryData) do
             if itemID > #GT.ItemData.Other.Other then
+                GT.Debug("Create Totals", 4, senderIndex, itemID, itemCount)
                 local calculatedItemCount = 0
 
                 calculatedItemCount = itemCount - GT.db.profile.General.ignoreAmount
