@@ -1245,8 +1245,8 @@ end
 
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
-    GT.tsmLoaded = IsAddOnLoaded("TradeSkillMaster")
-    GT.ElvUI = IsAddOnLoaded("ElvUI")
+    GT.tsmLoaded = C_AddOns.IsAddOnLoaded("TradeSkillMaster")
+    GT.ElvUI = C_AddOns.IsAddOnLoaded("ElvUI")
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
@@ -1288,8 +1288,7 @@ function Config:OnInitialize()
     GT:CreateCustomFilterOptions()
 
     local function openOptions()
-        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
-        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+        Settings.OpenToCategory(GT.metaData.name, true)
     end
 
     SLASH_GatheringTracker1 = "/gatheringtracker"

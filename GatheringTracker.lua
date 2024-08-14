@@ -15,9 +15,9 @@ GT.Notifications = {}
 GT.NotificationPause = true
 
 GT.metaData = {
-    name = GetAddOnMetadata("GatheringTracker", "Title"),
-    version = GetAddOnMetadata("GatheringTracker", "Version"),
-    notes = GetAddOnMetadata("GatheringTracker", "Notes"),
+    name = C_AddOns.GetAddOnMetadata("GatheringTracker", "Title"),
+    version = C_AddOns.GetAddOnMetadata("GatheringTracker", "Version"),
+    notes = C_AddOns.GetAddOnMetadata("GatheringTracker", "Notes"),
 }
 
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version

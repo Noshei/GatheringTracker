@@ -16,6 +16,23 @@ local expansions = {
 }
 GT.expansions = expansions
 
+local expansionsOrder = {
+    [1] = "Classic",
+    [2] = "BC",
+    [3] = "Wrath",
+    [4] = "Cata",
+    [5] = "MoP",
+    [6] = "WoD",
+    [7] = "Legion",
+    [8] = "BFA",
+    [9] = "SL",
+    [10] = "DF",
+
+    [11] = "Other",
+}
+
+GT.expansionsOrder = expansionsOrder
+
 local categories = {
     ["Herb"] = 1,
     ["Ore"] = 2,
@@ -33,6 +50,24 @@ local categories = {
     ["Other"] = 13,
 }
 GT.categories = categories
+
+local categoriesOrder = {
+    [1] = "Herb",
+    [2] = "Ore",
+    [3] = "Cloth",
+    [4] = "Leather",
+    [5] = "Meat",
+    [6] = "Fish",
+    [7] = "Elemental",
+    [8] = "Gem",
+    [9] = "Enchanting",
+    [10] = "Pigment",
+    [11] = "Legendary",
+    [12] = "Synthesis",
+
+    [13] = "Other",
+}
+GT.categoriesOrder = categoriesOrder
 
 local ItemData = {
     Classic = {

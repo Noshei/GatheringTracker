@@ -32,13 +32,6 @@ function GT:FiltersButton(profileChanged)
         GT:ToggleFilterButton(false)
         return
     end
-    if profileChanged then
-        --add Custom Filters to filterMenu
-        GT:CreateCustomFiltersList()
-
-        --add Profiles to filterMenu
-        GT:CreateProfilesList()
-    end
     if GT.baseFrame.button then
         GT:ToggleFilterButton(true)
         return
@@ -55,114 +48,11 @@ function GT:FiltersButton(profileChanged)
     filterButton:SetFrameStrata("BACKGROUND")
     filterButton:Show()
 
-    local menuFrame = CreateFrame("Frame", "GT_baseFrame_filtersMenu", UIParent, "UIDropDownMenuTemplate")
-
-    local filterMenu = {}
-    for expansion, expansionData in pairs(GT.ItemData) do
-        local expansionMenuList = {}
-
-        for category, categoryData in pairs(expansionData) do
-            local categoryMenuList = {}
-
-            for _, itemData in ipairs(categoryData) do
-                local itemDetails = {}
-                if itemData.id == -1 then
-                    itemDetails = {
-                        text = itemData.name,
-                        notCheckable = 1,
-                        disabled = true,
-                    }
-                else
-                    itemDetails = {
-                        text = itemData.name,
-                        isNotRadio = true,
-                        keepShownOnClick = true,
-                        icon = tostring(itemData.icon or GetItemIcon(tonumber(itemData.id)) or ""),
-                        checked = function()
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                return true
-                            else
-                                return false
-                            end
-                        end,
-                        func = function(_, _, _, key)
-                            GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name, key)
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                GT.db.profile.Filters[itemData.id] = nil
-                            else
-                                GT.db.profile.Filters[itemData.id] = true
-                            end
-
-                            GT:RebuildIDTables()
-                            GT:RemoveDisabledItemData(key, itemData.id)
-                            GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
-                        end,
-                    }
-                    -- Add asterics to the name to distinguish between the different qualities
-                    if itemData.quality then
-                        if itemData.quality == 1 then
-                            itemDetails.text = "|cff784335" .. itemDetails.text .. "*"
-                        elseif itemData.quality == 2 then
-                            itemDetails.text = "|cff96979E" .. itemDetails.text .. "**"
-                        elseif itemData.quality == 3 then
-                            itemDetails.text = "|cffDCC15F" .. itemDetails.text .. "***"
-                        end
-                    end
-                end
-                categoryMenuList[itemData.order] = itemDetails
-            end
-
-            local categoryMenuData = {}
-            categoryMenuData = {
-                text = category,
-                keepShownOnClick = false,
-                hasArrow = true,
-                isNotRadio = true,
-                menuList = categoryMenuList,
-                checked = function()
-                    local checked = true
-                    for _, itemData in ipairs(categoryData) do
-                        if itemData.id ~= -1 and checked == true then
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                checked = GT.db.profile.Filters[itemData.id]
-                            else
-                                checked = false
-                                break
-                            end
-                        end
-                    end
-                    return checked
-                end,
-                func = function(_, _, _, key)
-                    GT.Debug("Category Button Clicked", 2, expansion, category, key)
-                    local key = not key
-                    for _, itemData in ipairs(categoryData) do
-                        if not (itemData.id == -1) then
-                            GT.db.profile.Filters[itemData.id] = key or nil
-                            GT:RemoveDisabledItemData(key, itemData.id)
-                        end
-                    end
-
-                    GT:RebuildIDTables()
-                    GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
-                end,
-            }
-            table.insert(expansionMenuList, categoryMenuData)
-        end
-
-        table.sort(expansionMenuList, function(k1, k2)
-            return GT.categories[k1.text] < GT.categories[k2.text]
-        end)
-
-        filterMenu[GT.expansions[expansion]] = {
-            text = expansion,
-            keepShownOnClick = false,
-            hasArrow = true,
-            isNotRadio = true,
-            menuList = expansionMenuList,
-            checked = function()
+    local function FiltersMenu(filterButton, rootDescription)
+        for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
+            local function IsSelected_Expansion()
                 local checked = true
-                for category, categoryData in pairs(expansionData) do
+                for category, categoryData in pairs(GT.ItemData[expansion]) do
                     for _, itemData in ipairs(categoryData) do
                         if itemData.id ~= -1 and checked == true then
                             if GT.db.profile.Filters[itemData.id] == true then
@@ -175,11 +65,12 @@ function GT:FiltersButton(profileChanged)
                     end
                 end
                 return checked
-            end,
-            func = function(_, _, _, key)
-                GT.Debug("Expansion Button Clicked", 2, expansion, key)
-                local key = not key
-                for category, categoryData in pairs(expansionData) do
+            end
+
+            local function SetSelected_Expansion()
+                GT.Debug("Expansion Button Clicked", 2, expansion)
+                local key = not IsSelected_Expansion()
+                for category, categoryData in pairs(GT.ItemData[expansion]) do
                     for _, itemData in ipairs(categoryData) do
                         if not (itemData.id == -1) then
                             GT.db.profile.Filters[itemData.id] = key or nil
@@ -190,25 +81,107 @@ function GT:FiltersButton(profileChanged)
 
                 GT:RebuildIDTables()
                 GT:InventoryUpdate(expansion .. " clicked", false)
-            end,
-        }
+            end
+
+            GT.baseFrame.button[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
+            for categoryIndex, category in ipairs(GT.categoriesOrder) do
+                if GT.ItemData[expansion][category] then
+                    local function IsSelected_Category()
+                        local checked = true
+                        for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                            if itemData.id ~= -1 and checked == true then
+                                if GT.db.profile.Filters[itemData.id] == true then
+                                    checked = GT.db.profile.Filters[itemData.id]
+                                else
+                                    checked = false
+                                    break
+                                end
+                            end
+                        end
+                        return checked
+                    end
+                    local function SetSelected_Category()
+                        GT.Debug("Category Button Clicked", 2, expansion, category)
+                        local key = not IsSelected_Category()
+                        for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                            if not (itemData.id == -1) then
+                                GT.db.profile.Filters[itemData.id] = key or nil
+                                GT:RemoveDisabledItemData(key, itemData.id)
+                            end
+                        end
+
+                        GT:RebuildIDTables()
+                        GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
+                    end
+
+                    GT.baseFrame.button[expansion][category] = GT.baseFrame.button[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
+                    for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                        local function IsSelected_Item()
+                            if GT.db.profile.Filters[itemData.id] == true then
+                                return true
+                            else
+                                return false
+                            end
+                        end
+                        local function SetSelected_Item()
+                            GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
+                            if GT.db.profile.Filters[itemData.id] == true then
+                                GT.db.profile.Filters[itemData.id] = nil
+                            else
+                                GT.db.profile.Filters[itemData.id] = true
+                            end
+
+                            GT:RebuildIDTables()
+                            GT:RemoveDisabledItemData(IsSelected_Item(), itemData.id)
+                            GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
+                        end
+
+                        if itemData.id == -1 then
+                            local divider = GT.baseFrame.button[expansion][category]:CreateDivider()
+                        else
+                            local name = itemData.name
+
+                            if itemData.quality then
+                                if itemData.quality == 1 then
+                                    name = "|cff784335" .. name .. "*"
+                                elseif itemData.quality == 2 then
+                                    name = "|cff96979E" .. name .. "**"
+                                elseif itemData.quality == 3 then
+                                    name = "|cffDCC15F" .. name .. "***"
+                                end
+                            end
+
+                            GT.baseFrame.button[expansion][category][itemData.name] = GT.baseFrame.button[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
+                            GT.baseFrame.button[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
+                                local leftTexture = text:AttachTexture()
+                                leftTexture:SetSize(18, 18)
+                                leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1);
+
+                                if itemData.icon then
+                                    leftTexture:SetTexture(itemData.icon)
+                                else
+                                    leftTexture:SetTexture(GetItemIcon(tonumber(itemData.id)))
+                                end
+
+                                text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1);
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+
+        --add Custom Filters to filterMenu
+        GT:CreateCustomFiltersList(rootDescription)
+
+        --add Profiles to filterMenu
+        GT:CreateProfilesList(rootDescription)
     end
-
-    menuFrame:SetPoint("CENTER", UIParent, "CENTER")
-    menuFrame:Hide()
-
-    GT.baseFrame.menu = menuFrame
-    GT.baseFrame.filterMenu = filterMenu
-
-    --add Custom Filters to filterMenu
-    GT:CreateCustomFiltersList()
-
-    --add Profiles to filterMenu
-    GT:CreateProfilesList()
 
     filterButton:SetScript("OnClick", function(self, button, down)
         if button == "LeftButton" then
-            EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0, 0, "MENU")
+            --EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0, 0, "MENU")
+            MenuUtil.CreateContextMenu(filterButton, FiltersMenu)
         elseif button == "RightButton" then
             GT:ClearFilters()
         end
@@ -274,136 +247,111 @@ function GT:FiltersButtonFade(alpha)
     end
 end
 
-function GT:CreateCustomFiltersList()
-    if not GT.baseFrame.filterMenu then
-        return
-    end
-
-    local customFiltersMenuList = {}
+function GT:CreateCustomFiltersList(rootDescription)
+    local customFiltersList = {}
     for id, data in pairs(GT.db.profile.CustomFiltersTable) do
         local itemID = tonumber(id)
         local item = Item:CreateFromItemID(itemID)
         --Waits for the data to be returned from the server
         if not item:IsItemEmpty() then
             item:ContinueOnItemLoad(function()
-                local itemName = item:GetItemName()
                 local itemDetails = {
-                    text = itemName,
-                    isNotRadio = true,
-                    keepShownOnClick = true,
-                    icon = tostring(GetItemIcon(itemID) or ""),
-                    checked = function()
-                        return GT.db.profile.CustomFiltersTable[id]
-                    end,
-                    func = function(_, _, _, key)
-                        GT.Debug("Custom Filter Item Button Clicked", 2, itemName, key)
-                        if GT.db.profile.CustomFiltersTable[id] == true then
-                            GT.db.profile.CustomFiltersTable[id] = false
-                        else
-                            GT.db.profile.CustomFiltersTable[id] = true
-                        end
-
-                        GT:RebuildIDTables()
-                        GT:RemoveDisabledItemData(key, itemID)
-                        GT:InventoryUpdate("Custom Filter " .. itemName .. " menu clicked", false)
-                    end,
+                    id = tonumber(id),
+                    text = item:GetItemName(),
+                    icon = tostring(GetItemIcon(itemID) or "")
                 }
-                table.insert(customFiltersMenuList, itemDetails)
+                table.insert(customFiltersList, itemDetails)
             end)
         end
     end
-    table.sort(customFiltersMenuList, function(a, b)
+
+    table.sort(customFiltersList, function(a, b)
         return a.text < b.text
     end)
-    local customFilters = {
-        text = "Custom Filters",
-        keepShownOnClick = false,
-        hasArrow = true,
-        isNotRadio = true,
-        menuList = customFiltersMenuList,
-        checked = function()
-            local checked = true
-            for id, data in pairs(GT.db.profile.CustomFiltersTable) do
-                if data == true then
-                    checked = true
-                else
-                    checked = false
-                    break
-                end
+
+    local function IsSelected_CustomFilter()
+        local checked = true
+        for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+            if data == true then
+                checked = true
+            else
+                checked = false
+                break
             end
-            return checked
-        end,
-        func = function(_, _, _, key)
-            GT.Debug("Custom Filters Button Clicked", 2, key)
-            local key = not key
-            for id, data in pairs(GT.db.profile.CustomFiltersTable) do
-                GT.db.profile.CustomFiltersTable[id] = key
-                GT:RemoveDisabledItemData(key, id)
+        end
+        return checked
+    end
+    local function SetSelected_CustomFilter()
+        GT.Debug("Custom Filters Button Clicked", 2)
+        local key = not IsSelected_CustomFilter()
+        for id, data in pairs(GT.db.profile.CustomFiltersTable) do
+            GT.db.profile.CustomFiltersTable[tostring(id)] = key
+            GT:RemoveDisabledItemData(key, id)
+        end
+
+        GT:RebuildIDTables()
+        GT:InventoryUpdate("Custom Filters clicked", false)
+    end
+
+    GT.baseFrame.button["Custom Filters"] = rootDescription:CreateCheckbox("Custom Filters", IsSelected_CustomFilter, SetSelected_CustomFilter)
+
+    for itemIndex, itemData in ipairs(customFiltersList) do
+        local function IsSelected_CustomFilterItem()
+            return GT.db.profile.CustomFiltersTable[tostring(itemData.id)]
+        end
+        local function SetSelected_CustomFilterItem()
+            GT.Debug("Custom Filter Item Button Clicked", 2, itemData.text)
+            if GT.db.profile.CustomFiltersTable[tostring(itemData.id)] == true then
+                GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = false
+            else
+                GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = true
             end
 
             GT:RebuildIDTables()
-            GT:InventoryUpdate("Custom Filters clicked", false)
-        end,
-    }
-    local position = 0
-
-    for index, data in ipairs(GT.baseFrame.filterMenu) do
-        if data.text == customFilters.text then
-            position = index
+            GT:RemoveDisabledItemData(IsSelected_CustomFilterItem(), itemData.id)
+            GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
+
+        GT.baseFrame.button["Custom Filters"][itemData.text] = GT.baseFrame.button["Custom Filters"]:CreateCheckbox(itemData.text, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
+        GT.baseFrame.button["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
+            local leftTexture = text:AttachTexture()
+            leftTexture:SetSize(18, 18)
+            leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
+            leftTexture:SetTexture(tonumber(itemData.icon))
+
+            text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+        end)
     end
-    if position == 0 then
-        position = #GT.baseFrame.filterMenu + 1
-    end
-    GT.baseFrame.filterMenu[position] = customFilters
 end
 
-function GT:CreateProfilesList()
-    if not GT.baseFrame.filterMenu then
-        return
+function GT:CreateProfilesList(rootDescription)
+    local function IsSelected_ProfilesCategory()
+        return false
     end
-    local profilesMenuList = {}
-    local profiles = GT.db:GetProfiles()
-    for _, name in ipairs(profiles) do
-        local profileDetails = {
-            text = name,
-            isNotRadio = false,
-            keepShownOnClick = false,
-            checked = function()
-                local current = GT.db:GetCurrentProfile()
-                if current == name then
-                    return true
-                else
-                    return false
-                end
-            end,
-            func = function(_, _, _, key)
-                GT.Debug("Profile Button Clicked", 2, name, key)
-                --this closes the menu when the profile is changed
-                ToggleDropDownMenu(1, nil, GT.baseFrame.menu, "cursor", 0, 0, GT.baseFrame.filterMenu, nil)
-                GT.db:SetProfile(name)
-            end,
-        }
-        table.insert(profilesMenuList, profileDetails)
+
+    local function SetSelected_ProfilesCategory()
     end
-    table.sort(profilesMenuList, function(a, b)
-        return a.text < b.text
-    end)
-    local profiles = {
-        text = "Profiles",
-        keepShownOnClick = true,
-        hasArrow = true,
-        notCheckable = 1,
-        menuList = profilesMenuList,
-    }
-    local position = 0
-    for index, data in ipairs(GT.baseFrame.filterMenu) do
-        if data.text == profiles.text then
-            position = index
+
+    GT.baseFrame.button["Profiles"] = rootDescription:CreateCheckbox("Profiles", IsSelected_ProfilesCategory, SetSelected_ProfilesCategory)
+    GT.baseFrame.button["Profiles"]:SetSelectionIgnored()
+
+    for _, name in ipairs(GT.db:GetProfiles()) do
+        local function IsSelected_Profile()
+            local current = GT.db:GetCurrentProfile()
+            if current == name then
+                return true
+            else
+                return false
+            end
         end
+
+        local function SetSelected_Profile()
+            GT.Debug("Profile Button Clicked", 2, name, key)
+            --this closes the menu when the profile is changed
+            --ToggleDropDownMenu(1, nil, GT.baseFrame.menu, "cursor", 0, 0, GT.baseFrame.filterMenu, nil)
+            GT.db:SetProfile(name)
+        end
+
+        GT.baseFrame.button["Profiles"][name] = GT.baseFrame.button["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)
     end
-    if position == 0 then
-        position = #GT.baseFrame.filterMenu + 1
-    end
-    GT.baseFrame.filterMenu[position] = profiles
 end
