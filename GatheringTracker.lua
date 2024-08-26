@@ -615,7 +615,7 @@ function GT:CreateRarityBorder(frame, iconRarity)
     else
         frame.iconRarity:SetAtlas("bags-glow-white")
     end
-    local R, G, B = GetItemQualityColor(rarity)
+    local R, G, B = C_Item.GetItemQualityColor(rarity)
     frame.iconRarity:SetVertexColor(R, G, B, 0.8)
     frame.iconRarity:SetAllPoints(frame.icon)
     frame.iconRarity:Show()

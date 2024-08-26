@@ -155,7 +155,8 @@ function GT:FiltersButton(profileChanged)
                             GT.baseFrame.button[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
                                 local leftTexture = text:AttachTexture()
                                 leftTexture:SetSize(18, 18)
-                                leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1);
+                                leftTexture:SetDrawLayer("BACKGROUND", 0)
+                                leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
 
                                 if itemData.icon then
                                     leftTexture:SetTexture(itemData.icon)
@@ -163,7 +164,32 @@ function GT:FiltersButton(profileChanged)
                                     leftTexture:SetTexture(GetItemIcon(tonumber(itemData.id)))
                                 end
 
-                                text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1);
+                                text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+
+                                local leftTextureRarity = text:AttachTexture()
+                                leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
+                                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                                if rarity <= 1 then
+                                    leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+                                else
+                                    leftTextureRarity:SetAtlas("bags-glow-white")
+                                end
+                                local R, G, B = C_Item.GetItemQualityColor(rarity)
+                                leftTextureRarity:SetVertexColor(R, G, B, 0.8)
+                                leftTextureRarity:SetAllPoints(leftTexture)
+
+                                if itemData.quality then
+                                    local leftTextureQuality = text:AttachTexture()
+                                    leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
+                                    if itemData.quality == 1 then
+                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
+                                    elseif itemData.quality == 2 then
+                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
+                                    elseif itemData.quality == 3 then
+                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
+                                    end
+                                    leftTextureQuality:SetAllPoints(leftTexture)
+                                end
                             end)
                         end
                     end
