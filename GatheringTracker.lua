@@ -261,7 +261,7 @@ function GT:RemoveSender(senderIndex)
         GT:AddRemoveDisplayCell("remove", itemFrame, senderIndex)
         itemFrame.displayedCharacters = itemFrame.displayedCharacters - 1
 
-        if itemFrame.displayedCharacters == 1 then
+        if itemFrame.displayedCharacters == 1 and itemID > 1 and itemID < 9999999999 then
             GT.Pools.fontStringPool:Release(itemFrame.text[2])
             GT:AddRemoveDisplayCell("remove", itemFrame, 2)
             itemFrame.totalItemCount = nil
@@ -347,6 +347,7 @@ end
 
 local function CreateTextDisplay(frame, id, text, type, height, anchor)
     local string = GT.Pools.fontStringPool:Acquire()
+    string:SetParent(frame)
     if id < 9999999998 then
         string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
         string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
@@ -388,7 +389,11 @@ function GT:AllignRows()
         if i == 1 then
             GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
         else
-            GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i - 1]], "BOTTOMLEFT")
+            if GT.db.profile.General.multiColumn and ((i - 1) % GT.db.profile.General.numRows == 0) then
+                GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i - GT.db.profile.General.numRows]], "TOPRIGHT")
+            else
+                GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.Display.Frames[GT.Display.Order[i - 1]], "BOTTOMLEFT")
+            end
         end
     end
 end
@@ -398,6 +403,17 @@ function GT:AllignColumns()
         for index, string in ipairs(GT.Display.Frames[id].text) do
             string:SetWidth(GT.Display.ColumnSize[index])
         end
+    end
+    GT:SetDisplayFrameWidth()
+end
+
+function GT:SetDisplayFrameWidth()
+    local textWidth = GT:SumTable(GT.Display.ColumnSize)
+    local offsets = (#GT.Display.ColumnSize * 8) + 3
+    local iconWidth = GT.db.profile.General.iconWidth
+    local width = iconWidth + textWidth + offsets
+    for i, id in ipairs(GT.Display.Order) do
+        GT.Display.Frames[id]:SetWidth(width)
     end
 end
 
@@ -527,6 +543,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     GT.Display.Frames[id] = frame
 
     frame.icon = GT.Pools.texturePool:Acquire()
+    frame.icon:SetParent(frame)
     frame.icon:SetDrawLayer("BACKGROUND", 0)
     frame.icon:SetTexture(iconId)
     frame.icon:SetPoint("LEFT", frame, "LEFT")
@@ -536,6 +553,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     if iconQuality then
         frame.iconQuality = GT.Pools.texturePool:Acquire()
+        frame.iconQuality:SetParent(frame)
         frame.iconQuality:SetDrawLayer("BACKGROUND", 2)
         if iconQuality == 1 then
             frame.iconQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
@@ -591,6 +609,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         frame.priceTotalItem = #frame.text
     end
 
+
     GT.Display.Order = GT.Display.Order or {}
     table.insert(GT.Display.Order, id)
     table.sort(GT.Display.Order)
@@ -608,6 +627,7 @@ function GT:CreateRarityBorder(frame, iconRarity)
     end
 
     frame.iconRarity = GT.Pools.texturePool:Acquire()
+    frame.iconRarity:SetParent(frame)
     frame.iconRarity:SetDrawLayer("BACKGROUND", 1)
     local rarity = iconRarity or 1
     if rarity <= 1 then

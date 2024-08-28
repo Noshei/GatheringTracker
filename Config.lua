@@ -37,6 +37,8 @@ GT.defaults = {
             hideOthers = false,
             displayAlias = false,
             rarityBorder = true,
+            multiColumn = false,
+            numRows = 1,
         },
         Notifications = {
             Count = {
@@ -326,6 +328,7 @@ local generalOptions = {
                             for iterator = 1, cellsToRemove, 1 do
                                 table.remove(GT.Display.ColumnSize, #GT.Display.ColumnSize)
                             end
+                            GT:SetDisplayFrameWidth()
                         else
                             GT:PrepareDataForDisplay("TSM Price Source Option Changed")
                         end
@@ -361,6 +364,7 @@ local generalOptions = {
                                 end
                             end
                             table.remove(GT.Display.ColumnSize, columnToRemove)
+                            GT:SetDisplayFrameWidth()
                         else
                             GT:PrepareDataForDisplay("Display Per Item Price Enabled")
                         end
@@ -403,8 +407,46 @@ local generalOptions = {
                 },
                 header3 = {
                     type = "header",
-                    name = "Icon",
+                    name = "Columns",
                     order = 300
+                },
+                multiColumn = {
+                    type = "toggle",
+                    name = "Multiple Columns",
+                    desc = "Enables the display to use multiple columns.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.multiColumn end,
+                    set = function(_, key)
+                        GT.db.profile.General.multiColumn = key
+                    end,
+                    order = 301
+                },
+                numRows = {
+                    type = "range",
+                    name = "Max Rows Per Column",
+                    desc = "Set the maximum number of rows to be displayed per column.",
+                    min = 1,
+                    max = 30,
+                    step = 1,
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.numRows or 1 end,
+                    set = function(_, key)
+                        GT.db.profile.General.numRows = key
+                        GT:AllignRows()
+                    end,
+                    disabled = function()
+                        if not GT.db.profile.General.multiColumn then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 302
+                },
+                header4 = {
+                    type = "header",
+                    name = "Icon",
+                    order = 400
                 },
                 iconWidth = {
                     type = "range",
@@ -418,9 +460,10 @@ local generalOptions = {
                         GT.db.profile.General.iconWidth = key
                         for itemID, itemFrame in pairs(GT.Display.Frames) do
                             itemFrame.icon:SetWidth(GT.db.profile.General.iconWidth)
+                            GT:SetDisplayFrameWidth()
                         end
                     end,
-                    order = 301
+                    order = 401
                 },
                 iconHeight = {
                     type = "range",
@@ -444,7 +487,7 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 302
+                    order = 402
                 },
                 rarityBorder = {
                     type = "toggle",
@@ -472,12 +515,12 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 303
+                    order = 403
                 },
-                header4 = {
+                header5 = {
                     type = "header",
                     name = "Text",
-                    order = 400
+                    order = 500
                 },
                 textColor = {
                     type = "color",
@@ -497,7 +540,7 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 401
+                    order = 501
                 },
                 textSize = {
                     type = "range",
@@ -529,7 +572,7 @@ local generalOptions = {
                         end
                         GT:AllignColumns()
                     end,
-                    order = 402
+                    order = 502
                 },
                 textFont = {
                     type = "select",
@@ -555,7 +598,7 @@ local generalOptions = {
                         end
                         GT:AllignColumns()
                     end,
-                    order = 403
+                    order = 503
                 },
                 totalColor = {
                     type = "color",
@@ -575,7 +618,7 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 404
+                    order = 504
                 },
                 totalSize = {
                     type = "range",
@@ -607,7 +650,7 @@ local generalOptions = {
                         end
                         GT:AllignColumns()
                     end,
-                    order = 405
+                    order = 505
                 },
                 totalFont = {
                     type = "select",
@@ -633,7 +676,7 @@ local generalOptions = {
                         end
                         GT:AllignColumns()
                     end,
-                    order = 406
+                    order = 506
                 },
             },
         },
