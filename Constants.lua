@@ -1228,6 +1228,11 @@ local ItemData = {
             { id = 213197, name = "Null Lotus", order = 18 },
             { id = 213612, name = "Viridescent Spores", order = 19 },
             { id = 213611, name = "Writhing Sample", order = 20 },
+            { id = -1, name = "Seeds", order = 21 },
+            { id = 214561, name = "Verdant Seed", order = 22 },
+            { id = 214605, name = "Crystallized Verdant Seed", order = 23 },
+            { id = 214597, name = "Irradiated Verdant Seed", order = 24 },
+            { id = 214595, name = "Sporefused Verdant Seed", order = 25 },
         },
         Ore = {
             { id = 210930, name = "Bismuth", order = 1, quality = 1 },

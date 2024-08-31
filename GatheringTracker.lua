@@ -408,6 +408,7 @@ function GT:AllignColumns()
 end
 
 function GT:SetDisplayFrameWidth()
+    -- could also use Frame:GetBoundsRect() if needed in the future
     local textWidth = GT:SumTable(GT.Display.ColumnSize)
     local offsets = (#GT.Display.ColumnSize * 8) + 3
     local iconWidth = GT.db.profile.General.iconWidth
