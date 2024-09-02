@@ -115,6 +115,11 @@ function GT:FiltersButton(profileChanged)
                     end
 
                     GT.baseFrame.button[expansion][category] = GT.baseFrame.button[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
+                    if category == "Knowledge" then
+                        local columns = 3
+                        GT.baseFrame.button[expansion][category]:SetGridMode(MenuConstants.VerticalGridDirection, columns)
+                    end
+
                     for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                         local function IsSelected_Item()
                             if GT.db.profile.Filters[itemData.id] == true then
@@ -137,7 +142,7 @@ function GT:FiltersButton(profileChanged)
                         end
 
                         if itemData.id == -1 then
-                            local divider = GT.baseFrame.button[expansion][category]:CreateDivider()
+                            local divider = GT.baseFrame.button[expansion][category]:CreateTitle(itemData.name)
                         else
                             local name = itemData.name
 
