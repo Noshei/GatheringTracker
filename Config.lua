@@ -39,6 +39,7 @@ GT.defaults = {
             rarityBorder = true,
             multiColumn = false,
             numRows = 1,
+            instanceHide = false,
         },
         Notifications = {
             Count = {
@@ -291,6 +292,27 @@ local generalOptions = {
                         end
                     end,
                     order = 106
+                },
+                header2 = {
+                    type = "header",
+                    name = "Instance Visibility",
+                    order = 200
+                },
+                instanceHide = {
+                    type = "toggle",
+                    name = "Hide in Instance Content",
+                    desc = "When selected the display will be hidden in instance content.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.instanceHide end,
+                    set = function(_, key)
+                        GT.db.profile.General.instanceHide = key
+                        if key and IsInInstance() then
+                            GT:ClearDisplay()
+                        else
+                            GT:InventoryUpdate("Toggle Instance Hide", false)
+                        end
+                    end,
+                    order = 210
                 },
             },
         },
@@ -919,7 +941,7 @@ local generalOptions = {
                     name = "Debug",
                     desc = "This is for debugging the addon, do NOT enable, it is spammy.",
                     width = 1.70,
-                    values = { [0] = "Off", [1] = "Limites", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)" },
+                    values = { [0] = "Off", [1] = "Limited", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)" },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
                             GT.db.profile.General.debugOption = 0
@@ -1048,6 +1070,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
+                    width = 1.24,
                     order = itemData.order
                 }
                 if itemData.desc then

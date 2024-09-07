@@ -62,6 +62,12 @@ end
 function GT:PLAYER_ENTERING_WORLD()
     GT.Debug("PLAYER_ENTERING_WORLD", 1)
 
+    if GT.db.profile.General.instanceHide and IsInInstance() then
+        GT.Debug("PLAYER_ENTERING_WORLD: Instance Hide", 2)
+        GT:ClearDisplay()
+        return
+    end
+
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
     GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
 end
@@ -822,6 +828,11 @@ function GT:InventoryUpdate(event, wait)
     end
     if GT:CheckModeStatus() == false then
         GT.Debug("InventoryUpdate: CheckModeStatus", 2, GT:CheckModeStatus())
+        return
+    end
+    if GT.db.profile.General.instanceHide and IsInInstance() then
+        GT.Debug("InventoryUpdate: Instance Hide", 2)
+        GT:ClearDisplay()
         return
     end
     if GT.PlayerEnteringWorld == true then
