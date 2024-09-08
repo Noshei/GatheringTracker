@@ -1278,8 +1278,7 @@ function GatheringTracker_OnAddonCompartmentClick(addonName, button)
     if (button == "LeftButton") then
         GT:ToggleGatheringTracker()
     elseif (button == "RightButton") then
-        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
-        InterfaceOptionsFrame_OpenToCategory(GT.metaData.name)
+        Settings.OpenToCategory(GT.metaData.name, true)
     end
 end
 

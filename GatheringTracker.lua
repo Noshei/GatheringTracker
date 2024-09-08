@@ -1,4 +1,4 @@
-GatheringTracker = LibStub("AceAddon-3.0"):NewAddon("GatheringTracker", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0")
+GatheringTracker = LibStub("AceAddon-3.0"):NewAddon("GatheringTracker", "AceEvent-3.0", "AceComm-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 local GT = GatheringTracker
@@ -116,6 +116,7 @@ function GT:CreateBaseFrame()
     backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
     backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
     backdrop:SetFrameStrata("FULLSCREEN_DIALOG")
+    backdrop:SetClampedToScreen(true)
 
     backdrop:Hide()
 
