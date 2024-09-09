@@ -211,7 +211,6 @@ function GT:FiltersButton(profileChanged)
 
     filterButton:SetScript("OnClick", function(self, button, down)
         if button == "LeftButton" then
-            --EasyMenu(GT.baseFrame.filterMenu, GT.baseFrame.menu, "cursor", 0, 0, "MENU")
             MenuUtil.CreateContextMenu(filterButton, FiltersMenu)
         elseif button == "RightButton" then
             GT:ClearFilters()

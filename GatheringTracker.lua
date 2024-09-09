@@ -268,7 +268,7 @@ function GT:RemoveSender(senderIndex)
         GT:AddRemoveDisplayCell("remove", itemFrame, senderIndex)
         itemFrame.displayedCharacters = itemFrame.displayedCharacters - 1
 
-        if itemFrame.displayedCharacters == 1 and itemID > 1 and itemID < 9999999999 then
+        if itemFrame.displayedCharacters == 1 and itemID > 2 and itemID < 9999999999 then
             GT.Pools.fontStringPool:Release(itemFrame.text[2])
             GT:AddRemoveDisplayCell("remove", itemFrame, 2)
             itemFrame.totalItemCount = nil
@@ -816,6 +816,10 @@ function GT:PrepareDataForDisplay(event, wait)
     GT:AllignColumns()
 end
 
+function GT:ProcessSoloData()
+
+end
+
 function GT:InventoryUpdate(event, wait)
     GT.Debug("InventoryUpdate", 1, event, wait)
     if wait then
@@ -840,6 +844,50 @@ function GT:InventoryUpdate(event, wait)
         GT.PlayerEnteringWorld = false
     end
 
+
+    GT:ProcessSoloData(event)
+
+    if GT.db.profile.General.groupType > 0 and IsInGroup() then
+        GT:CreateDataMessage(event)
+    end
+end
+
+function GT:ProcessSoloData(event)
+    GT.Debug("ProcessSoloData", 2, event)
+    local itemTable = {}
+
+    for index, id in ipairs(GT.IDs) do
+        local itemCount = 0
+        if id == 1 then
+            itemCount = math.floor((GetMoney() / 10000) + 0.5)
+        elseif id == 2 then
+            for bagIndex = 0, 4 do
+                itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
+            end
+        else
+            itemCount = GetItemCount(id, GT.db.profile.General.includeBank, false)
+        end
+
+        if itemCount > 0 then
+            itemTable[id] = itemCount
+        end
+
+        if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
+            GT.Debug("Trigger Notification Handler for each", 2)
+            GT.NotificationPause = false
+            GT:NotificationHandler("each", id, itemCount)
+        end
+    end
+
+    local senderIndex = GT:UpdateSenderTable(UnitName("player"))
+
+    GT:UpdateInventoryData(senderIndex, itemTable)
+
+    GT:PrepareDataForDisplay("Process Solo Data")
+end
+
+function GT:CreateDataMessage(event)
+    GT.Debug("CreateDataMessage", 2, event)
     local updateMessage = ""
 
     for index, id in ipairs(GT.IDs) do
@@ -864,17 +912,17 @@ function GT:InventoryUpdate(event, wait)
             GT:NotificationHandler("each", id, itemCount)
         end
     end
-    GT.Debug("Inventory Update Data", 2, updateMessage)
 
+    GT.Debug("Inventory Update Data Message", 2, updateMessage)
+
+    GT:SendDataMessage(updateMessage)
+end
+
+function GT:SendDataMessage(updateMessage)
     GT:SetChatType()
 
-    if GT.groupMode == "WHISPER" then
-        GT.Debug("Sent Solo Message", 2, updateMessage, GT.groupMode, UnitName("player"))
-        GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, UnitName("player"), "NORMAL", GT.Debug, "AceComm Sent Solo Message")
-    else
-        GT.Debug("Sent Group Message", 2, updateMessage, GT.groupMode)
-        GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, nil, "NORMAL", GT.Debug, "AceComm Sent Group Message")
-    end
+    GT.Debug("Sent Group Message", 2, updateMessage, GT.groupMode)
+    GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, nil, "NORMAL")
 end
 
 function GT:DataMessageReceived(prefix, message, distribution, sender)
@@ -891,7 +939,18 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
 
     GT.Debug("Data Message Starting Processing", 1)
 
-    local senderIndex = ""
+    local senderIndex = GT:UpdateSenderTable(sender)
+
+    local messageTable = GT:CreateItemTable(message)
+
+    GT:UpdateInventoryData(senderIndex, messageTable)
+
+    GT:wait(0.4, "PrepareDataForDisplay", "Data Message Received", true)
+end
+
+function GT:UpdateSenderTable(sender)
+    GT.Debug("UpdateSenderTable", 2, sender)
+    local senderIndex = 0
     local SenderExists = false
     for index, data in ipairs(GT.sender) do
         if data.name == sender then
@@ -908,29 +967,43 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
         table.insert(GT.sender, senderTable)
         senderIndex = #GT.sender
     end
+    return senderIndex
+end
 
+function GT:CreateItemTable(message)
+    GT.Debug("CreateItemTable", 3, message)
     --create messageText table
     local str = " " .. message .. "\n"
     str = str:gsub("%s(%S-)=", "\n%1=")
-    local messageText = {}
+    local itemTable = {}
 
     for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
         local itemID = tonumber(itemID)
+        itemTable[itemID] = value
+    end
+
+    return itemTable
+end
+
+function GT:UpdateInventoryData(senderIndex, itemTable)
+    GT.Debug("UpdateInventoryData", 1, senderIndex, itemTable)
+    for itemID, value in pairs(itemTable) do
         if GT:TableFind(GT.IDs, itemID) then
-            messageText[itemID] = value
             GT.InventoryData[itemID] = GT.InventoryData[itemID] or {}
             GT.InventoryData[itemID][senderIndex] = tonumber(value)
             GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+        else
+            --only matters for when getting data from party members
+            --this removes items that we have disabled but were sent by party members
+            itemTable[itemID] = nil
         end
     end
 
-    --loop existing counts to update, set to 0 if not in message
+    --loop existing counts to update, set to 0 if not in table
     for itemID, data in pairs(GT.InventoryData) do
-        if not messageText[itemID] then
+        if not itemTable[itemID] then
             GT.InventoryData[itemID][senderIndex] = 0
             GT.sender[senderIndex].inventoryData[itemID] = 0
         end
     end
-
-    GT:wait(0.4, "PrepareDataForDisplay", "Data Message Received", true)
 end

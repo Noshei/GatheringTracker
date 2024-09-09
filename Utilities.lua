@@ -147,6 +147,7 @@ function GT:SetChatType()
 end
 
 function GT:CheckModeStatus()
+    --returns TRUE when we should process an inventory update
     local soloMode = GT.db.profile.General.groupType == 0
     local groupMode = GT.db.profile.General.groupType == 1
     GT.Debug("Check Mode Status", 2, soloMode, groupMode, IsInGroup())
