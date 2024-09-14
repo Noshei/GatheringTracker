@@ -2,7 +2,7 @@ local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 function GT:NotificationHandler(mode, id, amount, value)
-    GT.Debug("Notifications Handler", 2, mode, id, amount, value)
+    GT.Debug("Notifications Handler", 3, mode, id, amount, value)
 
     local NotificationTriggered = false
 
@@ -131,7 +131,7 @@ function GT:NotificationHandler(mode, id, amount, value)
                 for itemID, data in pairs(GT.InventoryData) do
                     if GT:TableFind(GT.IDs, tonumber(itemID)) then
                         id = tonumber(itemID)
-                        amount = data[i]
+                        amount = data.counts[i]
                         playerTotal = playerTotal + amount
                         NotificationCheck("Count", true)
                         if GT.db.profile.General.tsmPrice > 0 then
@@ -142,9 +142,8 @@ function GT:NotificationHandler(mode, id, amount, value)
                     end
                 end
                 id = "all"
-                amount = playerTotal
+                amount, value = GT:CalculateTotals(i, true)
                 NotificationCheck("Count", true)
-                value = GT.sender[i].totalValue
                 NotificationCheck("Gold", true)
             end
         end

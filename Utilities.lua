@@ -23,23 +23,23 @@ function GT.Debug(text, level, ...)
 
     if text and level <= GT.db.profile.General.debugOption then
         GT.DebugCount = GT.DebugCount + 1
-        local color = "89FF9A"
+        local color = "89FF9A" --#89FF9A
         if level == 2 then
-            color = "FFD270"
+            color = "FFD270"   --#FFD270
         elseif level == 3 then
-            color = "FF8080"
+            color = "FF8080"   --#FF8080
         elseif level == 4 then
-            color = "E300DB"
+            color = "E300DB"   --#E300DB
         end
         ChatFrame1:AddMessage(
-            "|cffff6f00"
+            "|cffff6f00"        --#ff6f00
             .. GT.metaData.name
-            .. ":|r |cffff0000"
+            .. ":|r |cffff0000" --#ff0000
             .. date("%X")
-            .. "|r |cff00a0a3"
+            .. "|r |cff00a0a3"  --#00a0a3
             .. tostring(GT.DebugCount)
             .. ": |r "
-            .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))
+            .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...)) --#00ff00
         )
     end
 end
@@ -123,6 +123,10 @@ function GT:GroupDisplayCheck()
     end
 
     if GT.db.profile.General.hideOthers == true then
+        return false
+    end
+
+    if C_LFGInfo.IsInLFGFollowerDungeon() == true then
         return false
     end
 

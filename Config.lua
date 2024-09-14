@@ -40,6 +40,8 @@ GT.defaults = {
             multiColumn = false,
             numRows = 1,
             instanceHide = false,
+            --itemsPerHour = false,
+            --goldPerHour = false,
         },
         Notifications = {
             Count = {
@@ -225,7 +227,6 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.hideOthers = key
                         if key then
-                            GT:ClearDisplay()
                             GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", false)
                         else
                             GT:InventoryUpdate("Toggle Hide Other Party Members", false)
@@ -242,10 +243,12 @@ local generalOptions = {
                 },
                 displayAlias = {
                     type = "toggle",
+                    dialogControl = "NW_CheckBox",
                     name = "Display Characters Alias",
                     desc = "When selected the character aliases will be displayed above their count column.",
                     width = 1.70,
                     image = function() return 413577 end,
+                    imageCoords = { { 24, 24 } },
                     get = function() return GT.db.profile.General.displayAlias end,
                     set = function(_, key)
                         GT.db.profile.General.displayAlias = key
@@ -265,14 +268,17 @@ local generalOptions = {
                             return false
                         end
                     end,
+
                     order = 105
                 },
                 characterValue = {
                     type = "toggle",
+                    dialogControl = "NW_CheckBox",
                     name = "Display Per Character Value",
                     desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
                     width = 1.70,
                     image = function() return 133784 end,
+                    imageCoords = { { 24, 24 } },
                     get = function() return GT.db.profile.General.characterValue end,
                     set = function(_, key)
                         GT.db.profile.General.characterValue = key
@@ -307,9 +313,9 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.instanceHide = key
                         if key and IsInInstance() then
-                            GT:ClearDisplay()
+                            GT.baseFrame.frame:Hide()
                         else
-                            GT:InventoryUpdate("Toggle Instance Hide", false)
+                            GT.baseFrame.frame:Show()
                         end
                     end,
                     order = 210
@@ -427,6 +433,38 @@ local generalOptions = {
                     end,
                     order = 204
                 },
+                --[[itemsPerHour = {
+                    type = "toggle",
+                    name = "Display Items Per Hour",
+                    desc = "If selected an estimated items gathered per hour will be displayed.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.itemsPerHour end,
+                    set = function(_, key)
+                        GT.db.profile.General.itemsPerHour = key
+                        --GT:InventoryUpdate("Include Bank", true)
+                    end,
+
+                    order = 205
+                },
+                goldPerHour = {
+                    type = "toggle",
+                    name = "Display Gold Per Hour",
+                    desc = "If selected an estimated gold per hour will be displayed based on the value of items gathered.\nTSM is required for this option to be enabled.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.goldPerHour end,
+                    set = function(_, key)
+                        GT.db.profile.General.goldPerHour = key
+                        --GT:InventoryUpdate("Include Bank", true)
+                    end,
+                    disabled = function()
+                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 206
+                },]]
                 header3 = {
                     type = "header",
                     name = "Columns",
@@ -1039,6 +1077,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
             else
                 filterOptions.args[expansion].args[category].args[tostring(itemData.id)] = {
                     type = "toggle",
+                    dialogControl = "NW_CheckBox",
                     name = function()
                         if itemData.quality then
                             if itemData.quality == 1 then
@@ -1059,6 +1098,45 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             return GetItemIcon(tonumber(itemData.id))
                         end
                     end,
+                    imageCoords = function()
+                        local data = {}
+                        local imageSize = { 24, 24 }
+                        local border = {}
+                        local borderColor = {}
+                        local overlay = {}
+
+                        if tonumber(itemData.id) <= #GT.ItemData.Other.Other then
+                            border = nil
+                            borderColor = nil
+                            overlay = nil
+                        else
+                            local rarity = C_Item.GetItemQualityByID(tonumber(itemData.id)) or 1
+                            if rarity <= 1 then
+                                border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                            else
+                                border = { "bags-glow-white", "atlas" }
+                            end
+
+                            local R, G, B = C_Item.GetItemQualityColor(rarity)
+                            borderColor = { R, G, B, 0.8 }
+
+                            if itemData.quality then
+                                if itemData.quality == 1 then
+                                    overlay = { "professions-icon-quality-tier1-inv", "atlas" }
+                                elseif itemData.quality == 2 then
+                                    overlay = { "professions-icon-quality-tier2-inv", "atlas" }
+                                elseif itemData.quality == 3 then
+                                    overlay = { "professions-icon-quality-tier3-inv", "atlas" }
+                                end
+                            else
+                                overlay = nil
+                            end
+                        end
+
+                        data = { imageSize, border, borderColor, overlay }
+
+                        return data
+                    end,
                     get = function() return GT.db.profile.Filters[itemData.id] end,
                     set = function(_, key)
                         if key then
@@ -1070,7 +1148,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
-                    width = 1.24,
+                    width = 1.2,
                     order = itemData.order
                 }
                 if itemData.desc then
@@ -1223,6 +1301,7 @@ function GT:CreateCustomFilterOptions()
                     local itemName = item:GetItemName()
                     filterOptions.args.custom.args[itemName] = {
                         type = "toggle",
+                        dialogControl = "NW_CheckBox",
                         name = itemName,
                         image = function() return GetItemIcon(tonumber(id)) end,
                         get = function() return GT.db.profile.CustomFiltersTable[id] end,
@@ -1235,6 +1314,35 @@ function GT:CreateCustomFilterOptions()
 
                             GT:RebuildIDTables()
                             GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
+                        end,
+                        imageCoords = function()
+                            local data = {}
+                            local imageSize = { 24, 24 }
+                            local border = {}
+                            local borderColor = {}
+                            local overlay = {}
+
+                            if tonumber(id) <= #GT.ItemData.Other.Other then
+                                border = nil
+                                borderColor = nil
+                                overlay = nil
+                            else
+                                local rarity = C_Item.GetItemQualityByID(tonumber(id)) or 1
+                                if rarity <= 1 then
+                                    border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                                else
+                                    border = { "bags-glow-white", "atlas" }
+                                end
+
+                                local R, G, B = C_Item.GetItemQualityColor(rarity)
+                                borderColor = { R, G, B, 0.8 }
+
+                                overlay = nil
+                            end
+
+                            data = { imageSize, border, borderColor, overlay }
+
+                            return data
                         end,
                         order = (id + 1000)
                     }

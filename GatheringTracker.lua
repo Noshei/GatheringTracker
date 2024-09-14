@@ -64,8 +64,10 @@ function GT:PLAYER_ENTERING_WORLD()
 
     if GT.db.profile.General.instanceHide and IsInInstance() then
         GT.Debug("PLAYER_ENTERING_WORLD: Instance Hide", 2)
-        GT:ClearDisplay()
+        GT.baseFrame.frame:Hide()
         return
+    else
+        GT.baseFrame.frame:Show()
     end
 
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
@@ -197,6 +199,7 @@ function GT:OptionsHide()
 end
 
 function GT:ClearDisplay()
+    GT.Debug("Clear Display", 1)
     for itemID, itemFrame in pairs(GT.Display.Frames) do
         GT:RemoveDiaplayRow(itemID)
     end
@@ -206,20 +209,20 @@ function GT:ClearDisplay()
     GT.Display.Order = {}
 end
 
-function GT:RemoveDisabledItemData(key, itemID)
-    GT.Debug("Remove Disabled Item Data", 3, key, itemID)
+function GT:RemoveItemData(key, itemID)
+    GT.Debug("Remove Item Data", 3, key, itemID)
     if key then
         return
     end
 
     if GT.InventoryData[itemID] then
-        GT.Debug("Remove Disabled Item Data: remove Inventory", 3, key, itemID)
+        GT.Debug("Remove Item Data: remove Inventory", 3, key, itemID)
         GT.InventoryData[itemID] = nil
     end
 
     for senderIndex, senderData in ipairs(GT.sender) do
         if senderData.inventoryData[itemID] then
-            GT.Debug("Remove Disabled Item Data: remove Sender", 3, key, itemID, senderIndex)
+            GT.Debug("Remove Item Data: remove Sender", 3, key, itemID, senderIndex)
             senderData.inventoryData[itemID] = nil
         end
     end
@@ -277,7 +280,8 @@ function GT:RemoveSender(senderIndex)
         GT:SetAnchor(itemFrame)
     end
     for itemID, inventoryData in pairs(GT.InventoryData) do
-        table.remove(inventoryData, senderIndex)
+        table.remove(inventoryData.counts, senderIndex)
+        table.remove(inventoryData.startAmount, senderIndex)
     end
     table.remove(GT.Display.ColumnSize, senderIndex)
     table.remove(GT.sender, senderIndex)
@@ -658,70 +662,9 @@ function GT:PrepareDataForDisplay(event, wait)
 
     GT.Display.ColumnSize = {}
 
-    local playerTotals = {}
-    local itemTotals = {}
-    local aliases = {}
-    local pricePerItem = {}
-    local totalItems = 0
-    local totalPrice = 0
-
     GT:SetTSMPriceSource()
 
     for senderIndex, senderData in ipairs(GT.sender) do
-        for itemID, itemCount in pairs(senderData.inventoryData) do
-            if itemID > #GT.ItemData.Other.Other then
-                GT.Debug("Create Totals", 4, senderIndex, itemID, itemCount)
-                local calculatedItemCount = 0
-
-                calculatedItemCount = itemCount - GT.db.profile.General.ignoreAmount
-                if calculatedItemCount < 0 then
-                    calculatedItemCount = 0
-                end
-
-                GT.InventoryData[itemID][senderIndex] = calculatedItemCount
-
-                itemTotals.countTotal = itemTotals.countTotal or {}
-                itemTotals.countTotal[itemID] = itemTotals.countTotal[itemID] or 0
-                itemTotals.countTotal[itemID] = itemTotals.countTotal[itemID] + calculatedItemCount
-
-                playerTotals.countTotal = playerTotals.countTotal or {}
-                playerTotals.countTotal[senderIndex] = playerTotals.countTotal[senderIndex] or 0
-                playerTotals.countTotal[senderIndex] = playerTotals.countTotal[senderIndex] + calculatedItemCount
-
-                totalItems = totalItems + calculatedItemCount
-
-                itemTotals.valueTotal = itemTotals.valueTotal or {}
-
-                playerTotals.valueTotal = playerTotals.valueTotal or {}
-
-                if GT.tsmLoaded then
-                    pricePerItem[itemID] = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
-                    local totalItemValue = calculatedItemCount * pricePerItem[itemID]
-
-                    itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] or 0
-                    itemTotals.valueTotal[itemID] = itemTotals.valueTotal[itemID] + totalItemValue
-
-                    playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] or 0
-                    playerTotals.valueTotal[senderIndex] = playerTotals.valueTotal[senderIndex] + totalItemValue
-
-                    totalPrice = totalPrice + totalItemValue
-                end
-            end
-        end
-
-        if GT.db.profile.General.displayAlias and #GT.db.profile.Aliases > 0 then
-            for index, aliasData in ipairs(GT.db.profile.Aliases) do
-                if aliasData.name == senderData.name then
-                    aliases[senderIndex] = aliasData.alias
-                end
-            end
-            if aliases[senderIndex] == nil then
-                aliases[senderIndex] = senderData.name
-            end
-        elseif GT.db.profile.General.displayAlias and #GT.db.profile.Aliases == 0 then
-            aliases[senderIndex] = senderData.name
-        end
-
         if senderData.name == GT.Player and not GT.NotificationPause then
             GT.Debug("Trigger Notification Handler for all", 2)
             local countTotal = 0
@@ -736,69 +679,24 @@ function GT:PrepareDataForDisplay(event, wait)
         end
     end
 
-    for itemID, itemData in pairs(GT.InventoryData) do
-        GT.Debug("Check for Items to remove from Display", 4, itemID)
-        if GT:SumTable(itemData) == 0 then
-            GT:RemoveDisabledItemData(flase, itemID)
-        end
-        if not (#itemData == #GT.sender) then
-            local diff = #GT.sender - #itemData
-            if diff > 0 then
-                for iterator = 1, diff do
-                    table.insert(itemData, 0)
-                end
-            end
-        end
-    end
+    GT:CleanUpInventoryData()
 
-    for itemID, itemData in pairs(GT.InventoryData) do
-        GT.Debug("Prepare Data for Display", 1, itemID)
-        if itemID <= #GT.ItemData.Other.Other then
-            GT:InitiateFrameProcess(
-                itemID,
-                GT.ItemData.Other.Other[itemID].icon,
-                nil,
-                nil,
-                itemData
-            )
-        else
-            GT:InitiateFrameProcess(
-                tonumber(itemID),
-                GetItemIcon(tonumber(itemID)),
-                C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
-                C_Item.GetItemQualityByID(itemID),
-                itemData,
-                itemTotals.countTotal[itemID],
-                pricePerItem[itemID],
-                itemTotals.valueTotal[itemID]
-            )
-        end
-    end
-    if playerTotals.countTotal and GT:SumTable(playerTotals.countTotal) > 0 then
-        GT:InitiateFrameProcess(
-            9999999998,
-            133647,
-            nil,
-            nil,
-            playerTotals.countTotal,
-            totalItems,
-            "",
-            totalPrice
-        )
-    elseif GT.Display.Frames[9999999998] then
-        GT:RemoveDiaplayRow(9999999998)
-    end
+    GT:SetupItemRows()
 
-    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and playerTotals.valueTotal then
-        for index, value in ipairs(playerTotals.valueTotal) do
-            playerTotals.valueTotal[index] = tostring(math.ceil(value - 0.5)) .. "g"
+    GT:SetupTotalsRow()
+
+    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and GT.tsmLoaded then
+        local playerPriceTotals = {}
+        for senderIndex, senderData in ipairs(GT.sender) do
+            local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true)
+            table.insert(playerPriceTotals, tostring(math.ceil(playerPrice - 0.5)) .. "g")
         end
         GT:InitiateFrameProcess(
             9999999999,
             133784,
             nil,
             nil,
-            playerTotals.valueTotal
+            playerPriceTotals
         )
     end
 
@@ -808,7 +706,7 @@ function GT:PrepareDataForDisplay(event, wait)
             413577,
             nil,
             nil,
-            aliases
+            GT:CreateAliasTable()
         )
     end
 
@@ -816,8 +714,112 @@ function GT:PrepareDataForDisplay(event, wait)
     GT:AllignColumns()
 end
 
-function GT:ProcessSoloData()
+function GT:SetupItemRows()
+    GT.Debug("SetupItemRows", 1)
+    for itemID, itemData in pairs(GT.InventoryData) do
+        GT.Debug("Prepare Data for Display", 2, itemID)
+        if itemID <= #GT.ItemData.Other.Other then
+            GT:InitiateFrameProcess(
+                itemID,
+                GT.ItemData.Other.Other[itemID].icon,
+                nil,
+                nil,
+                itemData.counts
+            )
+        else
+            local totalItemCount, priceTotalItem = GT:CalculateTotals(nil, nil, itemID, true)
+            local pricePerItem = nil
+            if GT.tsmLoaded then
+                pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+            end
 
+            GT:InitiateFrameProcess(
+                tonumber(itemID),
+                GetItemIcon(tonumber(itemID)),
+                C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
+                C_Item.GetItemQualityByID(itemID),
+                itemData.counts,
+                totalItemCount,
+                pricePerItem,
+                priceTotalItem
+            )
+        end
+    end
+end
+
+function GT:SetupTotalsRow()
+    GT.Debug("SetupTotalsRow", 1)
+    local playerTotals = {}
+    local priceTotal = 0
+    local totalItemCount = 0
+
+    for senderIndex, senderData in ipairs(GT.sender) do
+        local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true)
+        table.insert(playerTotals, playerTotal)
+        priceTotal = priceTotal + playerPrice
+    end
+    totalItemCount = GT:SumTable(playerTotals)
+    if totalItemCount > 0 then
+        GT:InitiateFrameProcess(
+            9999999998,
+            133647,
+            nil,
+            nil,
+            playerTotals,
+            GT:SumTable(playerTotals),
+            "",
+            priceTotal
+        )
+    elseif GT.Display.Frames[9999999998] then
+        GT:RemoveDiaplayRow(9999999998)
+    end
+end
+
+function GT:CleanUpInventoryData()
+    GT.Debug("CleanUpInventoryData", 1)
+    for itemID, itemData in pairs(GT.InventoryData) do
+        -- adds 0 count for senders that are missing data for a displayed Item
+        if not (#itemData.counts == #GT.sender) then
+            repeat
+                table.insert(itemData.counts, 0)
+            until (#itemData.counts == #GT.sender)
+        end
+
+        -- adds 0 startAmount for senders that are missing data for a displayed Item
+        if not (#itemData.startAmount == #GT.sender) then
+            repeat
+                table.insert(itemData.startAmount, 0)
+            until (#itemData.startAmount == #GT.sender)
+        end
+
+        -- Removes Items that have a total count of 0
+        if GT:SumTable(itemData.counts) == 0 then
+            GT.Debug("CleanUpInventoryData", 2, itemID, GT:SumTable(itemData.counts))
+            GT:RemoveItemData(false, itemID)
+        end
+    end
+end
+
+function GT:CreateAliasTable()
+    GT.Debug("CreateAliasTable", 1)
+    local aliases = {}
+
+    for senderIndex, senderData in ipairs(GT.sender) do
+        if GT.db.profile.General.displayAlias and #GT.db.profile.Aliases > 0 then
+            for index, aliasData in ipairs(GT.db.profile.Aliases) do
+                if aliasData.name == senderData.name then
+                    aliases[senderIndex] = aliasData.alias
+                end
+            end
+            if aliases[senderIndex] == nil then
+                aliases[senderIndex] = senderData.name
+            end
+        elseif GT.db.profile.General.displayAlias and #GT.db.profile.Aliases == 0 then
+            aliases[senderIndex] = senderData.name
+        end
+    end
+
+    return aliases
 end
 
 function GT:InventoryUpdate(event, wait)
@@ -837,8 +839,10 @@ function GT:InventoryUpdate(event, wait)
     end
     if GT.db.profile.General.instanceHide and IsInInstance() then
         GT.Debug("InventoryUpdate: Instance Hide", 2)
-        GT:ClearDisplay()
+        GT.baseFrame.frame:Hide()
         return
+    else
+        GT.baseFrame.frame:Show()
     end
     if GT.PlayerEnteringWorld == true then
         GT.PlayerEnteringWorld = false
@@ -873,7 +877,7 @@ function GT:ProcessSoloData(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
-            GT.Debug("Trigger Notification Handler for each", 2)
+            GT.Debug("Trigger Notification Handler for each", 4)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
@@ -907,7 +911,7 @@ function GT:CreateDataMessage(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") then
-            GT.Debug("Trigger Notification Handler for each", 2)
+            GT.Debug("Trigger Notification Handler for each", 4)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
@@ -961,7 +965,6 @@ function GT:UpdateSenderTable(sender)
     if not SenderExists then
         local senderTable = {
             name = sender,
-            totalValue = 0, --can be removed once mvoed to new data display function
             inventoryData = {},
         }
         table.insert(GT.sender, senderTable)
@@ -985,13 +988,33 @@ function GT:CreateItemTable(message)
     return itemTable
 end
 
+function GT:ItemDataConstructor(itemID, senderIndex)
+    GT.Debug("ItemDataConstructor", 1, itemID, senderIndex)
+
+    local itemData = {}
+    itemData.counts = {}
+    itemData.counts[senderIndex] = 0
+    itemData.total = 0
+    itemData.startTotal = 0
+    itemData.startAmount = {}
+    itemData.startAmount[senderIndex] = 0
+    itemData.startTime = time()
+
+    return itemData
+end
+
 function GT:UpdateInventoryData(senderIndex, itemTable)
     GT.Debug("UpdateInventoryData", 1, senderIndex, itemTable)
     for itemID, value in pairs(itemTable) do
         if GT:TableFind(GT.IDs, itemID) then
-            GT.InventoryData[itemID] = GT.InventoryData[itemID] or {}
-            GT.InventoryData[itemID][senderIndex] = tonumber(value)
+            GT.InventoryData[itemID] = GT.InventoryData[itemID] or GT:ItemDataConstructor(itemID, senderIndex)
+            GT.InventoryData[itemID].counts[senderIndex] = tonumber(value)
             GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+            if not GT.InventoryData[itemID].startAmount[senderIndex] or
+                GT.InventoryData[itemID].startAmount[senderIndex] == 0 then
+                GT.InventoryData[itemID].startAmount[senderIndex] = tonumber(value)
+            end
+            GT.InventoryData[itemID].startTotal = GT:CalculateTotals(nil, nil, itemID)
         else
             --only matters for when getting data from party members
             --this removes items that we have disabled but were sent by party members
@@ -1002,8 +1025,53 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
     --loop existing counts to update, set to 0 if not in table
     for itemID, data in pairs(GT.InventoryData) do
         if not itemTable[itemID] then
-            GT.InventoryData[itemID][senderIndex] = 0
+            GT.InventoryData[itemID].counts[senderIndex] = 0
             GT.sender[senderIndex].inventoryData[itemID] = 0
         end
     end
+end
+
+function GT:CalculateTotals(senderIndex, calcSenderValue, itemID, calcItemValue)
+    GT.Debug("CalculateTotals", 1, senderIndex, calcSenderValue, itemID, calcItemValue)
+
+    if senderIndex then
+        return GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
+    end
+
+    if itemID then
+        return GT:CalculateItemTotals(itemID, calcItemValue)
+    end
+end
+
+function GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
+    GT.Debug("CalculatePlayerTotals", 1, senderIndex, calcSenderValue)
+
+    local total = 0
+    local value = 0
+    for itemID, itemCount in pairs(GT.sender[senderIndex].inventoryData) do
+        if itemID > #GT.ItemData.Other.Other and itemCount - GT.db.profile.General.ignoreAmount > 0 then
+            total = total + itemCount
+            if calcSenderValue and GT.tsmLoaded then
+                value = value + (itemCount * (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000)
+            end
+        end
+    end
+    return total, math.ceil(value - 0.5) --rounds up to whole number
+end
+
+function GT:CalculateItemTotals(itemID, calcItemValue)
+    GT.Debug("CalculateItemTotals", 1, itemID, calcItemValue)
+
+    local total = 0
+    local value = 0
+    for senderIndex, itemCount in pairs(GT.InventoryData[itemID].counts) do
+        if itemCount - GT.db.profile.General.ignoreAmount > 0 then
+            total = total + itemCount
+        end
+    end
+    if calcItemValue and GT.tsmLoaded then
+        value = (total * (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000)
+    end
+    GT.InventoryData[itemID].total = total
+    return total, math.ceil(value - 0.5) --rounds up to whole number
 end

@@ -74,7 +74,7 @@ function GT:FiltersButton(profileChanged)
                     for _, itemData in ipairs(categoryData) do
                         if not (itemData.id == -1) then
                             GT.db.profile.Filters[itemData.id] = key or nil
-                            GT:RemoveDisabledItemData(key, itemData.id)
+                            GT:RemoveItemData(key, itemData.id)
                         end
                     end
                 end
@@ -106,7 +106,7 @@ function GT:FiltersButton(profileChanged)
                         for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                             if not (itemData.id == -1) then
                                 GT.db.profile.Filters[itemData.id] = key or nil
-                                GT:RemoveDisabledItemData(key, itemData.id)
+                                GT:RemoveItemData(key, itemData.id)
                             end
                         end
 
@@ -117,9 +117,10 @@ function GT:FiltersButton(profileChanged)
                     GT.baseFrame.button[expansion][category] = GT.baseFrame.button[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
                     if category == "Knowledge" then
                         local columns = 3
-                        GT.baseFrame.button[expansion][category]:SetGridMode(MenuConstants.VerticalGridDirection, columns)
-                    end
 
+                        --GT.baseFrame.button[expansion][category]:SetGridMode(MenuConstants.VerticalGridDirection, columns)
+                    end
+                    GT.baseFrame.button[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
                     for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                         local function IsSelected_Item()
                             if GT.db.profile.Filters[itemData.id] == true then
@@ -137,7 +138,7 @@ function GT:FiltersButton(profileChanged)
                             end
 
                             GT:RebuildIDTables()
-                            GT:RemoveDisabledItemData(IsSelected_Item(), itemData.id)
+                            GT:RemoveItemData(IsSelected_Item(), itemData.id)
                             GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
                         end
 
@@ -159,9 +160,16 @@ function GT:FiltersButton(profileChanged)
                             GT.baseFrame.button[expansion][category][itemData.name] = GT.baseFrame.button[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
                             GT.baseFrame.button[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
                                 local leftTexture = text:AttachTexture()
-                                leftTexture:SetSize(18, 18)
+
                                 leftTexture:SetDrawLayer("BACKGROUND", 0)
                                 leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
+
+                                --if category ~= "Knowledge" then
+                                text:SetHeight(26)
+                                leftTexture:SetSize(24, 24)
+                                --else
+                                --    leftTexture:SetSize(18, 18)
+                                --end
 
                                 if itemData.icon then
                                     leftTexture:SetTexture(itemData.icon)
@@ -316,7 +324,7 @@ function GT:CreateCustomFiltersList(rootDescription)
         local key = not IsSelected_CustomFilter()
         for id, data in pairs(GT.db.profile.CustomFiltersTable) do
             GT.db.profile.CustomFiltersTable[tostring(id)] = key
-            GT:RemoveDisabledItemData(key, id)
+            GT:RemoveItemData(key, id)
         end
 
         GT:RebuildIDTables()
@@ -338,7 +346,7 @@ function GT:CreateCustomFiltersList(rootDescription)
             end
 
             GT:RebuildIDTables()
-            GT:RemoveDisabledItemData(IsSelected_CustomFilterItem(), itemData.id)
+            GT:RemoveItemData(IsSelected_CustomFilterItem(), itemData.id)
             GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
 
