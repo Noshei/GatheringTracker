@@ -115,21 +115,30 @@ end
 function GT:GroupDisplayCheck()
     GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
     if GT.db.profile.General.groupType == 0 then
+        GT.Debug("Group Display Check Result", 3, "Group Mode Off")
         return false
     end
 
     if IsInGroup() == false then
+        GT.Debug("Group Display Check Result", 3, "Not in Group")
         return false
     end
 
     if GT.db.profile.General.hideOthers == true then
+        GT.Debug("Group Display Check Result", 3, "Hide Others Enabled")
         return false
     end
 
     if C_LFGInfo.IsInLFGFollowerDungeon() == true then
+        GT.Debug("Group Display Check Result", 3, "In Follower Dungeon")
+        return false
+    end
+    if #GT.sender < 2 then
+        GT.Debug("Group Display Check Result", 3, "No Group Data")
         return false
     end
 
+    GT.Debug("Group Display Check Result", 3, "Display Group")
     return true
 end
 

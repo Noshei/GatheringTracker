@@ -75,7 +75,7 @@ function GT:PLAYER_ENTERING_WORLD()
 end
 
 function GT:GROUP_ROSTER_UPDATE(event, wait)
-    GT.Debug("GROUP_ROSTER_UPDATE", 1, wait)
+    GT.Debug("GROUP_ROSTER_UPDATE", 1, event, wait)
 
     --Check if we need to wait on doing the update.
     --If we do need to wait, determine if an existing wait table has already been created
@@ -89,12 +89,12 @@ function GT:GROUP_ROSTER_UPDATE(event, wait)
     GT:SetChatType()
 
     GT:CheckForPlayersLeavingGroup()
-    GT:InventoryUpdate("GROUP_ROSTER_UPDATE", false)
+    GT:InventoryUpdate("GROUP_ROSTER_UPDATE", true)
 end
 
 function GT:BAG_UPDATE()
     if GT.PlayerEnteringWorld == false then
-        GT:InventoryUpdate("BAG_UPDATE")
+        GT:InventoryUpdate("BAG_UPDATE", true)
     end
 end
 
@@ -877,7 +877,6 @@ function GT:ProcessSoloData(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
-            GT.Debug("Trigger Notification Handler for each", 4)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
@@ -911,7 +910,6 @@ function GT:CreateDataMessage(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") then
-            GT.Debug("Trigger Notification Handler for each", 4)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
