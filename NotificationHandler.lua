@@ -2,6 +2,7 @@ local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 function GT:NotificationHandler(mode, id, amount, value)
+    GT.Debug("Notifications Handler", 5, mode, id, amount, value)
 
     local NotificationTriggered = false
 

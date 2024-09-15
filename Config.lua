@@ -979,7 +979,7 @@ local generalOptions = {
                     name = "Debug",
                     desc = "This is for debugging the addon, do NOT enable, it is spammy.",
                     width = 1.70,
-                    values = { [0] = "Off", [1] = "Limited", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)" },
+                    values = { [0] = "Off", [1] = "Limited", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)", [5] = "Notification Spam" },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
                             GT.db.profile.General.debugOption = 0

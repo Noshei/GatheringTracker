@@ -30,6 +30,8 @@ function GT.Debug(text, level, ...)
             color = "FF8080"   --#FF8080
         elseif level == 4 then
             color = "E300DB"   --#E300DB
+        elseif level == 5 then
+            color = "3990FA"   --#3990FA
         end
         ChatFrame1:AddMessage(
             "|cffff6f00"        --#ff6f00

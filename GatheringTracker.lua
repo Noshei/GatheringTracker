@@ -396,6 +396,9 @@ function GT:SetAnchor(frame)
 end
 
 function GT:AllignRows()
+    if not GT.Display.Order then
+        return
+    end
     for i, id in ipairs(GT.Display.Order) do
         if i == 1 then
             GT.Display.Frames[id]:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
@@ -410,6 +413,9 @@ function GT:AllignRows()
 end
 
 function GT:AllignColumns()
+    if not GT.Display.Order then
+        return
+    end
     for i, id in ipairs(GT.Display.Order) do
         for index, string in ipairs(GT.Display.Frames[id].text) do
             string:SetWidth(GT.Display.ColumnSize[index])
@@ -877,6 +883,7 @@ function GT:ProcessSoloData(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
+            GT.Debug("Trigger Notification Handler for each", 5)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
@@ -910,6 +917,7 @@ function GT:CreateDataMessage(event)
         end
 
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") then
+            GT.Debug("Trigger Notification Handler for each", 5)
             GT.NotificationPause = false
             GT:NotificationHandler("each", id, itemCount)
         end
