@@ -13,6 +13,7 @@ GT.DebugCount = 0
 GT.Options = {}
 GT.Notifications = {}
 GT.NotificationPause = true
+GT.GlobalStartTime = 0
 
 GT.metaData = {
     name = C_AddOns.GetAddOnMetadata("GatheringTracker", "Title"),
@@ -95,6 +96,7 @@ end
 function GT:BAG_UPDATE()
     if GT.PlayerEnteringWorld == false then
         GT:InventoryUpdate("BAG_UPDATE", true)
+        GT:RefreshPerHourDisplay(false, true)
     end
 end
 
@@ -179,7 +181,7 @@ end
 
 function GT:OptionsHide()
     if GT.baseFrame then
-        --[[This is called when the Interface Options Panel is closed.]]
+        --This is called when the Interface Options Panel is closed.
         --locks the base frame if the options are closed without first locking it.
         if GT.db.profile.General.unlock then
             GT.db.profile.General.unlock = false
@@ -200,13 +202,27 @@ end
 
 function GT:ClearDisplay()
     GT.Debug("Clear Display", 1)
-    for itemID, itemFrame in pairs(GT.Display.Frames) do
-        GT:RemoveDiaplayRow(itemID)
-    end
+    GT:DestroyDisplay()
+
     GT.InventoryData = {}
     GT.sender = {}
     GT.Display.ColumnSize = {}
     GT.Display.Order = {}
+end
+
+function GT:RebuildDisplay(event)
+    GT.Debug("Rebuild Display Start", 1, event)
+
+    GT:DestroyDisplay()
+
+    GT:PrepareDataForDisplay("Rebuild Display")
+end
+
+function GT:DestroyDisplay()
+    GT.Debug("Destroy Display", 1)
+    for itemID, itemFrame in pairs(GT.Display.Frames) do
+        GT:RemoveDiaplayRow(itemID)
+    end
 end
 
 function GT:RemoveItemData(key, itemID)
@@ -253,38 +269,16 @@ function GT:CheckForPlayersLeavingGroup()
             end
         end
     end
-    if groupList == nil then
-        --table.remove(GT.Display.ColumnSize, 2)
-        if GT.db.profile.General.characterValue and GT.Display.Frames[9999999999] then
-            GT:RemoveDiaplayRow(9999999999)
-        end
-        if GT.db.profile.General.displayAlias and GT.Display.Frames[0] then
-            GT:RemoveDiaplayRow(0)
-        end
-    end
 end
 
 function GT:RemoveSender(senderIndex)
     GT.Debug("Remove Sender", 2, senderIndex)
-    for itemID, itemFrame in pairs(GT.Display.Frames) do
-        GT.Pools.fontStringPool:Release(itemFrame.text[senderIndex])
-        GT:AddRemoveDisplayCell("remove", itemFrame, senderIndex)
-        itemFrame.displayedCharacters = itemFrame.displayedCharacters - 1
-
-        if itemFrame.displayedCharacters == 1 and itemID > 2 and itemID < 9999999999 then
-            GT.Pools.fontStringPool:Release(itemFrame.text[2])
-            GT:AddRemoveDisplayCell("remove", itemFrame, 2)
-            itemFrame.totalItemCount = nil
-        end
-
-        GT:SetAnchor(itemFrame)
-    end
     for itemID, inventoryData in pairs(GT.InventoryData) do
         table.remove(inventoryData.counts, senderIndex)
         table.remove(inventoryData.startAmount, senderIndex)
     end
-    table.remove(GT.Display.ColumnSize, senderIndex)
     table.remove(GT.sender, senderIndex)
+    GT:RebuildDisplay()
 end
 
 function GT:AddRemoveDisplayCell(actionType, itemFrame, index, columnFrame)
@@ -295,7 +289,7 @@ function GT:AddRemoveDisplayCell(actionType, itemFrame, index, columnFrame)
         table.remove(itemFrame.text, index)
     end
 
-    for textIndex, textFrame in ipairs(itemFrame.text) do
+    --[[for textIndex, textFrame in ipairs(itemFrame.text) do
         if textFrame.textType == "totalItemCount" then
             itemFrame.totalItemCount = textIndex
         end
@@ -305,7 +299,7 @@ function GT:AddRemoveDisplayCell(actionType, itemFrame, index, columnFrame)
         if textFrame.textType == "priceTotalItem" then
             itemFrame.priceTotalItem = textIndex
         end
-    end
+    end]]
 end
 
 function GT:RemoveDiaplayRow(itemID --[[int]])
@@ -314,70 +308,6 @@ function GT:RemoveDiaplayRow(itemID --[[int]])
     local order = GT:TableFind(GT.Display.Order, itemID)
     table.remove(GT.Display.Order, order)
     GT.Display.Frames[itemID] = nil
-end
-
-local function FramePool_Resetter(framePool, frame)
-    frame:Hide()
-    frame:ClearAllPoints()
-    if frame.icon then
-        GT.Pools.texturePool:Release(frame.icon)
-        frame.icon = nil
-    end
-    if frame.iconQuality then
-        GT.Pools.texturePool:Release(frame.iconQuality)
-        frame.iconQuality = nil
-    end
-    if frame.iconRarity then
-        frame.iconRarity:SetVertexColor(1, 1, 1, 1)
-        GT.Pools.texturePool:Release(frame.iconRarity)
-        frame.iconRarity = nil
-    end
-    if frame.text == nil then
-        return
-    end
-    for index, fontString in ipairs(frame.text) do
-        GT.Pools.fontStringPool:Release(fontString)
-    end
-    frame.text = nil
-    if frame.totalItemCount then
-        frame.totalItemCount = nil
-    end
-    if frame.pricePerItem then
-        frame.pricePerItem = nil
-    end
-    if frame.priceTotalItem then
-        frame.priceTotalItem = nil
-    end
-end
-
-local function InitializePools()
-    GT.Pools.framePool = GT.Pools.framePool or CreateFramePool("Frame", GT.baseFrame.frame, nil, FramePool_Resetter)
-    GT.Pools.texturePool = GT.Pools.texturePool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND")
-    GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
-end
-
-local function CreateTextDisplay(frame, id, text, type, height, anchor)
-    local string = GT.Pools.fontStringPool:Acquire()
-    string:SetParent(frame)
-    if id < 9999999998 then
-        string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-        string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
-    else
-        string:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
-        string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
-    end
-    string:SetHeight(height)
-    local offset = 3
-    if anchor ~= frame.icon then
-        offset = 8 --make spacing fraction of height? (make this adjustable?)
-    end
-    string.textType = type
-
-    string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
-    string:SetJustifyH("LEFT") --add option for this?
-    string:SetText(text)
-    string:Show()
-    return string
 end
 
 function GT:SetAnchor(frame)
@@ -435,18 +365,19 @@ function GT:SetDisplayFrameWidth()
     end
 end
 
-function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("InitiateFrameProcess", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
+function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayText, totalItemCount,
+                                 pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
+    GT.Debug("InitiateFrameProcess", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount,
+        pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
 
     if GT.Display.Frames[id] then
         GT:UpdateDisplayFrame(id,
-            iconId,
-            iconQuality,
-            iconRarity,
             displayText,
             totalItemCount,
             pricePerItem,
-            priceTotalItem
+            priceTotalItem,
+            itemsPerHour,
+            goldPerHour
         )
     else
         GT:CreateDisplayFrame(id,
@@ -456,13 +387,17 @@ function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayTex
             displayText,
             totalItemCount,
             pricePerItem,
-            priceTotalItem
+            priceTotalItem,
+            itemsPerHour,
+            goldPerHour
         )
     end
 end
 
-function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("UpdateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, unpack(displayText), totalItemCount, pricePerItem, priceTotalItem)
+function GT:UpdateDisplayFrame(id, displayText, totalItemCount, pricePerItem, priceTotalItem,
+                               itemsPerHour, goldPerHour)
+    GT.Debug("UpdateDisplayFrame", 4, id, unpack(displayText), totalItemCount, pricePerItem, priceTotalItem,
+        itemsPerHour, goldPerHour)
 
     if displayText == nil then
         return
@@ -475,30 +410,14 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         if type(text) == "number" then
             text = math.ceil(text - 0.5)
         end
-        if textIndex <= frame.displayedCharacters then
-            frame.text[textIndex]:SetText(text)
-            GT:CheckColumnSize(textIndex, frame.text[textIndex])
-        else
-            local anchor = frame.icon
-            if textIndex > 1 then
-                anchor = frame.text[textIndex - 1]
-            end
-            local textString = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
-            GT:AddRemoveDisplayCell("add", frame, textIndex, textString)
-            GT:CheckColumnSize(textIndex, frame.text[textIndex])
-        end
+        frame.text[textIndex]:SetText(text)
+        GT:CheckColumnSize(textIndex, frame.text[textIndex])
     end
-    frame.displayedCharacters = #displayText
 
     if totalItemCount and GT:GroupDisplayCheck() then
         if frame.totalItemCount then
             frame.text[frame.totalItemCount]:SetText("[" .. math.ceil(totalItemCount - 0.5) .. "]")
             GT:CheckColumnSize(frame.totalItemCount, frame.text[frame.totalItemCount])
-        else
-            local index = #displayText + 1
-            local textString = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#displayText])
-            GT:AddRemoveDisplayCell("add", frame, index, textString)
-            GT:CheckColumnSize(index, frame.text[index])
         end
     end
 
@@ -512,16 +431,6 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         if frame.pricePerItem then
             frame.text[frame.pricePerItem]:SetText(text)
             GT:CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem])
-        else
-            local index = 0
-            if frame.priceTotalItem then
-                index = #frame.text
-            else
-                index = #frame.text + 1
-            end
-            local textString = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[index - 1])
-            GT:AddRemoveDisplayCell("add", frame, index, textString)
-            GT:CheckColumnSize(index, frame.text[index])
         end
     end
 
@@ -529,134 +438,43 @@ function GT:UpdateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         if frame.priceTotalItem then
             frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
             GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
-        else
-            local index = #frame.text + 1
-            local textString = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[index - 1])
-            GT:AddRemoveDisplayCell("add", frame, index, textString)
-            GT:CheckColumnSize(index, frame.text[index])
         end
+    end
+
+    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
+        if frame.priceTotalItem then
+            frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
+            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
+        end
+    end
+
+    if itemsPerHour and GT.db.profile.General.itemsPerHour then
+        GT:UpdateItemsPerHour(frame, itemsPerHour)
+    end
+
+    if goldPerHour and GT.db.profile.General.goldPerHour then
+        GT:UpdateGoldPerHour(frame, goldPerHour)
     end
 
     GT:SetAnchor(frame)
 end
 
-function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-    GT.Debug("CreateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText, totalItemCount, pricePerItem, priceTotalItem)
-
-    if displayText == nil then
+function GT:UpdateItemsPerHour(frame, itemsPerHour)
+    if not frame.itemsPerHour then
         return
     end
 
-    InitializePools()
-
-    local frame = GT.Pools.framePool:Acquire()
-    frame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
-    frame:SetWidth(GT.db.profile.General.iconWidth)
-    local frameHeight = math.max(GT.db.profile.General.iconHeight, GT.db.profile.General.totalSize)
-    frame:SetHeight(frameHeight + 3)
-    frame:Show()
-
-    frame.displayedCharacters = #displayText
-
-    GT.Display.Frames[id] = frame
-
-    frame.icon = GT.Pools.texturePool:Acquire()
-    frame.icon:SetParent(frame)
-    frame.icon:SetDrawLayer("BACKGROUND", 0)
-    frame.icon:SetTexture(iconId)
-    frame.icon:SetPoint("LEFT", frame, "LEFT")
-    frame.icon:SetWidth(GT.db.profile.General.iconWidth)
-    frame.icon:SetHeight(GT.db.profile.General.iconHeight)
-    frame.icon:Show()
-
-    if iconQuality then
-        frame.iconQuality = GT.Pools.texturePool:Acquire()
-        frame.iconQuality:SetParent(frame)
-        frame.iconQuality:SetDrawLayer("BACKGROUND", 2)
-        if iconQuality == 1 then
-            frame.iconQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
-        elseif iconQuality == 2 then
-            frame.iconQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
-        elseif iconQuality == 3 then
-            frame.iconQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
-        end
-        frame.iconQuality:SetAllPoints(frame.icon)
-        frame.iconQuality:Show()
-    end
-
-    GT:CreateRarityBorder(frame, iconRarity)
-
-    frameHeight = frame:GetHeight()
-    frame.text = {}
-
-    for i, text in ipairs(displayText) do
-        local anchor = frame.icon
-        if i > 1 then
-            anchor = frame.text[i - 1]
-        end
-        if type(text) == "number" then
-            text = math.ceil(text - 0.5)
-        else
-            text = text
-        end
-        frame.text[i] = CreateTextDisplay(frame, id, text, "count", frameHeight, anchor)
-        GT:CheckColumnSize(i, frame.text[i])
-    end
-
-    if totalItemCount and GT:GroupDisplayCheck() then --Should I be running group checks here or before calling the function (such as when creating the data that is passed to this function)?
-        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frameHeight, frame.text[#frame.text])
-        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
-        frame.totalItemCount = #frame.text
-    end
-
-    if pricePerItem and GT.db.profile.General.perItemPrice then
-        local text = ""
-        if type(pricePerItem) == "number" then
-            text = "{" .. math.ceil(pricePerItem - 0.5) .. "g}"
-        else
-            text = ""
-        end
-        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "pricePerItem", frameHeight, frame.text[#frame.text])
-        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
-        frame.pricePerItem = #frame.text
-    end
-
-    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
-        frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frameHeight, frame.text[#frame.text])
-        GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
-        frame.priceTotalItem = #frame.text
-    end
-
-
-    GT.Display.Order = GT.Display.Order or {}
-    table.insert(GT.Display.Order, id)
-    table.sort(GT.Display.Order)
+    frame.text[frame.itemsPerHour]:SetText(math.ceil(itemsPerHour - 0.5) .. "/h")
+    GT:CheckColumnSize(frame.itemsPerHour, frame.text[frame.itemsPerHour])
 end
 
-function GT:CreateRarityBorder(frame, iconRarity)
-    if not GT.db.profile.General.rarityBorder then
-        return
-    end
-    if not frame then
-        return
-    end
-    if not iconRarity then
+function GT:UpdateGoldPerHour(frame, goldPerHour)
+    if not frame.goldPerHour then
         return
     end
 
-    frame.iconRarity = GT.Pools.texturePool:Acquire()
-    frame.iconRarity:SetParent(frame)
-    frame.iconRarity:SetDrawLayer("BACKGROUND", 1)
-    local rarity = iconRarity or 1
-    if rarity <= 1 then
-        frame.iconRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
-    else
-        frame.iconRarity:SetAtlas("bags-glow-white")
-    end
-    local R, G, B = C_Item.GetItemQualityColor(rarity)
-    frame.iconRarity:SetVertexColor(R, G, B, 0.8)
-    frame.iconRarity:SetAllPoints(frame.icon)
-    frame.iconRarity:Show()
+    frame.text[frame.goldPerHour]:SetText(math.ceil(goldPerHour - 0.5) .. "g/h")
+    GT:CheckColumnSize(frame.goldPerHour, frame.text[frame.goldPerHour])
 end
 
 function GT:PrepareDataForDisplay(event, wait)
@@ -738,6 +556,8 @@ function GT:SetupItemRows()
             if GT.tsmLoaded then
                 pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
             end
+            local itemsPerHour = GT:CalculateItemsPerHour(itemID)
+            local goldPerHour = itemsPerHour * (pricePerItem or 0)
 
             GT:InitiateFrameProcess(
                 tonumber(itemID),
@@ -747,10 +567,55 @@ function GT:SetupItemRows()
                 itemData.counts,
                 totalItemCount,
                 pricePerItem,
-                priceTotalItem
+                priceTotalItem,
+                itemsPerHour,
+                goldPerHour
             )
         end
     end
+end
+
+function GT:CalculateItemsPerHour(itemID)
+    if itemID then
+        local itemData = GT.InventoryData[itemID]
+        local itemDiff = itemData.total - itemData.startTotal
+        local timeDiff = time() - itemData.startTime
+
+        --divind time diff in Seconds by 3600 to get time diff in hours
+        local itemsPerHour = itemDiff / (timeDiff / 3600)
+        GT.Debug("CalculateItemsPerHour", 3, itemsPerHour, itemData.total, itemData.startTotal, itemDiff, timeDiff)
+        if itemsPerHour < 1 then
+            itemsPerHour = 0
+        end
+
+        return itemsPerHour
+    end
+end
+
+function GT:CalculateItemsPerHourTotal(playerTotals)
+    local startAmount = 0
+    local pricePerHour = 0
+    for itemID, itemData in pairs(GT.InventoryData) do
+        if itemID > #GT.ItemData.Other.Other then
+            startAmount = startAmount + itemData.startTotal
+
+            local itemPerHour = GT:CalculateItemsPerHour(itemID)
+            if itemPerHour and GT.tsmLoaded then
+                pricePerHour = pricePerHour + (itemPerHour * ((TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000))
+            end
+        end
+    end
+    local amountDiff = playerTotals - startAmount
+    local timeDiff = time() - GT.GlobalStartTime
+
+    --divind time diff in Seconds by 3600 to get time diff in hours
+    local itemsPerHour = amountDiff / (timeDiff / 3600)
+    GT.Debug("CalculateItemsPerHourTotal", 2, itemsPerHour, pricePerHour, playerTotals, startAmount, amountDiff, timeDiff)
+    if itemsPerHour < 1 then
+        itemsPerHour = 0
+    end
+
+    return itemsPerHour, pricePerHour
 end
 
 function GT:SetupTotalsRow()
@@ -766,18 +631,75 @@ function GT:SetupTotalsRow()
     end
     totalItemCount = GT:SumTable(playerTotals)
     if totalItemCount > 0 then
+        local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
+
         GT:InitiateFrameProcess(
             9999999998,
             133647,
             nil,
             nil,
             playerTotals,
-            GT:SumTable(playerTotals),
+            totalItemCount,
             "",
-            priceTotal
+            priceTotal,
+            itemsPerHour,
+            goldPerHour
         )
     elseif GT.Display.Frames[9999999998] then
         GT:RemoveDiaplayRow(9999999998)
+    end
+end
+
+function GT:RefreshPerHourDisplay(stop, wait)
+    GT.Debug("Refresh Per Hour Display", 1, stop, wait)
+    if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHourthen then
+        return
+    end
+    if stop then
+        return
+    end
+
+    for itemID, itemFrame in pairs(GT.Display.Frames) do
+        if itemID > #GT.ItemData.Other.Other and itemID < 9999999998 then
+            local itemsPerHour = 0
+            local goldPerHour = 0
+            local pricePerItem = nil
+            if GT.tsmLoaded then
+                pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+            end
+
+            if itemFrame.itemsPerHour and GT.db.profile.General.itemsPerHour then
+                itemsPerHour = GT:CalculateItemsPerHour(itemID)
+                GT:UpdateItemsPerHour(itemFrame, itemsPerHour)
+            end
+
+            if itemFrame.goldPerHour and GT.db.profile.General.goldPerHour then
+                goldPerHour = itemsPerHour * (pricePerItem or 0)
+                GT:UpdateGoldPerHour(itemFrame, goldPerHour)
+            end
+        elseif itemID == 9999999998 then
+            local playerTotals = {}
+            local totalItemCount = 0
+
+            for senderIndex, senderData in ipairs(GT.sender) do
+                local playerTotal = GT:CalculateTotals(senderIndex)
+                table.insert(playerTotals, playerTotal)
+            end
+            totalItemCount = GT:SumTable(playerTotals)
+            local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
+            if itemFrame.itemsPerHour and GT.db.profile.General.itemsPerHour then
+                GT:UpdateItemsPerHour(itemFrame, itemsPerHour)
+            end
+
+            if itemFrame.goldPerHour and GT.db.profile.General.goldPerHour then
+                GT:UpdateGoldPerHour(itemFrame, goldPerHour)
+            end
+        end
+    end
+
+    if wait then
+        GT:wait(5, "RefreshPerHourDisplay", false, true)
+        return
     end
 end
 
@@ -854,7 +776,6 @@ function GT:InventoryUpdate(event, wait)
         GT.PlayerEnteringWorld = false
     end
 
-
     GT:ProcessSoloData(event)
 
     if GT.db.profile.General.groupType > 0 and IsInGroup() then
@@ -896,8 +817,12 @@ function GT:ProcessSoloData(event)
     GT:PrepareDataForDisplay("Process Solo Data")
 end
 
-function GT:CreateDataMessage(event)
+function GT:CreateDataMessage(event, wait)
     GT.Debug("CreateDataMessage", 2, event)
+    if wait then
+        GT:wait(0.1, "CreateDataMessage", "CreateDataMessage", false)
+        return
+    end
     local updateMessage = ""
 
     for index, id in ipairs(GT.IDs) do
@@ -946,6 +871,10 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
         GT.Debug("DataMessageReceived: hideOthers", 2, GT.db.profile.General.hideOthers, sender, GT.Player)
         return
     end
+    if sender == GT.Player then
+        GT.Debug("DataMessageReceived: LocalPlayer", 2, GT.Player, sender)
+        return
+    end
 
     GT.Debug("Data Message Starting Processing", 1)
 
@@ -955,7 +884,7 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
 
     GT:UpdateInventoryData(senderIndex, messageTable)
 
-    GT:wait(0.4, "PrepareDataForDisplay", "Data Message Received", true)
+    GT:PrepareDataForDisplay("Data Message Received")
 end
 
 function GT:UpdateSenderTable(sender)
@@ -975,6 +904,7 @@ function GT:UpdateSenderTable(sender)
         }
         table.insert(GT.sender, senderTable)
         senderIndex = #GT.sender
+        GT:DestroyDisplay()
     end
     return senderIndex
 end
@@ -1020,7 +950,7 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
                 GT.InventoryData[itemID].startAmount[senderIndex] == 0 then
                 GT.InventoryData[itemID].startAmount[senderIndex] = tonumber(value)
             end
-            GT.InventoryData[itemID].startTotal = GT:CalculateTotals(nil, nil, itemID)
+            GT.InventoryData[itemID].startTotal = GT:CalculateStartTotal(itemID)
         else
             --only matters for when getting data from party members
             --this removes items that we have disabled but were sent by party members
@@ -1035,6 +965,24 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
             GT.sender[senderIndex].inventoryData[itemID] = 0
         end
     end
+
+    if GT.GlobalStartTime == 0 then
+        GT.GlobalStartTime = time()
+    end
+end
+
+function GT:CalculateStartTotal(itemID)
+    GT.Debug("CalculateStartTotal", 1, itemID)
+
+    local total = 0
+
+    for senderIndex, itemCount in pairs(GT.InventoryData[itemID].startAmount) do
+        if itemCount - GT.db.profile.General.ignoreAmount > 0 then
+            total = total + itemCount
+        end
+    end
+
+    return total
 end
 
 function GT:CalculateTotals(senderIndex, calcSenderValue, itemID, calcItemValue)

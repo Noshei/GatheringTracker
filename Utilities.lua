@@ -131,10 +131,13 @@ function GT:GroupDisplayCheck()
         return false
     end
 
+    -- follower dungeons act like normal groups, but we dont want to treat them like a group
     if C_LFGInfo.IsInLFGFollowerDungeon() == true then
         GT.Debug("Group Display Check Result", 3, "In Follower Dungeon")
         return false
     end
+
+    -- if we are in a group, but dont have data from group members, then remain in solo display
     if #GT.sender < 2 then
         GT.Debug("Group Display Check Result", 3, "No Group Data")
         return false

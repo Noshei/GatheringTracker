@@ -40,8 +40,8 @@ GT.defaults = {
             multiColumn = false,
             numRows = 1,
             instanceHide = false,
-            --itemsPerHour = false,
-            --goldPerHour = false,
+            itemsPerHour = false,
+            goldPerHour = false,
         },
         Notifications = {
             Count = {
@@ -343,23 +343,9 @@ local generalOptions = {
                         GT.db.profile.General.tsmPrice = key
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
-                            for itemID, itemFrame in pairs(GT.Display.Frames) do
-                                local cellsToRemove = #itemFrame.text - itemFrame.displayedCharacters
-                                for iterator = 1, cellsToRemove, 1 do
-                                    GT.Pools.fontStringPool:Release(itemFrame.text[#itemFrame.text])
-                                    GT:AddRemoveDisplayCell("remove", itemFrame, #itemFrame.text)
-                                end
-                                itemFrame.pricePerItem = nil
-                                itemFrame.priceTotalItem = nil
-                            end
-                            local cellsToRemove = #GT.Display.ColumnSize - #GT.sender
-                            for iterator = 1, cellsToRemove, 1 do
-                                table.remove(GT.Display.ColumnSize, #GT.Display.ColumnSize)
-                            end
-                            GT:SetDisplayFrameWidth()
-                        else
-                            GT:PrepareDataForDisplay("TSM Price Source Option Changed")
+                            GT.db.profile.General.goldPerHour = false
                         end
+                        GT:RebuildDisplay("TSM Price Source Option Changed")
                     end,
                     disabled = function()
                         if not GT.tsmLoaded then
@@ -378,24 +364,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.perItemPrice end,
                     set = function(_, key)
                         GT.db.profile.General.perItemPrice = key
-                        if not key then
-                            local columnToRemove
-                            for itemID, itemFrame in pairs(GT.Display.Frames) do
-                                if itemFrame.pricePerItem then
-                                    columnToRemove = columnToRemove or itemFrame.pricePerItem
-
-                                    GT.Pools.fontStringPool:Release(itemFrame.text[columnToRemove])
-                                    GT:AddRemoveDisplayCell("remove", itemFrame, columnToRemove)
-
-                                    itemFrame.pricePerItem = nil
-                                    GT:SetAnchor(itemFrame)
-                                end
-                            end
-                            table.remove(GT.Display.ColumnSize, columnToRemove)
-                            GT:SetDisplayFrameWidth()
-                        else
-                            GT:PrepareDataForDisplay("Display Per Item Price Enabled")
-                        end
+                        GT:RebuildDisplay("Display Per Item Price Changed")
                     end,
                     disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
@@ -433,7 +402,7 @@ local generalOptions = {
                     end,
                     order = 204
                 },
-                --[[itemsPerHour = {
+                itemsPerHour = {
                     type = "toggle",
                     name = "Display Items Per Hour",
                     desc = "If selected an estimated items gathered per hour will be displayed.",
@@ -441,7 +410,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.itemsPerHour end,
                     set = function(_, key)
                         GT.db.profile.General.itemsPerHour = key
-                        --GT:InventoryUpdate("Include Bank", true)
+                        GT:RebuildDisplay("tems Per Hour Changed")
                     end,
 
                     order = 205
@@ -454,7 +423,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.goldPerHour end,
                     set = function(_, key)
                         GT.db.profile.General.goldPerHour = key
-                        --GT:InventoryUpdate("Include Bank", true)
+                        GT:RebuildDisplay("Gold Per Hour Changed")
                     end,
                     disabled = function()
                         if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
@@ -464,7 +433,7 @@ local generalOptions = {
                         end
                     end,
                     order = 206
-                },]]
+                },
                 header3 = {
                     type = "header",
                     name = "Columns",
@@ -1419,7 +1388,6 @@ end
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.tsmLoaded = C_AddOns.IsAddOnLoaded("TradeSkillMaster")
-    GT.ElvUI = C_AddOns.IsAddOnLoaded("ElvUI")
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
