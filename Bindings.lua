@@ -81,3 +81,19 @@ function GT:ClearFilters()
     GT:RebuildIDTables()
     GT:ClearDisplay()
 end
+
+function GT:ResetPerHour()
+    --resets the per hour displays to current time and values
+    GT.Debug("Reset Per Hour", 1)
+
+    GT.GlobalStartTime = time()
+    for itemID, itemData in pairs(GT.InventoryData) do
+        itemData.startTime = time()
+        itemData.startAmount = {}
+        for senderIndex, value in ipairs(itemData.counts) do
+            itemData.startAmount[senderIndex] = value
+        end
+        itemData.startTotal = GT:SumTable(itemData.startAmount)
+    end
+    GT:RefreshPerHourDisplay(false, true)
+end

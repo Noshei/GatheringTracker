@@ -87,6 +87,14 @@ function GT:GROUP_ROSTER_UPDATE(event, wait)
         return
     end
 
+    if GT.db.profile.General.instanceHide and IsInInstance() then
+        GT.Debug("GROUP_ROSTER_UPDATE: Instance Hide", 2)
+        GT.baseFrame.frame:Hide()
+        return
+    else
+        GT.baseFrame.frame:Show()
+    end
+
     GT:SetChatType()
 
     GT:CheckForPlayersLeavingGroup()
@@ -279,27 +287,6 @@ function GT:RemoveSender(senderIndex)
     end
     table.remove(GT.sender, senderIndex)
     GT:RebuildDisplay()
-end
-
-function GT:AddRemoveDisplayCell(actionType, itemFrame, index, columnFrame)
-    GT.Debug("Add Remove Display Cell", 3, actionType, index)
-    if actionType == "add" then
-        table.insert(itemFrame.text, index, columnFrame)
-    elseif actionType == "remove" then
-        table.remove(itemFrame.text, index)
-    end
-
-    --[[for textIndex, textFrame in ipairs(itemFrame.text) do
-        if textFrame.textType == "totalItemCount" then
-            itemFrame.totalItemCount = textIndex
-        end
-        if textFrame.textType == "pricePerItem" then
-            itemFrame.pricePerItem = textIndex
-        end
-        if textFrame.textType == "priceTotalItem" then
-            itemFrame.priceTotalItem = textIndex
-        end
-    end]]
 end
 
 function GT:RemoveDiaplayRow(itemID --[[int]])

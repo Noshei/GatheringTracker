@@ -46,10 +46,12 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
     string:SetParent(frame)
     if id < 9999999998 then
         string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-        string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2], GT.db.profile.General.textColor[3])
+        string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2],
+            GT.db.profile.General.textColor[3])
     else
         string:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
-        string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2], GT.db.profile.General.totalColor[3])
+        string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2],
+            GT.db.profile.General.totalColor[3])
     end
     string:SetHeight(height)
     local offset = 3

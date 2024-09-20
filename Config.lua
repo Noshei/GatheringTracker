@@ -434,6 +434,23 @@ local generalOptions = {
                     end,
                     order = 206
                 },
+                perHourReset = {
+                    type = "execute",
+                    name = "Reset Item and Gold Per Hour",
+                    desc = "Clicking this will reset the Item and Gold Per Hour displays.",
+                    width = 1.70,
+                    func = function()
+                        GT:ResetPerHour()
+                    end,
+                    disabled = function()
+                        if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHour then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 207
+                },
                 header3 = {
                     type = "header",
                     name = "Columns",

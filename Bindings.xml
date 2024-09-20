@@ -14,4 +14,7 @@
     <Binding name="Clear Filters" category="Gathering Tracker">
         GatheringTracker:ClearFilters()
     </Binding>
+    <Binding name="Reset Item and Gold Per Hour" category="Gathering Tracker">
+        GatheringTracker:ResetPerHour()
+    </Binding>
 </Bindings>
