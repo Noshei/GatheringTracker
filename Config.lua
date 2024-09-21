@@ -66,6 +66,9 @@ GT.defaults = {
         },
         Aliases = {
         },
+        miniMap = {
+            hide = true,
+        },
     },
 }
 
@@ -99,6 +102,18 @@ local generalOptions = {
                         GT:ToggleBaseLock(key)
                     end,
                     order = 2
+                },
+                miniMap = {
+                    type = "toggle",
+                    name = "Minimap Button",
+                    desc = "Enable this to show the minimap button.\nLeft Click shows filters menu.\nRight Click opens the addon options.",
+                    width = 1.70,
+                    get = function() return not GT.db.profile.miniMap.hide end,
+                    set = function(_, key)
+                        GT.db.profile.miniMap.hide = not key
+                        GT:MinimapHandler(key)
+                    end,
+                    order = 3
                 },
                 buttonHeader = {
                     type = "header",
@@ -1474,6 +1489,8 @@ function Config:OnInitialize()
     if not GT.Enabled then
         GT:OnDisable()
     end
+
+    GT:InitializeBroker()
 
     GT:SetChatType()
 

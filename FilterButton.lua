@@ -48,7 +48,20 @@ function GT:FiltersButton(profileChanged)
     filterButton:SetFrameStrata("BACKGROUND")
     filterButton:Show()
 
-    local function FiltersMenu(filterButton, rootDescription)
+    filterButton:SetScript("OnClick", function(self, button, down)
+        if button == "LeftButton" then
+            GT:GenerateFiltersMenu(self)
+        elseif button == "RightButton" then
+            GT:ClearFilters()
+        end
+    end)
+
+    GT.baseFrame.button = filterButton
+    GT:FiltersButtonFade()
+end
+
+function GT:GenerateFiltersMenu(frame)
+    local function FiltersMenu(frame, rootDescription)
         for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
             local function IsSelected_Expansion()
                 local checked = true
@@ -217,16 +230,7 @@ function GT:FiltersButton(profileChanged)
         GT:CreateProfilesList(rootDescription)
     end
 
-    filterButton:SetScript("OnClick", function(self, button, down)
-        if button == "LeftButton" then
-            MenuUtil.CreateContextMenu(filterButton, FiltersMenu)
-        elseif button == "RightButton" then
-            GT:ClearFilters()
-        end
-    end)
-
-    GT.baseFrame.button = filterButton
-    GT:FiltersButtonFade()
+    MenuUtil.CreateContextMenu(frame, FiltersMenu)
 end
 
 function GT:FiltersButtonFade(alpha)
