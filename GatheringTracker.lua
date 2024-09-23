@@ -202,7 +202,7 @@ function GT:OptionsHide()
         GT.NotificationPause = true
 
         --Do an inventory update if we dont have any information
-        if #GT.InventoryData == 0 then
+        if #GT.InventoryData == 0 and GT.Enabled then
             GT:InventoryUpdate("InterfaceOptionsFrame:OnHide", false)
         end
     end
@@ -708,7 +708,7 @@ function GT:CleanUpInventoryData()
         end
 
         -- Removes Items that have a total count of 0
-        if GT:SumTable(itemData.counts) == 0 then
+        if GT:SumTable(itemData.counts) == 0 and not GT.db.profile.General.allFiltered then
             GT.Debug("CleanUpInventoryData", 2, itemID, GT:SumTable(itemData.counts))
             GT:RemoveItemData(false, itemID)
         end
@@ -748,6 +748,9 @@ function GT:InventoryUpdate(event, wait)
         GT.Debug(traceback, 1, event)
         return
     end
+    if not GT.Enabled then
+        return
+    end
     if GT:CheckModeStatus() == false then
         GT.Debug("InventoryUpdate: CheckModeStatus", 2, GT:CheckModeStatus())
         return
@@ -762,6 +765,8 @@ function GT:InventoryUpdate(event, wait)
     if GT.PlayerEnteringWorld == true then
         GT.PlayerEnteringWorld = false
     end
+
+    GT:DisplayAllCheck()
 
     GT:ProcessSoloData(event)
 
@@ -786,7 +791,7 @@ function GT:ProcessSoloData(event)
             itemCount = GetItemCount(id, GT.db.profile.General.includeBank, false)
         end
 
-        if itemCount > 0 then
+        if itemCount > 0 or GT.db.profile.General.allFiltered then
             itemTable[id] = itemCount
         end
 

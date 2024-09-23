@@ -316,7 +316,7 @@ local generalOptions = {
                 },
                 header2 = {
                     type = "header",
-                    name = "Instance Visibility",
+                    name = "Other",
                     order = 200
                 },
                 instanceHide = {
@@ -334,6 +334,28 @@ local generalOptions = {
                         end
                     end,
                     order = 210
+                },
+                allFiltered = {
+                    type = "toggle",
+                    name = "Display All Filtered Items",
+                    desc =
+                        "When selected all selected filtered items will be displayed, including those with 0 count.\n\n" ..
+                        "Not recommended to be used with a large number of enabled filters as it will cause significant lag.\n\n" ..
+                        "|cffff0000Automatically disables with over 500 filters selected.|r",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.allFiltered end,
+                    set = function(_, key)
+                        GT.db.profile.General.allFiltered = key
+                        GT:InventoryUpdate("Toggle Display All", false)
+                    end,
+                    disabled = function()
+                        if #GT.IDs > 500 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 220
                 },
             },
         },
@@ -487,7 +509,7 @@ local generalOptions = {
                     name = "Max Rows Per Column",
                     desc = "Set the maximum number of rows to be displayed per column.",
                     min = 1,
-                    max = 30,
+                    max = 50,
                     step = 1,
                     width = 1.70,
                     get = function() return GT.db.profile.General.numRows or 1 end,

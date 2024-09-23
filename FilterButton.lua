@@ -130,8 +130,6 @@ function GT:GenerateFiltersMenu(frame)
                     GT.baseFrame.button[expansion][category] = GT.baseFrame.button[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
                     if category == "Knowledge" then
                         local columns = 3
-
-                        --GT.baseFrame.button[expansion][category]:SetGridMode(MenuConstants.VerticalGridDirection, columns)
                     end
                     GT.baseFrame.button[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
                     for _, itemData in ipairs(GT.ItemData[expansion][category]) do
@@ -395,5 +393,15 @@ function GT:CreateProfilesList(rootDescription)
         end
 
         GT.baseFrame.button["Profiles"][name] = GT.baseFrame.button["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)
+    end
+end
+
+function GT:DisplayAllCheck()
+    if not GT.db.profile.General.allFiltered then
+        return
+    end
+
+    if #GT.IDs > 500 then
+        GT.db.profile.General.allFiltered = false
     end
 end
