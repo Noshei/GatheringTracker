@@ -1,7 +1,7 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
-function GT:ColpaseDisplay()
-    GT.Debug("ColpaseDisplay", 1)
+function GT:CollapseDisplay()
+    GT.Debug("CollapseDisplay", 1)
     for itemID, itemFrame in pairs(GT.Display.Frames) do
         if itemID < 9999999998 then
             itemFrame:Hide()
@@ -22,21 +22,21 @@ function GT:ExpandDisplay()
     GT:AllignRows()
 end
 
-function GT:ColpaseManager(wait)
-    GT.Debug("ColpaseManager", 1, wait, GT.db.profile.General.colpaseDisplay, GT.db.profile.General.colpaseTime)
+function GT:CollapseManager(wait)
+    GT.Debug("CollapseManager", 1, wait, GT.db.profile.General.collapseDisplay, GT.db.profile.General.collapseTime)
     if wait then
-        GT:wait(GT.db.profile.General.colpaseTime, "ColpaseManager", false)
+        GT:wait(GT.db.profile.General.collapseTime, "CollapseManager", false)
         return
     end
 
-    if GT.db.profile.General.colpaseDisplay then
-        GT:ColpaseDisplay()
+    if GT.db.profile.General.collapseDisplay then
+        GT:CollapseDisplay()
         if GT.Display.Frames[9999999998] then
             GT.Display.Frames[9999999998]:SetScript("OnEnter", function(self, motion)
                 if motion then
                     GT:ExpandDisplay()
                     GT.baseFrame.frame:SetScript("OnLeave", function(self, motion)
-                        GT:wait(GT.db.profile.General.colpaseTime, "ColpaseManager", false)
+                        GT:wait(GT.db.profile.General.collapseTime, "CollapseManager", false)
                         GT.baseFrame.frame:SetScript("OnLeave", nil)
                         GT.baseFrame.frame:SetMouseClickEnabled(false)
                     end)
@@ -48,14 +48,14 @@ function GT:ColpaseManager(wait)
             GT:AllignRows()
             GT:AllignColumns()
             GT:UpdateBaseFrameSize()
-            GT:ColpaseManager(false)
+            GT:CollapseManager(false)
         end
         if GT.Display.Frames[9999999999] then
             GT.Display.Frames[9999999999]:SetScript("OnEnter", function(self, motion)
                 if motion then
                     GT:ExpandDisplay()
                     GT.baseFrame.frame:SetScript("OnLeave", function(self, motion)
-                        GT:wait(GT.db.profile.General.colpaseTime, "ColpaseManager", false)
+                        GT:wait(GT.db.profile.General.collapseTime, "CollapseManager", false)
                         GT.baseFrame.frame:SetScript("OnLeave", nil)
                         GT.baseFrame.frame:SetMouseClickEnabled(false)
                     end)
@@ -65,14 +65,14 @@ function GT:ColpaseManager(wait)
         end
     else
         GT:ExpandDisplay()
-        GT:wait(nil, "ColpaseManager")
+        GT:wait(nil, "CollapseManager")
 
         GT.baseFrame.frame:SetScript("OnLeave", nil)
 
         GT:ClearMouse()
 
         if #GT.Display.Order == 1 then
-            GT:PrepareDataForDisplay("ColpaseManager", false)
+            GT:PrepareDataForDisplay("CollapseManager", false)
         end
     end
 end

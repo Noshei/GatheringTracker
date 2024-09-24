@@ -2,7 +2,7 @@
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 2.5.0
+## Version: 2.5.1
 ## OptionalDeps: TradeSkillMaster
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
@@ -11,7 +11,7 @@
 embeds.xml
 GatheringTracker.lua
 DisplayCreation.lua
-DisplayColpase.lua
+DisplayCollapse.lua
 Utilities.lua
 FilterButton.lua
 NotificationHandler.lua

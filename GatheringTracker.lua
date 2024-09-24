@@ -554,8 +554,8 @@ function GT:PrepareDataForDisplay(event, wait)
     GT:AllignRows()
     GT:AllignColumns()
     GT:UpdateBaseFrameSize()
-    if GT.db.profile.General.colpaseDisplay then
-        GT:ColpaseManager(false)
+    if GT.db.profile.General.collapseDisplay then
+        GT:CollapseManager(false)
     end
 end
 
@@ -651,7 +651,7 @@ function GT:SetupTotalsRow()
         priceTotal = priceTotal + playerPrice
     end
     totalItemCount = GT:SumTable(playerTotals)
-    if totalItemCount > 0 or GT.db.profile.General.colpaseDisplay then
+    if totalItemCount > 0 or GT.db.profile.General.collapseDisplay then
         local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
 
         GT:InitiateFrameProcess(
