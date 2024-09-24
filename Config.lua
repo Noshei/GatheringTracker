@@ -42,6 +42,8 @@ GT.defaults = {
             instanceHide = false,
             itemsPerHour = false,
             goldPerHour = false,
+            colpaseDisplay = false,
+            colpaseTime = 2,
         },
         Notifications = {
             Count = {
@@ -316,8 +318,44 @@ local generalOptions = {
                 },
                 header2 = {
                     type = "header",
-                    name = "Other",
+                    name = "Colpase Display",
                     order = 200
+                },
+                colpaseDisplay = {
+                    type = "toggle",
+                    name = "Colpase Display",
+                    desc = "When selected the display will be colpased to only display the total rows.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.colpaseDisplay end,
+                    set = function(_, key)
+                        GT.db.profile.General.colpaseDisplay = key
+                        GT:ColpaseManager(key)
+                    end,
+                    order = 210
+                },
+                colpaseTime = {
+                    type = "range",
+                    name = "Colpase Delay",
+                    desc = "This configures how long after the mouse leaves the display area before it clopases to the total rows.\nDefault is 2.",
+                    min = 0,
+                    max = 10,
+                    step = 0.5,
+                    width = 1.40,
+                    get = function() return GT.db.profile.General.colpaseTime or 2 end,
+                    set = function(_, key) GT.db.profile.General.colpaseTime = key end,
+                    disabled = function()
+                        if GT.db.profile.General.colpaseDisplay then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    order = 215
+                },
+                header3 = {
+                    type = "header",
+                    name = "Other",
+                    order = 300
                 },
                 instanceHide = {
                     type = "toggle",
@@ -333,7 +371,7 @@ local generalOptions = {
                             GT.baseFrame.frame:Show()
                         end
                     end,
-                    order = 210
+                    order = 310
                 },
                 allFiltered = {
                     type = "toggle",
@@ -355,7 +393,7 @@ local generalOptions = {
                             return false
                         end
                     end,
-                    order = 220
+                    order = 320
                 },
             },
         },
@@ -515,7 +553,9 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.numRows or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.numRows = key
-                        GT:AllignRows()
+                        if not GT.db.profile.General.colpaseDisplay then
+                            GT:AllignRows()
+                        end
                     end,
                     disabled = function()
                         if not GT.db.profile.General.multiColumn then

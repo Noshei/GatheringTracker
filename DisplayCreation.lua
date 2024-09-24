@@ -33,9 +33,12 @@ local function FramePool_Resetter(framePool, frame)
     if frame.priceTotalItem then
         frame.priceTotalItem = nil
     end
+    frame:SetScript("OnEnter", nil)
+    frame:SetMouseClickEnabled(false)
+    frame:SetMouseMotionEnabled(false)
 end
 
-local function InitializePools()
+function GT:InitializePools()
     GT.Pools.framePool = GT.Pools.framePool or CreateFramePool("Frame", GT.baseFrame.frame, nil, FramePool_Resetter)
     GT.Pools.texturePool = GT.Pools.texturePool or CreateTexturePool(GT.baseFrame.frame, "BACKGROUND")
     GT.Pools.fontStringPool = GT.Pools.fontStringPool or CreateFontStringPool(GT.baseFrame.frame, "BACKGROUND")
@@ -75,8 +78,6 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     if displayText == nil then
         return
     end
-
-    InitializePools()
 
     local frame = GT:DisplayFrameBase(id)
 

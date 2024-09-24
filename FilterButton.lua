@@ -38,7 +38,7 @@ function GT:FiltersButton(profileChanged)
     end
 
     GT.Debug("Create Filters Button", 1)
-    local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", GT.baseFrame.frame, "UIPanelButtonTemplate")
+    local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", UIParent, "UIPanelButtonTemplate")
     filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
     filterButton:SetWidth(25)
     filterButton:SetHeight(25)
@@ -58,6 +58,28 @@ function GT:FiltersButton(profileChanged)
 
     GT.baseFrame.button = filterButton
     GT:FiltersButtonFade()
+end
+
+function GT:AnchorFilterButton()
+    -- 25 is the size of the filter button, so if any part of the button is off screen it will be moved
+    local UITop = UIParent:GetTop() - 25
+    local UILeft = UIParent:GetLeft() + 25
+    local backdropTop = GT.baseFrame.backdrop:GetTop()
+    local backdropLeft = GT.baseFrame.backdrop:GetLeft()
+
+    if backdropTop >= UITop and backdropLeft <= UILeft then
+        GT.Debug("Display Location", 1, "Top Left", UITop, UILeft, backdropTop, backdropLeft)
+        local left, bottom, width, height = GT.baseFrame.frame:GetBoundsRect()
+        GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (height + 25))
+    elseif backdropTop >= UITop then
+        GT.Debug("Display Location", 1, "Top", UITop, UILeft, backdropTop, backdropLeft)
+        GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 0, -25)
+    elseif backdropLeft <= UILeft then
+        GT.Debug("Display Location", 1, "Left", UITop, UILeft, backdropTop, backdropLeft)
+        GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, 0)
+    else
+        GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+    end
 end
 
 function GT:GenerateFiltersMenu(frame)

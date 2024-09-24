@@ -73,6 +73,7 @@ function GT:PLAYER_ENTERING_WORLD()
 
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
     GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
+    GT:wait(7, "AnchorFilterButton", "PLAYER_ENTERING_WORLD")
 end
 
 function GT:GROUP_ROSTER_UPDATE(event, wait)
@@ -112,8 +113,11 @@ function GT:CreateBaseFrame()
     --this creates the basic frame structure that the addon uses.
     --the backdrop is used for positioning through the addon options.
     local frame = CreateFrame("Frame", "GT_baseFrame", UIParent)
+    frame:SetFrameStrata("BACKGROUND")
+    frame:SetFrameLevel(0)
+    frame:SetMouseClickEnabled(false)
 
-    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", frame, BackdropTemplateMixin and "BackdropTemplate")
+    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, BackdropTemplateMixin and "BackdropTemplate")
     backdrop:SetWidth(300)
     backdrop:SetHeight(300)
     backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
@@ -129,8 +133,13 @@ function GT:CreateBaseFrame()
     backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
     backdrop:SetFrameStrata("FULLSCREEN_DIALOG")
     backdrop:SetClampedToScreen(true)
+    backdrop:SetMouseClickEnabled(false)
 
     backdrop:Hide()
+
+    frame:SetPoint("TOPLEFT", backdrop, "TOPLEFT")
+    frame:Show()
+    frame:SetMouseClickEnabled(false)
 
     local baseFrame = {
         frame = frame,
@@ -139,17 +148,45 @@ function GT:CreateBaseFrame()
     GT.baseFrame = baseFrame
 
     GT:FiltersButton()
+    GT:InitializePools()
+end
+
+function GT:UpdateBaseFrameSize()
+    --Have to reset to 0 otherwise the size will never shrink
+    GT.baseFrame.frame:SetHeight(0)
+    GT.baseFrame.frame:SetWidth(0)
+
+    local left, bottom, width, height = GT.baseFrame.frame:GetBoundsRect()
+    GT.baseFrame.frame:SetHeight(height)
+    GT.baseFrame.frame:SetWidth(width)
 end
 
 function GT:ToggleBaseLock(key)
     --used to toggle if the base frame should be shown and interactable.
     --the base frame should only be shown when unlocked so that the user can position it on screen where they want.
     local frame = GT.baseFrame.backdrop
+
+    local function stoppedMoving(self)
+        self:StopMovingOrSizing()
+        self.isMoving = false
+        local rel, _, _, xPos, yPos = self:GetPoint()
+        GT.db.profile.General.xPos = xPos
+        GT.db.profile.General.yPos = yPos
+        GT.db.profile.General.relativePoint = rel
+
+        --Return if Filter Button is disabled, we only need to do the rest if it is enabled
+        if not GT.db.profile.General.filtersButton then
+            return
+        end
+        GT:AnchorFilterButton()
+    end
+
     if key then
         GT.Debug("Show baseFrame", 1)
         frame:Show()
         frame:SetMovable(true)
         frame:EnableMouse(true)
+        frame:SetMouseClickEnabled(true)
         frame:SetScript("OnMouseDown", function(self, button)
             if button == "LeftButton" and not self.isMoving then
                 self:StartMoving()
@@ -158,22 +195,12 @@ function GT:ToggleBaseLock(key)
         end)
         frame:SetScript("OnMouseUp", function(self, button)
             if button == "LeftButton" and self.isMoving then
-                self:StopMovingOrSizing()
-                self.isMoving = false
-                local rel, _, _, xPos, yPos = self:GetPoint()
-                GT.db.profile.General.xPos = xPos
-                GT.db.profile.General.yPos = yPos
-                GT.db.profile.General.relativePoint = rel
+                stoppedMoving(self)
             end
         end)
         frame:SetScript("OnHide", function(self)
             if self.isMoving then
-                self:StopMovingOrSizing()
-                self.isMoving = false
-                local rel, _, _, xPos, yPos = self:GetPoint()
-                GT.db.profile.General.xPos = xPos
-                GT.db.profile.General.yPos = yPos
-                GT.db.profile.General.relativePoint = rel
+                stoppedMoving(self)
             end
         end)
     else
@@ -181,6 +208,7 @@ function GT:ToggleBaseLock(key)
         frame:Hide()
         frame:SetMovable(false)
         frame:EnableMouse(false)
+        frame:SetMouseClickEnabled(false)
         frame:SetScript("OnMouseDown", nil)
         frame:SetScript("OnMouseUp", nil)
         frame:SetScript("OnHide", nil)
@@ -327,6 +355,7 @@ function GT:AllignRows()
             end
         end
     end
+    GT:UpdateBaseFrameSize()
 end
 
 function GT:AllignColumns()
@@ -339,6 +368,7 @@ function GT:AllignColumns()
         end
     end
     GT:SetDisplayFrameWidth()
+    GT:UpdateBaseFrameSize()
 end
 
 function GT:SetDisplayFrameWidth()
@@ -523,6 +553,10 @@ function GT:PrepareDataForDisplay(event, wait)
 
     GT:AllignRows()
     GT:AllignColumns()
+    GT:UpdateBaseFrameSize()
+    if GT.db.profile.General.colpaseDisplay then
+        GT:ColpaseManager(false)
+    end
 end
 
 function GT:SetupItemRows()
@@ -617,7 +651,7 @@ function GT:SetupTotalsRow()
         priceTotal = priceTotal + playerPrice
     end
     totalItemCount = GT:SumTable(playerTotals)
-    if totalItemCount > 0 then
+    if totalItemCount > 0 or GT.db.profile.General.colpaseDisplay then
         local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
 
         GT:InitiateFrameProcess(
