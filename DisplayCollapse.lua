@@ -9,6 +9,9 @@ function GT:CollapseDisplay()
         if itemID == 9999999998 then
             itemFrame:SetPoint("TOPLEFT", GT.baseFrame.backdrop, "TOPLEFT")
         end
+        if itemID == 9999999999 then
+            itemFrame:SetPoint("TOPLEFT", GT.Display.Frames[9999999998], "BOTTOMLEFT")
+        end
     end
 end
 

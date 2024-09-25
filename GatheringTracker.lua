@@ -541,14 +541,17 @@ function GT:PrepareDataForDisplay(event, wait)
         )
     end
 
-    if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() and aliases then
-        GT:InitiateFrameProcess(
-            0,
-            413577,
-            nil,
-            nil,
-            GT:CreateAliasTable()
-        )
+    if GT.db.profile.General.displayAlias and GT:GroupDisplayCheck() then
+        local aliases = GT:CreateAliasTable()
+        if #aliases > 0 then
+            GT:InitiateFrameProcess(
+                0,
+                413577,
+                nil,
+                nil,
+                GT:CreateAliasTable()
+            )
+        end
     end
 
     GT:AllignRows()
@@ -562,7 +565,7 @@ end
 function GT:SetupItemRows()
     GT.Debug("SetupItemRows", 1)
     for itemID, itemData in pairs(GT.InventoryData) do
-        GT.Debug("Prepare Data for Display", 2, itemID)
+        GT.Debug("Setup Item Row", 2, itemID)
         if itemID <= #GT.ItemData.Other.Other then
             GT:InitiateFrameProcess(
                 itemID,
@@ -815,9 +818,9 @@ function GT:ProcessSoloData(event)
 
     for index, id in ipairs(GT.IDs) do
         local itemCount = 0
-        if id == 1 then
+        if id == GT.ItemData.Other.Other[1].id then
             itemCount = math.floor((GetMoney() / 10000) + 0.5)
-        elseif id == 2 then
+        elseif id == GT.ItemData.Other.Other[2].id then
             for bagIndex = 0, 4 do
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end
@@ -853,9 +856,9 @@ function GT:CreateDataMessage(event, wait)
 
     for index, id in ipairs(GT.IDs) do
         local itemCount = 0
-        if id == 1 then
+        if id == GT.ItemData.Other.Other[1].id then
             itemCount = math.floor((GetMoney() / 10000) + 0.5)
-        elseif id == 2 then
+        elseif id == GT.ItemData.Other.Other[2].id then
             for bagIndex = 0, 4 do
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end

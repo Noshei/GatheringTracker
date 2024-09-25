@@ -165,12 +165,6 @@ function GT:DisplayFrameRarity(frame, iconRarity)
     if not GT.db.profile.General.rarityBorder then
         return
     end
-    --[[if not frame then
-        return
-    end
-    if not iconRarity then
-        return
-    end]]
 
     frame.iconRarity = GT.Pools.texturePool:Acquire()
     frame.iconRarity:SetParent(frame)
