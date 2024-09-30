@@ -61,6 +61,10 @@ function GT:FiltersButton(profileChanged)
 end
 
 function GT:AnchorFilterButton()
+    if not GT.baseFrame.button then
+        return
+    end
+
     -- 25 is the size of the filter button, so if any part of the button is off screen it will be moved
     local UITop = UIParent:GetTop() - 25
     local UILeft = UIParent:GetLeft() + 25
