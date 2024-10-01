@@ -6,6 +6,21 @@ local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 GT.media = media
 
+-- Localize global functions
+local ipairs = ipairs
+local math = math
+local max = max
+local next = next
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local time = time
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
+
 GT.defaults = {
     profile = {
         General = {
@@ -108,7 +123,8 @@ local generalOptions = {
                 miniMap = {
                     type = "toggle",
                     name = "Minimap Button",
-                    desc = "Enable this to show the minimap button.\nLeft Click shows filters menu.\nRight Click opens the addon options.",
+                    desc = "Enable this to show the minimap button.\nLeft Click shows filters menu.\n" ..
+                        "Right Click opens the addon options.",
                     width = 1.70,
                     get = function() return not GT.db.profile.miniMap.hide end,
                     set = function(_, key)
@@ -192,7 +208,8 @@ local generalOptions = {
                 buttonDelay = {
                     type = "range",
                     name = "Fade Out Delay",
-                    desc = "This configures how long after the mouse leaves the button before it fades out.\nDefault is 0.5.",
+                    desc = "This configures how long after the mouse leaves the button before it fades out.\n" ..
+                        "Default is 0.5.",
                     min = 0,
                     max = 1,
                     step = 0.02,
@@ -220,7 +237,9 @@ local generalOptions = {
                 groupType = {
                     type = "select",
                     name = "Group Mode",
-                    desc = "Disabled: Hides the display when in a group\nGroup Only: Only shows the display when in a group\nGroup and Solo: Shows the display when in a group or Solo",
+                    desc = "Disabled: Hides the display when in a group\n" ..
+                        "Group Only: Only shows the display when in a group\n" ..
+                        "Group and Solo: Shows the display when in a group or Solo",
                     width = 1.40,
                     values = { [0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo" },
                     get = function() return GT.db.profile.General.groupType end,
@@ -238,7 +257,8 @@ local generalOptions = {
                 hideOthers = {
                     type = "toggle",
                     name = "Hide Other Party Members",
-                    desc = "When selected only your character will be displayed when you are in a group.\nInformation will still be sent to and received from party members.",
+                    desc = "When selected only your character will be displayed when you are in a group.\n" ..
+                        "Information will still be sent to and received from party members.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.hideOthers end,
                     set = function(_, key)
@@ -292,7 +312,8 @@ local generalOptions = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
                     name = "Display Per Character Value",
-                    desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.",
+                    desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.\n" ..
+                        "Price Source is required for this option to be enabled.",
                     width = 1.70,
                     image = function() return 133784 end,
                     imageCoords = { { 24, 24 } },
@@ -309,6 +330,8 @@ local generalOptions = {
                     end,
                     disabled = function()
                         if GT.db.profile.General.groupType == 0 then
+                            return true
+                        elseif not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                             return true
                         else
                             return false
@@ -409,21 +432,44 @@ local generalOptions = {
                 },
                 tsmPrice = {
                     type = "select",
-                    name = "TSM Price Source",
-                    desc = "Select the desired TSM price source, or none to disable price information.  TSM is required for this option to be enabled.",
+                    name = "Price Source",
+                    desc = "Select the desired price source, or none to disable price information.\n" ..
+                        "|cffff0000Supported addon required.|r\n\n" ..
+                        "Supports:\n" ..
+                        "TradeSkillMaster\n" ..
+                        "RECrystallize",
                     width = 1.70,
-                    values = { [0] = "None", [1] = "DBMarket", [2] = "DBMinBuyout", [3] = "DBHistorical", [4] = "DBRegionMinBuyoutAvg", [5] = "DBRegionMarketAvg", [6] = "DBRegionHistorical" },
+                    values = function()
+                        local options = {}
+                        options[0] = "None"
+                        if not GT.priceSources then
+                            return options
+                        end
+                        if GT.priceSources["TradeSkillMaster"] then
+                            options[1] = "TSM - DBMarket"
+                            options[2] = "TSM - DBMinBuyout"
+                            options[3] = "TSM - DBHistorical"
+                            options[4] = "TSM - DBRegionMinBuyoutAvg"
+                            options[5] = "TSM - DBRegionMarketAvg"
+                            options[6] = "TSM - DBRegionHistorical"
+                        end
+                        if GT.priceSources["RECrystallize"] then
+                            options[10] = "RECrystallize"
+                        end
+                        return options
+                    end,
                     get = function() return GT.db.profile.General.tsmPrice end,
                     set = function(_, key)
                         GT.db.profile.General.tsmPrice = key
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
                             GT.db.profile.General.goldPerHour = false
+                            GT.db.profile.General.characterValue = false
                         end
                         GT:RebuildDisplay("TSM Price Source Option Changed")
                     end,
                     disabled = function()
-                        if not GT.tsmLoaded then
+                        if not GT.priceSources then
                             return true
                         else
                             return false
@@ -434,7 +480,8 @@ local generalOptions = {
                 perItemPrice = {
                     type = "toggle",
                     name = "Display Per Item Price",
-                    desc = "If selected the price for 1 of each item will be displayed",
+                    desc = "If selected the price for 1 of each item will be displayed.\n" ..
+                        "Price Source is required for this option to be enabled.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.perItemPrice end,
                     set = function(_, key)
@@ -442,7 +489,7 @@ local generalOptions = {
                         GT:RebuildDisplay("Display Per Item Price Changed")
                     end,
                     disabled = function()
-                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                        if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                             return true
                         else
                             return false
@@ -493,7 +540,8 @@ local generalOptions = {
                 goldPerHour = {
                     type = "toggle",
                     name = "Display Gold Per Hour",
-                    desc = "If selected an estimated gold per hour will be displayed based on the value of items gathered.\nTSM is required for this option to be enabled.",
+                    desc = "If selected an estimated gold per hour will be displayed based on the value of items gathered.\n" ..
+                        "Price Source is required for this option to be enabled.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.goldPerHour end,
                     set = function(_, key)
@@ -501,7 +549,7 @@ local generalOptions = {
                         GT:RebuildDisplay("Gold Per Hour Changed")
                     end,
                     disabled = function()
-                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                        if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                             return true
                         else
                             return false
@@ -866,7 +914,9 @@ local generalOptions = {
                 countItemAll = {
                     type = "select",
                     name = "Notify for each item, all items, or both",
-                    desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
+                    desc = "This controls if the notification triggers when each filtered item hits the threshold" ..
+                        ", when all items hits the threshold, or both.\n\n" ..
+                        "Default: All Items",
                     width = 1.40,
                     values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
                     get = function() return GT.db.profile.Notifications.Count.itemAll end,
@@ -883,8 +933,12 @@ local generalOptions = {
                 countInterval = {
                     type = "select",
                     name = "Exact or Interval",
-                    desc =
-                    "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    desc = "This controls if the notification only triggers when exceeding the exact threshold" ..
+                        ", an interval of the threshold, or both.\n" ..
+                        "For an Example, if the threshold is 100:\n" ..
+                        "Exact: only triggers once after exceeding 100\n" ..
+                        "Interval: Triggers after exceeding 100, 200, 300, etc\n\n" ..
+                        "Default: Exact",
                     width = 1.40,
                     values = { [0] = "Exact", [1] = "Interval" },
                     get = function() return GT.db.profile.Notifications.Count.interval end,
@@ -909,7 +963,7 @@ local generalOptions = {
                         GT:ToggleGoldNotifications()
                     end,
                     disabled = function()
-                        if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                        if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                             return true
                         else
                             return false
@@ -928,7 +982,7 @@ local generalOptions = {
                     set = function(_, key) GT.db.profile.Notifications.Gold.sound = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                                 return true
                             else
                                 return false
@@ -965,7 +1019,7 @@ local generalOptions = {
                     end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                                 return true
                             else
                                 return false
@@ -979,14 +1033,16 @@ local generalOptions = {
                 goldItemAll = {
                     type = "select",
                     name = "Notify for each item, all items, or both",
-                    desc = "This controls if the notification triggers when each filtered item hits the threshold, when all items hits the threshold, or both.\n\nDefault: All Items",
+                    desc = "This controls if the notification triggers when each filtered item hits the threshold" ..
+                        ", when all items hits the threshold, or both.\n\n" ..
+                        "Default: All Items",
                     width = 1.40,
                     values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
                     get = function() return GT.db.profile.Notifications.Gold.itemAll end,
                     set = function(_, key) GT.db.profile.Notifications.Gold.itemAll = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                                 return true
                             else
                                 return false
@@ -1006,15 +1062,19 @@ local generalOptions = {
                 goldInterval = {
                     type = "select",
                     name = "Exact or Interval",
-                    desc =
-                    "This controls if the notification only triggers when exceeding the exact threshold, an interval of the threshold, or both.\n For an Example, if the threshold is 100:\n Exact: only triggers once after exceeding 100\n Interval: Triggers after exceeding 100, 200, 300, etc\n\nDefault: Exact",
+                    desc = "This controls if the notification only triggers when exceeding the exact threshold" ..
+                        ", an interval of the threshold, or both.\n" ..
+                        "For an Example, if the threshold is 100:\n" ..
+                        "Exact: only triggers once after exceeding 100\n" ..
+                        "Interval: Triggers after exceeding 100, 200, 300, etc\n\n" ..
+                        "Default: Exact",
                     width = 1.40,
                     values = { [0] = "Exact", [1] = "Interval" },
                     get = function() return GT.db.profile.Notifications.Gold.interval end,
                     set = function(_, key) GT.db.profile.Notifications.Gold.interval = key end,
                     disabled = function()
                         if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.tsmLoaded or GT.db.profile.General.tsmPrice == 0 then
+                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
                                 return true
                             else
                                 return false
@@ -1042,7 +1102,14 @@ local generalOptions = {
                     name = "Debug",
                     desc = "This is for debugging the addon, do NOT enable, it is spammy.",
                     width = 1.70,
-                    values = { [0] = "Off", [1] = "Limited", [2] = "Info", [3] = "Debug", [4] = "Trace (Very Spammy)", [5] = "Notification Spam" },
+                    values = {
+                        [0] = "Off",
+                        [1] = "Limited",
+                        [2] = "Info",
+                        [3] = "Debug",
+                        [4] = "Trace (Very Spammy)",
+                        [5] = "Notification Spam",
+                    },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
                             GT.db.profile.General.debugOption = 0
@@ -1479,9 +1546,27 @@ local function UpdateChangedorRemovedSavedVariables()
     end
 end
 
+local function InitializePriceSource()
+    local priceSources = { "TradeSkillMaster", "RECrystallize" }
+    local priceSourcesLoaded = {}
+
+    for _, source in ipairs(priceSources) do
+        local loaded = C_AddOns.IsAddOnLoaded(source)
+        if loaded then
+            priceSourcesLoaded[source] = true
+        end
+    end
+
+    if next(priceSourcesLoaded) == nil then
+        priceSourcesLoaded = false
+    end
+
+    return priceSourcesLoaded
+end
+
 function Config:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
-    GT.tsmLoaded = C_AddOns.IsAddOnLoaded("TradeSkillMaster")
+    GT.priceSources = InitializePriceSource()
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
@@ -1494,10 +1579,10 @@ function Config:OnInitialize()
     end
 
     --if TSM is not loaded set tsmPrice Option to none.
-    if not GT.tsmLoaded then
+    if not GT.priceSources then
         GT.db.profile.General.tsmPrice = 0
         GT.db.profile.General.perItemPrice = false
-    else
+    elseif GT.priceSources["TradeSkillMaster"] then
         GT:SetTSMPriceSource()
     end
 

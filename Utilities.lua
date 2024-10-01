@@ -1,5 +1,20 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
+-- Localize global functions
+local ipairs = ipairs
+local math = math
+local max = max
+local next = next
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local time = time
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
+
 function GT:AddComas(str)
     return #str % 3 == 0 and str:reverse():gsub("(%d%d%d)", "%1,"):reverse():sub(2) or str:reverse():gsub("(%d%d%d)", "%1,"):reverse()
 end
@@ -245,4 +260,23 @@ function GT:CheckColumnSize(index, frame)
         GT.Display.ColumnSize[index] = width
         return
     end
+end
+
+function GT:GetItemPrice(itemID)
+    if not GT.priceSources then
+        return
+    end
+    if GT.db.profile.General.tsmPrice == 0 then
+        return 0
+    end
+    local itemID = tonumber(itemID)
+    local price = 0
+
+    if GT.priceSources["RECrystallize"] and GT.db.profile.General.tsmPrice == 10 then
+        price = (RECrystallize_PriceCheckItemID(itemID) or 0) / 10000
+    end
+    if GT.priceSources["TradeSkillMaster"] then
+        price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+    end
+    return price
 end

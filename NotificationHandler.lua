@@ -1,6 +1,21 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
+-- Localize global functions
+local ipairs = ipairs
+local math = math
+local max = max
+local next = next
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local time = time
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
+
 function GT:NotificationHandler(mode, id, amount, value)
     GT.Debug("Notifications Handler", 5, mode, id, amount, value)
 
@@ -110,13 +125,13 @@ function GT:NotificationHandler(mode, id, amount, value)
         end
     end
 
-    if GT.db.profile.Notifications.Gold.enable and GT.tsmLoaded and GT.db.profile.General.tsmPrice > 0 then
+    if GT.db.profile.Notifications.Gold.enable and GT.priceSources and GT.db.profile.General.tsmPrice > 0 then
         if mode == "all" and (GT.db.profile.Notifications.Gold.itemAll == 1 or GT.db.profile.Notifications.Gold.itemAll == 2) then --All Items or Both
             NotificationCheck("Gold", false)
         end
         if mode == "each" and (GT.db.profile.Notifications.Gold.itemAll == 0 or GT.db.profile.Notifications.Gold.itemAll == 2) then --Each Item or Both
             if GT.db.profile.General.tsmPrice > 0 then
-                local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(id)) or 0) / 10000
+                local eprice = GT:GetItemPrice(id)
                 value = math.ceil(eprice * amount)
                 NotificationCheck("Gold", false)
             end
@@ -135,7 +150,7 @@ function GT:NotificationHandler(mode, id, amount, value)
                         playerTotal = playerTotal + amount
                         NotificationCheck("Count", true)
                         if GT.db.profile.General.tsmPrice > 0 then
-                            local eprice = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. tostring(itemID)) or 0) / 10000
+                            local eprice = GT:GetItemPrice(itemID)
                             value = math.ceil(eprice * amount)
                             NotificationCheck("Gold", true)
                         end

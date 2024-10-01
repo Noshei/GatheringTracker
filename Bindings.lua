@@ -1,5 +1,20 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
+-- Localize global functions
+local ipairs = ipairs
+local math = math
+local max = max
+local next = next
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local time = time
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
+
 function GT:ToggleGatheringTracker()
     GT.Debug("Toggle Gathering Tracker", 1, GT.db.profile.General.enable)
     local key = not GT.db.profile.General.enable

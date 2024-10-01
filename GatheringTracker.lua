@@ -15,6 +15,21 @@ GT.Notifications = {}
 GT.NotificationPause = true
 GT.GlobalStartTime = 0
 
+-- Localize global functions
+local ipairs = ipairs
+local math = math
+local max = max
+local next = next
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local time = time
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
+
 GT.metaData = {
     name = C_AddOns.GetAddOnMetadata("GatheringTracker", "Title"),
     version = C_AddOns.GetAddOnMetadata("GatheringTracker", "Version"),
@@ -526,7 +541,7 @@ function GT:PrepareDataForDisplay(event, wait)
 
     GT:SetupTotalsRow()
 
-    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and GT.tsmLoaded then
+    if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and GT.priceSources then
         local playerPriceTotals = {}
         for senderIndex, senderData in ipairs(GT.sender) do
             local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true)
@@ -577,8 +592,8 @@ function GT:SetupItemRows()
         else
             local totalItemCount, priceTotalItem = GT:CalculateTotals(nil, nil, itemID, true)
             local pricePerItem = nil
-            if GT.tsmLoaded then
-                pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+            if GT.priceSources then
+                pricePerItem = GT:GetItemPrice(itemID)
             end
             local itemsPerHour = GT:CalculateItemsPerHour(itemID)
             local goldPerHour = itemsPerHour * (pricePerItem or 0)
@@ -624,8 +639,8 @@ function GT:CalculateItemsPerHourTotal(playerTotals)
             startAmount = startAmount + itemData.startTotal
 
             local itemPerHour = GT:CalculateItemsPerHour(itemID)
-            if itemPerHour and GT.tsmLoaded then
-                pricePerHour = pricePerHour + (itemPerHour * ((TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000))
+            if itemPerHour and GT.priceSources then
+                pricePerHour = pricePerHour + (itemPerHour * GT:GetItemPrice(itemID))
             end
         end
     end
@@ -688,8 +703,8 @@ function GT:RefreshPerHourDisplay(stop, wait)
             local itemsPerHour = 0
             local goldPerHour = 0
             local pricePerItem = nil
-            if GT.tsmLoaded then
-                pricePerItem = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+            if GT.priceSources then
+                pricePerItem = GT:GetItemPrice(itemID)
             end
 
             if itemFrame.itemsPerHour and GT.db.profile.General.itemsPerHour then
@@ -1034,8 +1049,8 @@ function GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
     for itemID, itemCount in pairs(GT.sender[senderIndex].inventoryData) do
         if itemID > #GT.ItemData.Other.Other and itemCount - GT.db.profile.General.ignoreAmount > 0 then
             total = total + itemCount
-            if calcSenderValue and GT.tsmLoaded then
-                value = value + (itemCount * (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000)
+            if calcSenderValue and GT.priceSources then
+                value = value + (itemCount * GT:GetItemPrice(itemID))
             end
         end
     end
@@ -1052,8 +1067,8 @@ function GT:CalculateItemTotals(itemID, calcItemValue)
             total = total + itemCount
         end
     end
-    if calcItemValue and GT.tsmLoaded then
-        value = (total * (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000)
+    if calcItemValue and GT.priceSources then
+        value = (total * GT:GetItemPrice(itemID))
     end
     GT.InventoryData[itemID].total = total
     return total, math.ceil(value - 0.5) --rounds up to whole number
