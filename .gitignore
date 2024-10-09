@@ -4,3 +4,4 @@ Libs/*
 !Libs/LibDataBroker-1.1
 !Libs/AceGUI-3.0-NosheiWidgets
 .vscode/
+.vs/

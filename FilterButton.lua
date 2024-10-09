@@ -137,7 +137,7 @@ function GT:GenerateFiltersMenu(frame)
                 GT:InventoryUpdate(expansion .. " clicked", false)
             end
 
-            GT.baseFrame.button[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
+            frame[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
             for categoryIndex, category in ipairs(GT.categoriesOrder) do
                 if GT.ItemData[expansion][category] then
                     local function IsSelected_Category()
@@ -168,11 +168,11 @@ function GT:GenerateFiltersMenu(frame)
                         GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                     end
 
-                    GT.baseFrame.button[expansion][category] = GT.baseFrame.button[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
+                    frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
                     if category == "Knowledge" then
                         local columns = 3
                     end
-                    GT.baseFrame.button[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
+                    frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
                     for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                         local function IsSelected_Item()
                             if GT.db.profile.Filters[itemData.id] == true then
@@ -195,7 +195,7 @@ function GT:GenerateFiltersMenu(frame)
                         end
 
                         if itemData.id == -1 then
-                            local divider = GT.baseFrame.button[expansion][category]:CreateTitle(itemData.name)
+                            local divider = frame[expansion][category]:CreateTitle(itemData.name)
                         else
                             local name = itemData.name
 
@@ -209,8 +209,8 @@ function GT:GenerateFiltersMenu(frame)
                                 end
                             end
 
-                            GT.baseFrame.button[expansion][category][itemData.name] = GT.baseFrame.button[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
-                            GT.baseFrame.button[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
+                            frame[expansion][category][itemData.name] = frame[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
+                            frame[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
                                 local leftTexture = text:AttachTexture()
 
                                 leftTexture:SetDrawLayer("BACKGROUND", 0)
@@ -263,10 +263,10 @@ function GT:GenerateFiltersMenu(frame)
         end
 
         --add Custom Filters to filterMenu
-        GT:CreateCustomFiltersList(rootDescription)
+        GT:CreateCustomFiltersList(frame, rootDescription)
 
         --add Profiles to filterMenu
-        GT:CreateProfilesList(rootDescription)
+        GT:CreateProfilesList(frame, rootDescription)
     end
 
     MenuUtil.CreateContextMenu(frame, FiltersMenu)
@@ -328,7 +328,7 @@ function GT:FiltersButtonFade(alpha)
     end
 end
 
-function GT:CreateCustomFiltersList(rootDescription)
+function GT:CreateCustomFiltersList(frame, rootDescription)
     local customFiltersList = {}
     for id, data in pairs(GT.db.profile.CustomFiltersTable) do
         local itemID = tonumber(id)
@@ -374,7 +374,7 @@ function GT:CreateCustomFiltersList(rootDescription)
         GT:InventoryUpdate("Custom Filters clicked", false)
     end
 
-    GT.baseFrame.button["Custom Filters"] = rootDescription:CreateCheckbox("Custom Filters", IsSelected_CustomFilter, SetSelected_CustomFilter)
+    frame["Custom Filters"] = rootDescription:CreateCheckbox("Custom Filters", IsSelected_CustomFilter, SetSelected_CustomFilter)
 
     for itemIndex, itemData in ipairs(customFiltersList) do
         local function IsSelected_CustomFilterItem()
@@ -393,8 +393,8 @@ function GT:CreateCustomFiltersList(rootDescription)
             GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
 
-        GT.baseFrame.button["Custom Filters"][itemData.text] = GT.baseFrame.button["Custom Filters"]:CreateCheckbox(itemData.text, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
-        GT.baseFrame.button["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
+        frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.text, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
+        frame["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
             local leftTexture = text:AttachTexture()
             leftTexture:SetSize(18, 18)
             leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
@@ -405,7 +405,7 @@ function GT:CreateCustomFiltersList(rootDescription)
     end
 end
 
-function GT:CreateProfilesList(rootDescription)
+function GT:CreateProfilesList(frame, rootDescription)
     local function IsSelected_ProfilesCategory()
         return false
     end
@@ -413,8 +413,8 @@ function GT:CreateProfilesList(rootDescription)
     local function SetSelected_ProfilesCategory()
     end
 
-    GT.baseFrame.button["Profiles"] = rootDescription:CreateCheckbox("Profiles", IsSelected_ProfilesCategory, SetSelected_ProfilesCategory)
-    GT.baseFrame.button["Profiles"]:SetSelectionIgnored()
+    frame["Profiles"] = rootDescription:CreateCheckbox("Profiles", IsSelected_ProfilesCategory, SetSelected_ProfilesCategory)
+    frame["Profiles"]:SetSelectionIgnored()
 
     for _, name in ipairs(GT.db:GetProfiles()) do
         local function IsSelected_Profile()
@@ -433,7 +433,7 @@ function GT:CreateProfilesList(rootDescription)
             GT.db:SetProfile(name)
         end
 
-        GT.baseFrame.button["Profiles"][name] = GT.baseFrame.button["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)
+        frame["Profiles"][name] = frame["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)
     end
 end
 
