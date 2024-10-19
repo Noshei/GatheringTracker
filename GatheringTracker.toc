@@ -3,7 +3,7 @@
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
 ## Version: 2.5.5
-## OptionalDeps: TradeSkillMaster, RECrystallize
+## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
 ## IconTexture: 3692438
