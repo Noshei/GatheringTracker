@@ -437,7 +437,8 @@ local generalOptions = {
                         "|cffff0000Supported addon required.|r\n\n" ..
                         "Supports:\n" ..
                         "TradeSkillMaster\n" ..
-                        "RECrystallize",
+                        "RECrystallize\n" ..
+						"Auctionator",
                     width = 1.70,
                     values = function()
                         local options = {}
@@ -455,6 +456,9 @@ local generalOptions = {
                         end
                         if GT.priceSources["RECrystallize"] then
                             options[10] = "RECrystallize"
+                        end
+                        if GT.priceSources["Auctionator"] then
+                            options[10] = "Auctionator"
                         end
                         return options
                     end,
@@ -1547,7 +1551,7 @@ local function UpdateChangedorRemovedSavedVariables()
 end
 
 local function InitializePriceSource()
-    local priceSources = { "TradeSkillMaster", "RECrystallize" }
+    local priceSources = { "TradeSkillMaster", "RECrystallize", "Auctionator" }
     local priceSourcesLoaded = {}
 
     for _, source in ipairs(priceSources) do

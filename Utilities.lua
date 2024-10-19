@@ -278,5 +278,8 @@ function GT:GetItemPrice(itemID)
     if GT.priceSources["TradeSkillMaster"] then
         price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
     end
+	if GT.priceSources["Auctionator"] then
+		price = (Auctionator.API.v1.GetAuctionPriceByItemID("GatheringTracker", itemID) or 0) / 10000
+	end
     return price
 end
