@@ -275,11 +275,11 @@ function GT:GetItemPrice(itemID)
     if GT.priceSources["RECrystallize"] and GT.db.profile.General.tsmPrice == 10 then
         price = (RECrystallize_PriceCheckItemID(itemID) or 0) / 10000
     end
+    if GT.priceSources["Auctionator"] and GT.db.profile.General.tsmPrice == 20 then
+        price = (Auctionator.API.v1.GetAuctionPriceByItemID("GatheringTracker", itemID) or 0) / 10000
+    end
     if GT.priceSources["TradeSkillMaster"] then
         price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
     end
-	if GT.priceSources["Auctionator"] then
-		price = (Auctionator.API.v1.GetAuctionPriceByItemID("GatheringTracker", itemID) or 0) / 10000
-	end
     return price
 end
