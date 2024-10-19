@@ -438,7 +438,7 @@ local generalOptions = {
                         "Supports:\n" ..
                         "TradeSkillMaster\n" ..
                         "RECrystallize\n" ..
-						"Auctionator",
+                        "Auctionator",
                     width = 1.70,
                     values = function()
                         local options = {}
@@ -458,7 +458,7 @@ local generalOptions = {
                             options[10] = "RECrystallize"
                         end
                         if GT.priceSources["Auctionator"] then
-                            options[10] = "Auctionator"
+                            options[20] = "Auctionator"
                         end
                         return options
                     end,
