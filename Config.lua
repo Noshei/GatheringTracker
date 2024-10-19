@@ -458,7 +458,7 @@ local generalOptions = {
                             options[10] = "RECrystallize"
                         end
                         if GT.priceSources["Auctionator"] then
-                            options[10] = "Auctionator"
+                            options[20] = "Auctionator"
                         end
                         return options
                     end,
