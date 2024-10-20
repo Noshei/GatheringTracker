@@ -44,6 +44,8 @@ GT.defaults = {
             groupType = 0,
             stacksOnIcon = false,
             includeBank = false,
+            includeReagent = false,
+            includeWarband = false,
             tsmPrice = 1,
             ignoreAmount = 0,
             perItemPrice = false,
@@ -529,6 +531,30 @@ local generalOptions = {
                         GT:InventoryUpdate("Include Bank", true)
                     end,
                     order = 204
+                },
+                includeReagent = {
+                    type = "toggle",
+                    name = "Include Reagent Bank",
+                    desc = "If selected displayed values will include items in your reagent bank.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.includeReagent end,
+                    set = function(_, key)
+                        GT.db.profile.General.includeReagent = key
+                        GT:InventoryUpdate("Include Reagent", true)
+                    end,
+                    order = 205
+                },
+                includeWarband = {
+                    type = "toggle",
+                    name = "Include Warband Bank",
+                    desc = "If selected displayed values will include items in your Warband bank.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.includeWarband end,
+                    set = function(_, key)
+                        GT.db.profile.General.includeWarband = key
+                        GT:InventoryUpdate("Include Warband", true)
+                    end,
+                    order = 206
                 },
                 header2 = {
                     type = "header",

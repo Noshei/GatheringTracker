@@ -874,7 +874,13 @@ function GT:ProcessSoloData(event)
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end
         else
-            itemCount = GetItemCount(id, GT.db.profile.General.includeBank, false)
+            itemCount = C_Item.GetItemCount(
+                id,
+                GT.db.profile.General.includeBank,
+                false,
+                GT.db.profile.General.includeReagent,
+                GT.db.profile.General.includeWarband
+            )
         end
 
         if itemCount > 0 or GT.db.profile.General.allFiltered then
@@ -912,7 +918,13 @@ function GT:CreateDataMessage(event, wait)
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end
         else
-            itemCount = GetItemCount(id, GT.db.profile.General.includeBank, false)
+            itemCount = C_Item.GetItemCount(
+                id,
+                GT.db.profile.General.includeBank,
+                false,
+                GT.db.profile.General.includeReagent,
+                GT.db.profile.General.includeWarband
+            )
         end
 
         if itemCount > 0 then
