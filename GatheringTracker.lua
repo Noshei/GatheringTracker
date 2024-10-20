@@ -326,6 +326,7 @@ function GT:RemoveSender(senderIndex)
     GT.Debug("Remove Sender", 2, senderIndex)
     for itemID, inventoryData in pairs(GT.InventoryData) do
         table.remove(inventoryData.counts, senderIndex)
+        table.remove(inventoryData.sessionCounts, senderIndex)
         table.remove(inventoryData.startAmount, senderIndex)
     end
     table.remove(GT.sender, senderIndex)
@@ -544,7 +545,13 @@ function GT:PrepareDataForDisplay(event, wait)
     if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and GT.priceSources then
         local playerPriceTotals = {}
         for senderIndex, senderData in ipairs(GT.sender) do
-            local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true)
+            local playerTotal, playerPrice = GT:CalculateTotals(
+                senderIndex,
+                true,
+                nil,
+                nil,
+                GT.db.profile.General.sessionOnly
+            )
             table.insert(playerPriceTotals, tostring(math.ceil(playerPrice - 0.5)) .. "g")
         end
         GT:InitiateFrameProcess(
@@ -590,7 +597,7 @@ function GT:SetupItemRows()
                 itemData.counts
             )
         else
-            local totalItemCount, priceTotalItem = GT:CalculateTotals(nil, nil, itemID, true)
+            local totalItemCount, priceTotalItem = GT:CalculateTotals(nil, nil, itemID, true, GT.db.profile.General.sessionOnly)
             local pricePerItem = nil
             if GT.priceSources then
                 pricePerItem = GT:GetItemPrice(itemID)
@@ -598,26 +605,50 @@ function GT:SetupItemRows()
             local itemsPerHour = GT:CalculateItemsPerHour(itemID)
             local goldPerHour = itemsPerHour * (pricePerItem or 0)
 
-            GT:InitiateFrameProcess(
-                tonumber(itemID),
-                GetItemIcon(tonumber(itemID)),
-                C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
-                C_Item.GetItemQualityByID(itemID),
-                itemData.counts,
-                totalItemCount,
-                pricePerItem,
-                priceTotalItem,
-                itemsPerHour,
-                goldPerHour
-            )
+            if totalItemCount > 0 or GT.db.profile.General.allFiltered then
+                GT:InitiateFrameProcess(
+                    tonumber(itemID),
+                    GetItemIcon(tonumber(itemID)),
+                    C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
+                    C_Item.GetItemQualityByID(itemID),
+                    GT:GetItemRowData(itemID),
+                    totalItemCount,
+                    pricePerItem,
+                    priceTotalItem,
+                    itemsPerHour,
+                    goldPerHour
+                )
+            elseif GT.Display.Frames[itemID] then
+                GT:RemoveDiaplayRow(itemID)
+            end
         end
+    end
+end
+
+function GT:GetItemRowData(itemID)
+    GT.Debug("GetItemRowData", 2, itemID)
+
+    if GT.db.profile.General.sessionOnly then
+        GT.Debug("GetItemRowData", 3, "Session Counts", itemID)
+        return GT.InventoryData[itemID].sessionCounts
+    elseif GT.db.profile.General.sessionItems and not IsInGroup() then
+        local data = {}
+        for playerIndex, count in ipairs(GT.InventoryData[itemID].counts) do
+            table.insert(data, count)
+            table.insert(data, GT.InventoryData[itemID].sessionCounts[playerIndex])
+        end
+        GT.Debug("GetItemRowData", 3, "Normal Counts & Session Counts", itemID)
+        return data
+    else
+        GT.Debug("GetItemRowData", 3, "Normal Counts", itemID)
+        return GT.InventoryData[itemID].counts
     end
 end
 
 function GT:CalculateItemsPerHour(itemID)
     if itemID then
         local itemData = GT.InventoryData[itemID]
-        local itemDiff = itemData.total - itemData.startTotal
+        local itemDiff = GT:SumTable(itemData.sessionCounts)
         local timeDiff = time() - itemData.startTime
 
         --divind time diff in Seconds by 3600 to get time diff in hours
@@ -632,11 +663,11 @@ function GT:CalculateItemsPerHour(itemID)
 end
 
 function GT:CalculateItemsPerHourTotal(playerTotals)
-    local startAmount = 0
+    local sessionAmount = 0
     local pricePerHour = 0
     for itemID, itemData in pairs(GT.InventoryData) do
         if itemID > #GT.ItemData.Other.Other then
-            startAmount = startAmount + itemData.startTotal
+            sessionAmount = sessionAmount + GT:SumTable(itemData.sessionCounts)
 
             local itemPerHour = GT:CalculateItemsPerHour(itemID)
             if itemPerHour and GT.priceSources then
@@ -644,12 +675,11 @@ function GT:CalculateItemsPerHourTotal(playerTotals)
             end
         end
     end
-    local amountDiff = playerTotals - startAmount
     local timeDiff = time() - GT.GlobalStartTime
 
     --divind time diff in Seconds by 3600 to get time diff in hours
-    local itemsPerHour = amountDiff / (timeDiff / 3600)
-    GT.Debug("CalculateItemsPerHourTotal", 2, itemsPerHour, pricePerHour, playerTotals, startAmount, amountDiff, timeDiff)
+    local itemsPerHour = sessionAmount / (timeDiff / 3600)
+    GT.Debug("CalculateItemsPerHourTotal", 2, itemsPerHour, pricePerHour, playerTotals, sessionAmount, timeDiff)
     if itemsPerHour < 1 then
         itemsPerHour = 0
     end
@@ -664,11 +694,15 @@ function GT:SetupTotalsRow()
     local totalItemCount = 0
 
     for senderIndex, senderData in ipairs(GT.sender) do
-        local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true)
+        local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true, nil, nil, GT.db.profile.General.sessionOnly)
         table.insert(playerTotals, playerTotal)
+        if GT.db.profile.General.sessionItems and not GT.db.profile.General.sessionOnly and not IsInGroup() then
+            local playerTotalSession, playerPriceSession = GT:CalculateTotals(senderIndex, true, nil, nil, true)
+            table.insert(playerTotals, playerTotalSession)
+        end
+        totalItemCount = totalItemCount + playerTotal
         priceTotal = priceTotal + playerPrice
     end
-    totalItemCount = GT:SumTable(playerTotals)
     if totalItemCount > 0 or GT.db.profile.General.collapseDisplay then
         local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
 
@@ -945,6 +979,7 @@ function GT:UpdateSenderTable(sender)
         local senderTable = {
             name = sender,
             inventoryData = {},
+            sessionData = {},
         }
         table.insert(GT.sender, senderTable)
         senderIndex = #GT.sender
@@ -978,6 +1013,8 @@ function GT:ItemDataConstructor(itemID, senderIndex)
     itemData.startTotal = 0
     itemData.startAmount = {}
     itemData.startAmount[senderIndex] = 0
+    itemData.sessionCounts = {}
+    itemData.sessionCounts[senderIndex] = 0
     itemData.startTime = time()
 
     return itemData
@@ -986,14 +1023,21 @@ end
 function GT:UpdateInventoryData(senderIndex, itemTable)
     GT.Debug("UpdateInventoryData", 1, senderIndex, itemTable)
     for itemID, value in pairs(itemTable) do
+        local value = tonumber(value)
         if GT:TableFind(GT.IDs, itemID) then
             GT.InventoryData[itemID] = GT.InventoryData[itemID] or GT:ItemDataConstructor(itemID, senderIndex)
-            GT.InventoryData[itemID].counts[senderIndex] = tonumber(value)
-            GT.sender[senderIndex].inventoryData[itemID] = tonumber(value)
+            GT.InventoryData[itemID].counts[senderIndex] = value
+            GT.sender[senderIndex].inventoryData[itemID] = value
+
             if not GT.InventoryData[itemID].startAmount[senderIndex] or
                 GT.InventoryData[itemID].startAmount[senderIndex] == 0 then
-                GT.InventoryData[itemID].startAmount[senderIndex] = tonumber(value)
+                GT.InventoryData[itemID].startAmount[senderIndex] = value
             end
+
+            GT.InventoryData[itemID].sessionCounts[senderIndex] =
+                GT.InventoryData[itemID].counts[senderIndex] - GT.InventoryData[itemID].startAmount[senderIndex]
+            GT.sender[senderIndex].sessionData[itemID] =
+                GT.InventoryData[itemID].counts[senderIndex] - GT.InventoryData[itemID].startAmount[senderIndex]
             GT.InventoryData[itemID].startTotal = GT:CalculateStartTotal(itemID)
         else
             --only matters for when getting data from party members
@@ -1006,7 +1050,9 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
     for itemID, data in pairs(GT.InventoryData) do
         if not itemTable[itemID] then
             GT.InventoryData[itemID].counts[senderIndex] = 0
+            GT.InventoryData[itemID].sessionCounts[senderIndex] = 0
             GT.sender[senderIndex].inventoryData[itemID] = 0
+            GT.sender[senderIndex].sessionData[itemID] = 0
         end
     end
 
@@ -1029,24 +1075,30 @@ function GT:CalculateStartTotal(itemID)
     return total
 end
 
-function GT:CalculateTotals(senderIndex, calcSenderValue, itemID, calcItemValue)
-    GT.Debug("CalculateTotals", 1, senderIndex, calcSenderValue, itemID, calcItemValue)
+function GT:CalculateTotals(senderIndex, calcSenderValue, itemID, calcItemValue, useSessionData)
+    GT.Debug("CalculateTotals", 1, senderIndex, calcSenderValue, itemID, calcItemValue, useSessionData)
 
     if senderIndex then
-        return GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
+        return GT:CalculatePlayerTotals(senderIndex, calcSenderValue, useSessionData)
     end
 
     if itemID then
-        return GT:CalculateItemTotals(itemID, calcItemValue)
+        return GT:CalculateItemTotals(itemID, calcItemValue, useSessionData)
     end
 end
 
-function GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
-    GT.Debug("CalculatePlayerTotals", 1, senderIndex, calcSenderValue)
+function GT:CalculatePlayerTotals(senderIndex, calcSenderValue, useSessionData)
+    GT.Debug("CalculatePlayerTotals", 1, senderIndex, calcSenderValue, useSessionData)
 
     local total = 0
     local value = 0
-    for itemID, itemCount in pairs(GT.sender[senderIndex].inventoryData) do
+    local data = {}
+    if useSessionData then
+        data = GT.sender[senderIndex].sessionData
+    else
+        data = GT.sender[senderIndex].inventoryData
+    end
+    for itemID, itemCount in pairs(data) do
         if itemID > #GT.ItemData.Other.Other and itemCount - GT.db.profile.General.ignoreAmount > 0 then
             total = total + itemCount
             if calcSenderValue and GT.priceSources then
@@ -1057,12 +1109,18 @@ function GT:CalculatePlayerTotals(senderIndex, calcSenderValue)
     return total, math.ceil(value - 0.5) --rounds up to whole number
 end
 
-function GT:CalculateItemTotals(itemID, calcItemValue)
-    GT.Debug("CalculateItemTotals", 1, itemID, calcItemValue)
+function GT:CalculateItemTotals(itemID, calcItemValue, useSessionData)
+    GT.Debug("CalculateItemTotals", 1, itemID, calcItemValue, useSessionData)
 
     local total = 0
     local value = 0
-    for senderIndex, itemCount in pairs(GT.InventoryData[itemID].counts) do
+    local data = {}
+    if useSessionData then
+        data = GT.InventoryData[itemID].sessionCounts
+    else
+        data = GT.InventoryData[itemID].counts
+    end
+    for senderIndex, itemCount in pairs(data) do
         if itemCount - GT.db.profile.General.ignoreAmount > 0 then
             total = total + itemCount
         end

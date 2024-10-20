@@ -59,6 +59,8 @@ GT.defaults = {
             goldPerHour = false,
             collapseDisplay = false,
             collapseTime = 2,
+            sessionItems = false,
+            sessionOnly = false,
         },
         Notifications = {
             Count = {
@@ -528,6 +530,48 @@ local generalOptions = {
                     end,
                     order = 204
                 },
+                header2 = {
+                    type = "header",
+                    name = "Session Display Options",
+                    order = 250
+                },
+                sessionItems = {
+                    type = "toggle",
+                    name = "Display Session Item Counts",
+                    desc = "If selected session item counts will be displayed in the column to the right of the item count.\n" ..
+                        "Price data (if enabled) is not displayed for session data.\n\n" ..
+                        "|cffff0000Session data not displayed in group mode.|r",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.sessionItems end,
+                    set = function(_, key)
+                        GT.db.profile.General.sessionItems = key
+                        if not key then
+                            GT.db.profile.General.sessionOnly = false
+                        end
+                        GT:RebuildDisplay("Display Session Item Counts Changed")
+                    end,
+                    order = 251
+                },
+                sessionOnly = {
+                    type = "toggle",
+                    name = "Only Display Session Data",
+                    desc = "If selected only the session data will be displayed and selected items will only display if collected during the session.\n" ..
+                        "Price data (if enabled) is displayed for the session data.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.sessionOnly end,
+                    set = function(_, key)
+                        GT.db.profile.General.sessionOnly = key
+                        GT:RebuildDisplay("Only Display Session Data Changed")
+                    end,
+                    disabled = function()
+                        if not GT.db.profile.General.sessionItems then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    order = 252
+                },
                 itemsPerHour = {
                     type = "toggle",
                     name = "Display Items Per Hour",
@@ -536,10 +580,9 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.itemsPerHour end,
                     set = function(_, key)
                         GT.db.profile.General.itemsPerHour = key
-                        GT:RebuildDisplay("tems Per Hour Changed")
+                        GT:RebuildDisplay("Items Per Hour Changed")
                     end,
-
-                    order = 205
+                    order = 255
                 },
                 goldPerHour = {
                     type = "toggle",
@@ -559,24 +602,25 @@ local generalOptions = {
                             return false
                         end
                     end,
-                    order = 206
+                    order = 256
                 },
                 perHourReset = {
                     type = "execute",
-                    name = "Reset Item and Gold Per Hour",
-                    desc = "Clicking this will reset the Item and Gold Per Hour displays.",
+                    name = "Reset Session Data",
+                    desc = "Clicking this will reset the session data.",
                     width = 1.70,
                     func = function()
-                        GT:ResetPerHour()
+                        GT:ResetSession()
                     end,
                     disabled = function()
-                        if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHour then
-                            return true
-                        else
+                        if GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or
+                            GT.db.profile.General.sessionItems then
                             return false
+                        else
+                            return true
                         end
                     end,
-                    order = 207
+                    order = 257
                 },
                 header3 = {
                     type = "header",

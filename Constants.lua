@@ -1490,7 +1490,6 @@ local ItemData = {
         Other = {
             { id = 1, name = "Current Gold", order = 1, icon = 370211, desc = "Displays the current Gold on the character, rounded to the nearest whole number." },
             { id = 2, name = "Open Bag Space", order = 2, icon = 975745, desc = "Displays the number of open bag space." },
-            { id = 3, name = "Timer", order = 3, icon = 134377, desc = "Displays a timer starting from the first gather after being enabled." },
         },
     },
 }

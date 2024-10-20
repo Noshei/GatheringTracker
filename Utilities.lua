@@ -131,6 +131,11 @@ end
 
 function GT:GroupDisplayCheck()
     GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
+    --Checks if we should display group data
+    if GT.SimulateGroupRunning then
+        GT.Debug("Group Display Check Result", 3, "Simulate Group")
+        return true
+    end
     if GT.db.profile.General.groupType == 0 then
         GT.Debug("Group Display Check Result", 3, "Group Mode Off")
         return false
@@ -165,6 +170,10 @@ end
 function GT:SetChatType()
     local soloMode = GT.db.profile.General.groupType == 0 or GT.db.profile.General.groupType == 2
     local groupMode = GT.db.profile.General.groupType > 0
+    if GT.SimulateGroupRunning then --used to simulate being in a group
+        GT.groupMode = "PARTY"
+        return
+    end
     if IsInGroup() == false and soloMode then
         GT.groupMode = "WHISPER"
         return
@@ -184,6 +193,9 @@ function GT:CheckModeStatus()
     local soloMode = GT.db.profile.General.groupType == 0
     local groupMode = GT.db.profile.General.groupType == 1
     GT.Debug("Check Mode Status", 2, soloMode, groupMode, IsInGroup())
+    if GT.SimulateGroupRunning then --used to simulate being in a group
+        return true
+    end
     if GT.db.profile.General.groupType == 2 then --group mode set to Both
         return true
     end
@@ -282,4 +294,32 @@ function GT:GetItemPrice(itemID)
         price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
     end
     return price
+end
+
+function GT:SimulateGroup(case)
+    --[[
+        This is for testing purposes only.
+        It will simulate the effects of another player being in a group with you that also has the addon.
+    ]]
+    GT.Debug("Simulate Group", 1)
+    GT.SimulateGroupRunning = true
+
+    local message = ""
+    if case == 1 then
+        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
+        message = "1=4824 2=1 2447=452 2449=483 2450=85 2452=10 785=60 " ..
+            "765=490 2592=10 3685=10 2589=80 7100=40 6663=10 39354=50 171831=45"
+    elseif case == 2 then
+        message = "1=4824 2=2 2447=4520 2449=4830 2450=850 2452=10 785=600 " ..
+            "765=4900 2592=100 3685=10 2589=80 7100=400 6663=10 39354=50 171831=450"
+    elseif case == 3 then
+        message = "1=4824 2=3 2447=45200 2449=4830 2450=850 2452=100 785=600 " ..
+            "765=4900 2592=1000 3685=10 2589=800 7100=400 6663=100 39354=50 171831=450"
+    end
+    if case then
+        GT:DataMessageReceived("GT_Data", message, "GROUP", "SimulatedGroup")
+    else
+        GT.SimulateGroupRunning = nil
+        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
+    end
 end

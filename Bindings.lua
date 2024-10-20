@@ -97,7 +97,7 @@ function GT:ClearFilters()
     GT:ClearDisplay()
 end
 
-function GT:ResetPerHour()
+function GT:ResetSession()
     --resets the per hour displays to current time and values
     GT.Debug("Reset Per Hour", 1)
 
@@ -107,8 +107,13 @@ function GT:ResetPerHour()
         itemData.startAmount = {}
         for senderIndex, value in ipairs(itemData.counts) do
             itemData.startAmount[senderIndex] = value
+            itemData.sessionCounts[senderIndex] = 0
         end
         itemData.startTotal = GT:SumTable(itemData.startAmount)
     end
+    for senderIndex, senderData in ipairs(GT.sender) do
+        senderData.sessionData = {}
+    end
     GT:RefreshPerHourDisplay(false, true)
+    GT:RebuildDisplay("Reset Session")
 end
