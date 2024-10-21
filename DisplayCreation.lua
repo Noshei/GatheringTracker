@@ -152,6 +152,8 @@ function GT:DisplayFrameBase(id)
     frame:SetWidth(GT.db.profile.General.iconWidth)
     local frameHeight = math.max(GT.db.profile.General.iconHeight, GT.db.profile.General.totalSize)
     frame:SetHeight(frameHeight + 3)
+    frame:SetFrameStrata("BACKGROUND")
+    frame:SetFrameLevel(3)
     frame:Show()
 
     return frame

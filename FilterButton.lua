@@ -62,6 +62,7 @@ function GT:FiltersButton(profileChanged)
     filterButton:EnableMouse(true)
     filterButton:RegisterForClicks("AnyDown")
     filterButton:SetFrameStrata("BACKGROUND")
+    filterButton:SetFrameLevel(1)
     filterButton:Show()
 
     filterButton:SetScript("OnClick", function(self, button, down)
@@ -104,6 +105,7 @@ end
 
 function GT:GenerateFiltersMenu(frame)
     local function FiltersMenu(frame, rootDescription)
+        rootDescription:SetTag("GatheringTracker_Filter_Menu")
         for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
             local function IsSelected_Expansion()
                 local checked = true
@@ -262,12 +264,13 @@ function GT:GenerateFiltersMenu(frame)
                 end
             end
         end
-
         --add Custom Filters to filterMenu
         GT:CreateCustomFiltersList(frame, rootDescription)
 
         --add Profiles to filterMenu
         GT:CreateProfilesList(frame, rootDescription)
+
+        GT.baseFrame.button.rootDescription = rootDescription
     end
 
     MenuUtil.CreateContextMenu(frame, FiltersMenu)
@@ -300,7 +303,8 @@ function GT:FiltersButtonFade(alpha)
             mouseOver:SetHeight(75)
             mouseOver:SetPoint("CENTER", GT.baseFrame.button, "CENTER")
             mouseOver:SetMouseClickEnabled(false)
-            mouseOver:SetFrameStrata("LOW")
+            mouseOver:SetFrameStrata("BACKGROUND")
+            mouseOver:SetFrameLevel(2)
             GT.baseFrame.button.mouseOver = mouseOver
         end
         GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
@@ -325,6 +329,7 @@ function GT:FiltersButtonFade(alpha)
         if GT.baseFrame.button.mouseOver then
             GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
             GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)
+            GT.baseFrame.button.mouseOver:SetMouseMotionEnabled(false)
         end
     end
 end

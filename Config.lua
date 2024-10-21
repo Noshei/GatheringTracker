@@ -1257,7 +1257,10 @@ local filterOptions = {
                         GT:CreateCustomFilterOptions()
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Custom Filter Changed", true)
-                        GT:CreateCustomFiltersList()
+                        GT:CreateCustomFiltersList(
+                            GT.baseFrame.button,
+                            GT.baseFrame.button.rootDescription
+                        )
                     end,
                     order = 2
                 },
@@ -1541,12 +1544,12 @@ function GT:CreateCustomFilterOptions()
                             local borderColor = {}
                             local overlay = {}
 
-                            if id <= #GT.ItemData.Other.Other then
+                            if itemID <= #GT.ItemData.Other.Other then
                                 border = nil
                                 borderColor = nil
                                 overlay = nil
                             else
-                                local rarity = C_Item.GetItemQualityByID(id) or 1
+                                local rarity = C_Item.GetItemQualityByID(itemID) or 1
                                 if rarity <= 1 then
                                     border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                                 else
@@ -1563,7 +1566,7 @@ function GT:CreateCustomFilterOptions()
 
                             return data
                         end,
-                        order = (id + 1000)
+                        order = (itemID + 1000)
                     }
                     AceConfigRegistry:NotifyChange("GT/Filter")
                 end)
@@ -1659,7 +1662,6 @@ function GT:OnInitialize()
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
-    GT.db.RegisterCallback(GT, "OnProfileDeleted", "CreateProfilesList")
     GT.db.RegisterCallback(GT, "OnProfileCopied", "RefreshConfig")
     GT.db.RegisterCallback(GT, "OnProfileReset", "RefreshConfig")
 

@@ -1,76 +1,50 @@
 ---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
-local expansions = {
-    ["Classic"] = 1,
-    ["BC"] = 2,
-    ["Wrath"] = 3,
-    ["Cata"] = 4,
-    ["MoP"] = 5,
-    ["WoD"] = 6,
-    ["Legion"] = 7,
-    ["BFA"] = 8,
-    ["SL"] = 9,
-    ["DF"] = 10,
-    ["TWW"] = 11,
-    ["Other"] = 12,
-}
-GT.expansions = expansions
-
 local expansionsOrder = {
-    [1] = "Classic",
-    [2] = "BC",
-    [3] = "Wrath",
-    [4] = "Cata",
-    [5] = "MoP",
-    [6] = "WoD",
-    [7] = "Legion",
-    [8] = "BFA",
-    [9] = "SL",
-    [10] = "DF",
-    [11] = "TWW",
-    [12] = "Other",
+    "Classic",
+    "BC",
+    "Wrath",
+    "Cata",
+    "MoP",
+    "WoD",
+    "Legion",
+    "BFA",
+    "SL",
+    "DF",
+    "TWW",
+    "Other",
 }
 
 GT.expansionsOrder = expansionsOrder
 
-local categories = {
-    ["Herb"] = 1,
-    ["Ore"] = 2,
-    ["Cloth"] = 3,
-    ["Leather"] = 4,
-    ["Meat"] = 5,
-    ["Fish"] = 6,
-    ["Elemental"] = 7,
-    ["Gem"] = 8,
-    ["Enchanting"] = 9,
-    ["Pigment"] = 10,
-    ["Legendary"] = 11,
-    ["Synthesis"] = 12,
-    ["Knowledge"] = 13,
-
-    ["Other"] = 14,
-}
-GT.categories = categories
+GT.expansions = {}
+for index, expansion in ipairs(GT.expansionsOrder) do
+    GT.expansions[expansion] = index
+end
 
 local categoriesOrder = {
-    [1] = "Herb",
-    [2] = "Ore",
-    [3] = "Cloth",
-    [4] = "Leather",
-    [5] = "Meat",
-    [6] = "Fish",
-    [7] = "Elemental",
-    [8] = "Gem",
-    [9] = "Enchanting",
-    [10] = "Pigment",
-    [11] = "Legendary",
-    [12] = "Synthesis",
-    [13] = "Knowledge",
-
-    [14] = "Other",
+    "Herb",
+    "Ore",
+    "Cloth",
+    "Leather",
+    "Meat",
+    "Fish",
+    "Elemental",
+    "Gem",
+    "Enchanting",
+    "Pigment",
+    "Legendary",
+    "Synthesis",
+    "Knowledge",
+    "Other",
 }
 GT.categoriesOrder = categoriesOrder
+
+GT.categories = {}
+for index, category in ipairs(GT.categoriesOrder) do
+    GT.categories[category] = index
+end
 
 local ItemData = {
     Classic = {
