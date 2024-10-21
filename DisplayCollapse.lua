@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
 -- Localize global functions

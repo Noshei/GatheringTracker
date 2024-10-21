@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
@@ -140,7 +141,7 @@ function GT:NotificationHandler(mode, id, amount, value)
 
     if mode == "PLAYER_ENTERING_WORLD" then
         GT.Debug("Generate Notification Table", 1)
-        for i = 1, table.getn(GT.sender) do
+        for i = 1, #GT.sender do
             if GT.sender[1].name == GT.Player then
                 local playerTotal = 0
                 for itemID, data in pairs(GT.InventoryData) do
@@ -157,7 +158,7 @@ function GT:NotificationHandler(mode, id, amount, value)
                     end
                 end
                 id = "all"
-                amount, value = GT:CalculateTotals(i, true)
+                amount, value = GT:CalculatePlayerTotals(i, true, GT.db.profile.General.sessionOnly)
                 NotificationCheck("Count", true)
                 NotificationCheck("Gold", true)
             end
@@ -170,10 +171,10 @@ function GT:TriggerNotification(alertType)
     if not GT.NotificationPause then
         --GT.Debug("|cffff6f00" .. GT.metaData.name .. " v" .. GT.metaData.version .. "|r|cff00ff00 Notifications |r" .. alertType, 1)
         if media:IsValid("sound", GT.db.profile.Notifications[alertType].sound) then
-            PlaySoundFile(media:Fetch("sound", GT.db.profile.Notifications[alertType].sound), "master")
+            PlaySoundFile(tostring(media:Fetch("sound", GT.db.profile.Notifications[alertType].sound)), "master")
         else
             GT.Debug("Trigger Notifications: Play Default Sound", 1, alertType, GT.NotificationPause, GT.db.profile.Notifications[alertType].sound, GT.defaults.profile.Notifications[alertType].sound)
-            PlaySoundFile(media:Fetch("sound", GT.defaults.profile.Notifications[alertType].sound), "master")
+            PlaySoundFile(tostring(media:Fetch("sound", GT.defaults.profile.Notifications[alertType].sound)), "master")
         end
     end
 end

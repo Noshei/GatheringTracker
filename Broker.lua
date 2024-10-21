@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local ldb = LibStub("LibDataBroker-1.1")
 local LibDBIcon = LibStub("LibDBIcon-1.0")

@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
 -- Localize global functions
@@ -209,7 +210,7 @@ function GT:CheckModeStatus()
 end
 
 function GT:GetUnitFullName(UnitId)
-    name, realm = UnitNameUnmodified(UnitId)
+    local name, realm = UnitNameUnmodified(UnitId)
     local fullName = name
     if realm then
         fullName = fullName .. "-" .. realm

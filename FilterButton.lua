@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
 -- Localize global functions
@@ -226,7 +227,7 @@ function GT:GenerateFiltersMenu(frame)
                                 if itemData.icon then
                                     leftTexture:SetTexture(itemData.icon)
                                 else
-                                    leftTexture:SetTexture(GetItemIcon(tonumber(itemData.id)))
+                                    leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
                                 end
 
                                 text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
@@ -331,7 +332,7 @@ end
 function GT:CreateCustomFiltersList(frame, rootDescription)
     local customFiltersList = {}
     for id, data in pairs(GT.db.profile.CustomFiltersTable) do
-        local itemID = tonumber(id)
+        local itemID = tonumber(id) or 1
         local item = Item:CreateFromItemID(itemID)
         --Waits for the data to be returned from the server
         if not item:IsItemEmpty() then
@@ -339,7 +340,7 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
                 local itemDetails = {
                     id = tonumber(id),
                     text = item:GetItemName(),
-                    icon = tostring(GetItemIcon(itemID) or "")
+                    icon = tostring(C_Item.GetItemIconByID(itemID) or "")
                 }
                 table.insert(customFiltersList, itemDetails)
             end)
@@ -427,7 +428,7 @@ function GT:CreateProfilesList(frame, rootDescription)
         end
 
         local function SetSelected_Profile()
-            GT.Debug("Profile Button Clicked", 2, name, key)
+            GT.Debug("Profile Button Clicked", 2, name)
             --this closes the menu when the profile is changed
             --ToggleDropDownMenu(1, nil, GT.baseFrame.menu, "cursor", 0, 0, GT.baseFrame.filterMenu, nil)
             GT.db:SetProfile(name)

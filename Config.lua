@@ -1,5 +1,5 @@
+---@class GT : AceAddon-3.0, AceEvent-3.0, AceConfigRegistry-3.0, AceConfigDialog-3.0
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
-local Config = GT:NewModule("Config", "AceEvent-3.0")
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
@@ -63,6 +63,7 @@ GT.defaults = {
             collapseTime = 2,
             sessionItems = false,
             sessionOnly = false,
+            itemTooltip = false,
         },
         Notifications = {
             Count = {
@@ -422,6 +423,19 @@ local generalOptions = {
                     end,
                     order = 320
                 },
+                itemTooltip = {
+                    type = "toggle",
+                    name = "Display Item Tooltip",
+                    desc =
+                    "When selected the item tooltip will be displayed when mousing over an items icon.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.itemTooltip end,
+                    set = function(_, key)
+                        GT.db.profile.General.itemTooltip = key
+                        GT:RebuildDisplay("Item Tooltip Option Changed")
+                    end,
+                    order = 321
+                },
             },
         },
         LookandFeel = {
@@ -429,7 +443,7 @@ local generalOptions = {
             name = "Look and Feel",
             order = 2,
             args = {
-                header2 = {
+                header3 = {
                     type = "header",
                     name = "Display Options",
                     order = 200
@@ -648,7 +662,7 @@ local generalOptions = {
                     end,
                     order = 257
                 },
-                header3 = {
+                header4 = {
                     type = "header",
                     name = "Columns",
                     order = 300
@@ -688,7 +702,7 @@ local generalOptions = {
                     end,
                     order = 302
                 },
-                header4 = {
+                header5 = {
                     type = "header",
                     name = "Icon",
                     order = 400
@@ -747,7 +761,7 @@ local generalOptions = {
                             for itemID, itemFrame in pairs(GT.Display.Frames) do
                                 if itemID > 2 and itemID < 9999999998 then
                                     local iconRarity = C_Item.GetItemQualityByID(itemID)
-                                    GT:CreateRarityBorder(itemFrame, iconRarity)
+                                    GT:DisplayFrameRarity(itemFrame, iconRarity)
                                 end
                             end
                         else
@@ -762,7 +776,7 @@ local generalOptions = {
                     end,
                     order = 403
                 },
-                header5 = {
+                header6 = {
                     type = "header",
                     name = "Text",
                     order = 500
@@ -1299,7 +1313,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         if itemData.id <= #GT.ItemData.Other.Other then
                             return itemData.icon
                         else
-                            return GetItemIcon(tonumber(itemData.id))
+                            return C_Item.GetItemIconByID(itemData.id)
                         end
                     end,
                     imageCoords = function()
@@ -1314,7 +1328,7 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             borderColor = nil
                             overlay = nil
                         else
-                            local rarity = C_Item.GetItemQualityByID(tonumber(itemData.id)) or 1
+                            local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
                             if rarity <= 1 then
                                 border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                             else
@@ -1433,7 +1447,7 @@ local aliasOptions = {
                         end
                         if exists > 0 then
                             if tempAliasName == "Reset This Alias" then
-                                table.remove(GT.db.profile.Aliases, index)
+                                table.remove(GT.db.profile.Aliases, exists)
                                 GT:UpdateAliases(tempAliasCharacter)
                             else
                                 GT.db.profile.Aliases[exists].alias = tempAliasName
@@ -1496,7 +1510,7 @@ function GT:CreateCustomFilterOptions()
         end
         for id, value in pairs(GT.db.profile.CustomFiltersTable) do
             --Create a local item to get data from the server
-            local itemID = tonumber(id)
+            local itemID = tonumber(id) or 1
             local item = Item:CreateFromItemID(itemID)
             GT.Debug("Create Custom Filter Options", 2, itemID)
             --Waits for the data to be returned from the server
@@ -1507,7 +1521,7 @@ function GT:CreateCustomFilterOptions()
                         type = "toggle",
                         dialogControl = "NW_CheckBox",
                         name = itemName,
-                        image = function() return GetItemIcon(tonumber(id)) end,
+                        image = function() return C_Item.GetItemIconByID(id) end,
                         get = function() return GT.db.profile.CustomFiltersTable[id] end,
                         set = function(_, key)
                             if key then
@@ -1526,12 +1540,12 @@ function GT:CreateCustomFilterOptions()
                             local borderColor = {}
                             local overlay = {}
 
-                            if tonumber(id) <= #GT.ItemData.Other.Other then
+                            if id <= #GT.ItemData.Other.Other then
                                 border = nil
                                 borderColor = nil
                                 overlay = nil
                             else
-                                local rarity = C_Item.GetItemQualityByID(tonumber(id)) or 1
+                                local rarity = C_Item.GetItemQualityByID(id) or 1
                                 if rarity <= 1 then
                                     border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                                 else
@@ -1632,13 +1646,13 @@ local function InitializePriceSource()
     end
 
     if next(priceSourcesLoaded) == nil then
-        priceSourcesLoaded = false
+        priceSourcesLoaded = nil
     end
 
     return priceSourcesLoaded
 end
 
-function Config:OnInitialize()
+function GT:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.priceSources = InitializePriceSource()
 
@@ -1693,18 +1707,18 @@ function Config:OnInitialize()
 
     --register font and sound with LSM
     media:Register("font", "Fira Mono Medium", "Interface\\Addons\\GatheringTracker\\Media\\Fonts\\FiraMono-Medium.ttf", media.LOCALE_BIT_western + media.LOCALE_BIT_ruRU)
-    media:Register("sound", "Auction Window Open", 567482)
-    media:Register("sound", "Auction Window Close", 567499)
-    media:Register("sound", "Auto Quest Complete", 567476)
-    media:Register("sound", "Level Up", 567431)
-    media:Register("sound", "Player Invite", 567451)
-    media:Register("sound", "Raid Warning", 567397)
-    media:Register("sound", "Ready Check", 567409)
-    media:Register("sound", "Murloc Aggro", 556000)
-    media:Register("sound", "Map Ping", 567416)
-    media:Register("sound", "Bonk 1", 568956)
-    media:Register("sound", "Bonk 2", 569179)
-    media:Register("sound", "Bonk 3", 569569)
+    media:Register("sound", "Auction Window Open", "567482")
+    media:Register("sound", "Auction Window Close", "567499")
+    media:Register("sound", "Auto Quest Complete", "567476")
+    media:Register("sound", "Level Up", "567431")
+    media:Register("sound", "Player Invite", "567451")
+    media:Register("sound", "Raid Warning", "567397")
+    media:Register("sound", "Ready Check", "567409")
+    media:Register("sound", "Murloc Aggro", "556000")
+    media:Register("sound", "Map Ping", "567416")
+    media:Register("sound", "Bonk 1", "568956")
+    media:Register("sound", "Bonk 2", "569179")
+    media:Register("sound", "Bonk 3", "569569")
 
     GT.Enabled = GT.db.profile.General.enable
     if not GT.Enabled then
@@ -1719,5 +1733,5 @@ function Config:OnInitialize()
     GT.NotificationPause = true
 
     GT:RebuildIDTables()
-    GT:CreateBaseFrame("Config:OnInitialize")
+    GT:CreateBaseFrame()
 end

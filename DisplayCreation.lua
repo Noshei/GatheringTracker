@@ -1,3 +1,4 @@
+---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 
@@ -20,6 +21,10 @@ local function FramePool_Resetter(framePool, frame)
     frame:Hide()
     frame:ClearAllPoints()
     if frame.icon then
+        frame.icon:SetScript("OnEnter", nil)
+        frame.icon:SetScript("OnLeave", nil)
+        frame.icon:SetMouseClickEnabled(false)
+        frame.icon:SetMouseMotionEnabled(false)
         GT.Pools.texturePool:Release(frame.icon)
         frame.icon = nil
     end
@@ -100,7 +105,9 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     GT.Display.Frames[id] = frame
 
-    GT:DisplayFrameIcon(frame, iconId)
+    --GT:DisplayFrameHighlight(frame)
+
+    GT:DisplayFrameIcon(frame, iconId, id)
 
     if iconQuality then
         GT:DisplayFrameQuality(frame, iconQuality)
@@ -108,7 +115,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     GT:DisplayFrameRarity(frame, iconRarity)
 
-    frameHeight = frame:GetHeight()
+    local frameHeight = frame:GetHeight()
     frame.text = {}
 
     GT:DisplayFrameCounts(frame, id, displayText)
@@ -150,7 +157,7 @@ function GT:DisplayFrameBase(id)
     return frame
 end
 
-function GT:DisplayFrameIcon(frame, iconId)
+function GT:DisplayFrameIcon(frame, iconId, id)
     frame.icon = GT.Pools.texturePool:Acquire()
     frame.icon:SetParent(frame)
     frame.icon:SetDrawLayer("BACKGROUND", 0)
@@ -159,6 +166,33 @@ function GT:DisplayFrameIcon(frame, iconId)
     frame.icon:SetWidth(GT.db.profile.General.iconWidth)
     frame.icon:SetHeight(GT.db.profile.General.iconHeight)
     frame.icon:Show()
+
+    if id <= #GT.ItemData.Other.Other and id >= 9999999998 then
+        return
+    end
+    if not GT.db.profile.General.itemTooltip then
+        return
+    end
+
+    frame.icon:SetScript("OnEnter", function(self, motion)
+        if motion then
+            GameTooltip:SetOwner(self, self:GetTooltipAnchor())
+            GameTooltip:SetItemByID(id)
+            GameTooltip:Show()
+        end
+    end)
+
+    frame.icon:SetScript("OnLeave", function(self)
+        if GameTooltip:GetOwner() == self then
+            GameTooltip:Hide()
+        end
+    end)
+
+    function frame.icon:GetTooltipAnchor()
+        local x = self:GetRight() / GetScreenWidth() > 0.8
+        return x and 'ANCHOR_LEFT' or 'ANCHOR_RIGHT'
+    end
+    frame.icon:SetMouseClickEnabled(false)
 end
 
 function GT:DisplayFrameQuality(frame, iconQuality)
@@ -195,6 +229,23 @@ function GT:DisplayFrameRarity(frame, iconRarity)
     frame.iconRarity:SetAllPoints(frame.icon)
     frame.iconRarity:Show()
 end
+
+function GT:DisplayFrameHighlight(frame)
+    frame.highlight = GT.Pools.texturePool:Acquire()
+    frame.highlight:SetParent(frame)
+    frame.highlight:SetDrawLayer("BACKGROUND", 7)
+    frame.highlight:SetAtlas("communities-create-avatar-border-hover")
+    frame.highlight:SetAllPoints(frame)
+    frame.highlight:Hide()
+end
+--[[
+    Possible textures to use for the highlight:
+        Looting_ItemCard_HighlightState (best option as it is visible and colors well)
+        ClickCastList-ButtonHighlight (good option, but less visible)
+        Adventures_MissionList_Highlight
+        communitiesfinder_card_highlight
+        search-highlight-largeNumber
+]]
 
 function GT:DisplayFrameCounts(frame, id, displayText)
     for i, text in ipairs(displayText) do

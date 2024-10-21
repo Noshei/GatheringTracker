@@ -1,7 +1,7 @@
 GatheringTracker = LibStub("AceAddon-3.0"):NewAddon("GatheringTracker", "AceEvent-3.0", "AceComm-3.0")
-local AceGUI = LibStub("AceGUI-3.0")
-local media = LibStub:GetLibrary("LibSharedMedia-3.0")
+---@class GT : AceAddon-3.0, AceEvent-3.0, AceComm-3.0, AceGUI-3.0
 local GT = GatheringTracker
+
 GT.sender = {}
 GT.count = {}
 GT.InventoryData = {}
@@ -524,15 +524,8 @@ function GT:PrepareDataForDisplay(event, wait)
     for senderIndex, senderData in ipairs(GT.sender) do
         if senderData.name == GT.Player and not GT.NotificationPause then
             GT.Debug("Trigger Notification Handler for all", 2)
-            local countTotal = 0
-            local valueTotal = 0
-            if playerTotals and playerTotals.countTotal and playerTotals.countTotal[senderIndex] then
-                countTotal = playerTotals.countTotal[senderIndex]
-            end
-            if playerTotals and playerTotals.valueTotal and playerTotals.valueTotal[senderIndex] then
-                valueTotal = playerTotals.valueTotal[senderIndex]
-            end
-            GT:NotificationHandler("all", "all", countTotal, valueTotal)
+            local count, value = GT:CalculatePlayerTotals(senderIndex, true, GT.db.profile.General.sessionOnly)
+            GT:NotificationHandler("all", "all", count, value)
         end
     end
 
@@ -545,11 +538,9 @@ function GT:PrepareDataForDisplay(event, wait)
     if GT.db.profile.General.characterValue and GT:GroupDisplayCheck() and GT.priceSources then
         local playerPriceTotals = {}
         for senderIndex, senderData in ipairs(GT.sender) do
-            local playerTotal, playerPrice = GT:CalculateTotals(
+            local playerTotal, playerPrice = GT:CalculatePlayerTotals(
                 senderIndex,
                 true,
-                nil,
-                nil,
                 GT.db.profile.General.sessionOnly
             )
             table.insert(playerPriceTotals, tostring(math.ceil(playerPrice - 0.5)) .. "g")
@@ -597,7 +588,11 @@ function GT:SetupItemRows()
                 itemData.counts
             )
         else
-            local totalItemCount, priceTotalItem = GT:CalculateTotals(nil, nil, itemID, true, GT.db.profile.General.sessionOnly)
+            local totalItemCount, priceTotalItem = GT:CalculateItemTotals(
+                itemID,
+                true,
+                GT.db.profile.General.sessionOnly
+            )
             local pricePerItem = nil
             if GT.priceSources then
                 pricePerItem = GT:GetItemPrice(itemID)
@@ -608,7 +603,7 @@ function GT:SetupItemRows()
             if totalItemCount > 0 or GT.db.profile.General.allFiltered then
                 GT:InitiateFrameProcess(
                     tonumber(itemID),
-                    GetItemIcon(tonumber(itemID)),
+                    C_Item.GetItemIconByID(itemID),
                     C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
                     C_Item.GetItemQualityByID(itemID),
                     GT:GetItemRowData(itemID),
@@ -694,10 +689,18 @@ function GT:SetupTotalsRow()
     local totalItemCount = 0
 
     for senderIndex, senderData in ipairs(GT.sender) do
-        local playerTotal, playerPrice = GT:CalculateTotals(senderIndex, true, nil, nil, GT.db.profile.General.sessionOnly)
+        local playerTotal, playerPrice = GT:CalculatePlayerTotals(
+            senderIndex,
+            true,
+            GT.db.profile.General.sessionOnly
+        )
         table.insert(playerTotals, playerTotal)
         if GT.db.profile.General.sessionItems and not GT.db.profile.General.sessionOnly and not IsInGroup() then
-            local playerTotalSession, playerPriceSession = GT:CalculateTotals(senderIndex, true, nil, nil, true)
+            local playerTotalSession, playerPriceSession = GT:CalculatePlayerTotals(
+                senderIndex,
+                true,
+                true
+            )
             table.insert(playerTotals, playerTotalSession)
         end
         totalItemCount = totalItemCount + playerTotal
@@ -755,7 +758,11 @@ function GT:RefreshPerHourDisplay(stop, wait)
             local totalItemCount = 0
 
             for senderIndex, senderData in ipairs(GT.sender) do
-                local playerTotal = GT:CalculateTotals(senderIndex)
+                local playerTotal = GT:CalculatePlayerTotals(
+                    senderIndex,
+                    false,
+                    GT.db.profile.General.sessionOnly
+                )
                 table.insert(playerTotals, playerTotal)
             end
             totalItemCount = GT:SumTable(playerTotals)
@@ -901,6 +908,9 @@ function GT:ProcessSoloData(event)
     GT:PrepareDataForDisplay("Process Solo Data")
 end
 
+--- Creates the message string to send to other party members
+---@param event any calling function
+---@param wait any if true we will wait a bit to avoid issues
 function GT:CreateDataMessage(event, wait)
     GT.Debug("CreateDataMessage", 2, event)
     if wait then
@@ -943,6 +953,8 @@ function GT:CreateDataMessage(event, wait)
     GT:SendDataMessage(updateMessage)
 end
 
+--- Send addon message to other characters in group
+---@param updateMessage string message string to send to group that is formatted with id=count and space seperated
 function GT:SendDataMessage(updateMessage)
     GT:SetChatType()
 
@@ -950,6 +962,11 @@ function GT:SendDataMessage(updateMessage)
     GT:SendCommMessage("GT_Data", updateMessage, GT.groupMode, nil, "NORMAL")
 end
 
+--- Called when receiving an addon message
+---@param prefix string addon message prefix
+---@param message string addon message
+---@param distribution string distribution type of message expect "PARTY" or "RAID"
+---@param sender string name of player that sent the message
 function GT:DataMessageReceived(prefix, message, distribution, sender)
     GT.Debug("Data Message Received", 3, prefix, message, distribution, sender)
 
@@ -977,6 +994,9 @@ function GT:DataMessageReceived(prefix, message, distribution, sender)
     GT:PrepareDataForDisplay("Data Message Received")
 end
 
+--- Creates or Updates the sender table
+---@param sender string Sender name
+---@return integer senderIndex
 function GT:UpdateSenderTable(sender)
     GT.Debug("UpdateSenderTable", 2, sender)
     local senderIndex = 0
@@ -1000,6 +1020,9 @@ function GT:UpdateSenderTable(sender)
     return senderIndex
 end
 
+--- Creates a table from a string that is formatted with id=count and space seperated
+---@param message string Message string
+---@return table itemTable
 function GT:CreateItemTable(message)
     GT.Debug("CreateItemTable", 3, message)
     --create messageText table
@@ -1009,12 +1032,17 @@ function GT:CreateItemTable(message)
 
     for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
         local itemID = tonumber(itemID)
+        ---@diagnostic disable-next-line: need-check-nil
         itemTable[itemID] = value
     end
 
     return itemTable
 end
 
+--- Creates an itemData Construct
+---@param itemID integer ID of the item to create
+---@param senderIndex integer Index of the user that initiated the creation of the item
+---@return table itemData
 function GT:ItemDataConstructor(itemID, senderIndex)
     GT.Debug("ItemDataConstructor", 1, itemID, senderIndex)
 
@@ -1032,6 +1060,9 @@ function GT:ItemDataConstructor(itemID, senderIndex)
     return itemData
 end
 
+--- Updates the Inventory data for a Sender
+---@param senderIndex integer
+---@param itemTable table
 function GT:UpdateInventoryData(senderIndex, itemTable)
     GT.Debug("UpdateInventoryData", 1, senderIndex, itemTable)
     for itemID, value in pairs(itemTable) do
@@ -1073,6 +1104,8 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
     end
 end
 
+---@param itemID integer
+---@return integer startTotal
 function GT:CalculateStartTotal(itemID)
     GT.Debug("CalculateStartTotal", 1, itemID)
 
@@ -1087,18 +1120,11 @@ function GT:CalculateStartTotal(itemID)
     return total
 end
 
-function GT:CalculateTotals(senderIndex, calcSenderValue, itemID, calcItemValue, useSessionData)
-    GT.Debug("CalculateTotals", 1, senderIndex, calcSenderValue, itemID, calcItemValue, useSessionData)
-
-    if senderIndex then
-        return GT:CalculatePlayerTotals(senderIndex, calcSenderValue, useSessionData)
-    end
-
-    if itemID then
-        return GT:CalculateItemTotals(itemID, calcItemValue, useSessionData)
-    end
-end
-
+---@param senderIndex integer Index of a character from GT.Sender
+---@param calcSenderValue boolean If true calculates value of all filtered items from sender
+---@param useSessionData boolean If true only uses session data for calculations
+---@return integer total Total count of items for sender
+---@return integer value Total gold value of items for sender
 function GT:CalculatePlayerTotals(senderIndex, calcSenderValue, useSessionData)
     GT.Debug("CalculatePlayerTotals", 1, senderIndex, calcSenderValue, useSessionData)
 
@@ -1121,6 +1147,11 @@ function GT:CalculatePlayerTotals(senderIndex, calcSenderValue, useSessionData)
     return total, math.ceil(value - 0.5) --rounds up to whole number
 end
 
+---@param itemID integer Item id of the item to calculate for
+---@param calcItemValue boolean If true calculates value of the item from all senders
+---@param useSessionData boolean If true only uses session data for calculations
+---@return integer total Total count of the item from all senders
+---@return integer value Total gold value of the item from all senders
 function GT:CalculateItemTotals(itemID, calcItemValue, useSessionData)
     GT.Debug("CalculateItemTotals", 1, itemID, calcItemValue, useSessionData)
 
