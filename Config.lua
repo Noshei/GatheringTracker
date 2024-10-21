@@ -427,7 +427,8 @@ local generalOptions = {
                     type = "toggle",
                     name = "Display Item Tooltip",
                     desc =
-                    "When selected the item tooltip will be displayed when mousing over an items icon.",
+                        "When selected the item tooltip will be displayed when mousing over an items icon.\n\n" ..
+                        "Interacts poorly with the Collapse Display option, not recommended to use both.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.itemTooltip end,
                     set = function(_, key)

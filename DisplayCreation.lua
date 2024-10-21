@@ -167,7 +167,7 @@ function GT:DisplayFrameIcon(frame, iconId, id)
     frame.icon:SetHeight(GT.db.profile.General.iconHeight)
     frame.icon:Show()
 
-    if id <= #GT.ItemData.Other.Other and id >= 9999999998 then
+    if id <= #GT.ItemData.Other.Other or id >= 9999999998 then
         return
     end
     if not GT.db.profile.General.itemTooltip then
