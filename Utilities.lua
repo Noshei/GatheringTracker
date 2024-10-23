@@ -168,6 +168,14 @@ function GT:GroupDisplayCheck()
     return true
 end
 
+function GT:IsInGroup()
+    -- Extention of IsInGroup to return false when in follower dungeons
+    if C_LFGInfo.IsInLFGFollowerDungeon() == true then
+        return false
+    end
+    return IsInGroup()
+end
+
 function GT:SetChatType()
     local soloMode = GT.db.profile.General.groupType == 0 or GT.db.profile.General.groupType == 2
     local groupMode = GT.db.profile.General.groupType > 0

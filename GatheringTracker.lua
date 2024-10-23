@@ -380,6 +380,9 @@ function GT:AllignColumns()
     end
     for i, id in ipairs(GT.Display.Order) do
         for index, string in ipairs(GT.Display.Frames[id].text) do
+            if not GT.Display.ColumnSize[index] then
+                GT:CheckColumnSize(index, GT.Display.Frames[id].text[index])
+            end
             string:SetWidth(GT.Display.ColumnSize[index])
         end
     end
@@ -626,7 +629,7 @@ function GT:GetItemRowData(itemID)
     if GT.db.profile.General.sessionOnly then
         GT.Debug("GetItemRowData", 3, "Session Counts", itemID)
         return GT.InventoryData[itemID].sessionCounts
-    elseif GT.db.profile.General.sessionItems and not IsInGroup() then
+    elseif GT.db.profile.General.sessionItems and not GT:IsInGroup() then
         local data = {}
         for playerIndex, count in ipairs(GT.InventoryData[itemID].counts) do
             table.insert(data, count)
@@ -695,7 +698,7 @@ function GT:SetupTotalsRow()
             GT.db.profile.General.sessionOnly
         )
         table.insert(playerTotals, playerTotal)
-        if GT.db.profile.General.sessionItems and not GT.db.profile.General.sessionOnly and not IsInGroup() then
+        if GT.db.profile.General.sessionItems and not GT.db.profile.General.sessionOnly and not GT:IsInGroup() then
             local playerTotalSession, playerPriceSession = GT:CalculatePlayerTotals(
                 senderIndex,
                 true,
@@ -863,7 +866,7 @@ function GT:InventoryUpdate(event, wait)
 
     GT:ProcessSoloData(event)
 
-    if GT.db.profile.General.groupType > 0 and IsInGroup() then
+    if GT.db.profile.General.groupType > 0 and GT:IsInGroup() then
         GT:CreateDataMessage(event)
     end
 end
