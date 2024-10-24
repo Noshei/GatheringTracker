@@ -1055,7 +1055,7 @@ function GT:ItemDataConstructor(itemID, senderIndex)
     itemData.total = 0
     itemData.startTotal = 0
     itemData.startAmount = {}
-    itemData.startAmount[senderIndex] = 0
+    itemData.startAmount[senderIndex] = -1
     itemData.sessionCounts = {}
     itemData.sessionCounts[senderIndex] = 0
     itemData.startTime = time()
@@ -1067,8 +1067,9 @@ end
 ---@param senderIndex integer
 ---@param itemTable table
 function GT:UpdateInventoryData(senderIndex, itemTable)
-    GT.Debug("UpdateInventoryData", 1, senderIndex, itemTable)
+    GT.Debug("UpdateInventoryData", 1, senderIndex, GT.sender[senderIndex].name)
     for itemID, value in pairs(itemTable) do
+        GT.Debug("UpdateInventoryData", 3, GT.sender[senderIndex].name, itemID, value)
         local value = tonumber(value)
         if GT:TableFind(GT.IDs, itemID) then
             GT.InventoryData[itemID] = GT.InventoryData[itemID] or GT:ItemDataConstructor(itemID, senderIndex)
@@ -1076,7 +1077,7 @@ function GT:UpdateInventoryData(senderIndex, itemTable)
             GT.sender[senderIndex].inventoryData[itemID] = value
 
             if not GT.InventoryData[itemID].startAmount[senderIndex] or
-                GT.InventoryData[itemID].startAmount[senderIndex] == 0 then
+                GT.InventoryData[itemID].startAmount[senderIndex] == -1 then
                 GT.InventoryData[itemID].startAmount[senderIndex] = value
             end
 
