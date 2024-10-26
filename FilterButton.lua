@@ -66,7 +66,9 @@ function GT:FiltersButton(profileChanged)
     filterButton:Show()
 
     filterButton:SetScript("OnClick", function(self, button, down)
-        if button == "LeftButton" then
+        if button == "LeftButton" and IsShiftKeyDown() then
+            GT:ResetSession()
+        elseif button == "LeftButton" then
             GT:GenerateFiltersMenu(self)
         elseif button == "RightButton" then
             GT:ClearFilters()

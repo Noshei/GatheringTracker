@@ -872,7 +872,7 @@ function GT:InventoryUpdate(event, wait)
 end
 
 function GT:ProcessSoloData(event)
-    GT.Debug("ProcessSoloData", 2, event)
+    GT.Debug("ProcessSoloData", 1, event)
     local itemTable = {}
 
     for index, id in ipairs(GT.IDs) do
@@ -915,7 +915,7 @@ end
 ---@param event any calling function
 ---@param wait any if true we will wait a bit to avoid issues
 function GT:CreateDataMessage(event, wait)
-    GT.Debug("CreateDataMessage", 2, event)
+    GT.Debug("CreateDataMessage", 1, event)
     if wait then
         GT:wait(0.1, "CreateDataMessage", "CreateDataMessage", false)
         return

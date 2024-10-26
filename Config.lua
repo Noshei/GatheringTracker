@@ -128,8 +128,10 @@ local generalOptions = {
                 miniMap = {
                     type = "toggle",
                     name = "Minimap Button",
-                    desc = "Enable this to show the minimap button.\nLeft Click shows filters menu.\n" ..
-                        "Right Click opens the addon options.",
+                    desc = "Enable this to show the minimap button.\n" ..
+                        "Left Click shows filters menu.\n" ..
+                        "Right Click opens the addon options.\n" ..
+                        "Shift + Left Click resets Session Data.",
                     width = 1.70,
                     get = function() return not GT.db.profile.miniMap.hide end,
                     set = function(_, key)
@@ -146,7 +148,9 @@ local generalOptions = {
                 filtersButton = {
                     type = "toggle",
                     name = "Filters Button",
-                    desc = "Left Click shows filters menu.\nRight Click clears all filters.",
+                    desc = "Left Click shows filters menu.\n" ..
+                        "Right Click clears all filters.\n" ..
+                        "Shift + Left Click resets Session Data.",
                     width = 1.70,
                     get = function() return GT.db.profile.General.filtersButton end,
                     set = function(_, key)

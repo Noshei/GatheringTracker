@@ -173,6 +173,9 @@ function GT:IsInGroup()
     if C_LFGInfo.IsInLFGFollowerDungeon() == true then
         return false
     end
+    if select(3, GetInstanceInfo()) == 208 then
+        return false
+    end
     return IsInGroup()
 end
 

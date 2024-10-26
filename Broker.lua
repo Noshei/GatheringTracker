@@ -25,7 +25,9 @@ function GT:InitializeBroker()
         type = "launcher",
         icon = "Interface\\Addons\\GatheringTracker\\Media\\GT_Icon",
         OnClick = function(frame, button)
-            if button == "LeftButton" then
+            if button == "LeftButton" and IsShiftKeyDown() then
+                GT:ResetSession()
+            elseif button == "LeftButton" then
                 GT:GenerateFiltersMenu(frame)
             elseif button == "RightButton" then
                 Settings.OpenToCategory(GT.metaData.name, true)
