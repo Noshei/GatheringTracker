@@ -15,6 +15,7 @@ DisplayCollapse.lua
 Utilities.lua
 FilterButton.lua
 NotificationHandler.lua
+Alerts.lua
 Constants.lua
 Config.lua
 Broker.lua

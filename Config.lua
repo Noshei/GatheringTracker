@@ -81,6 +81,8 @@ GT.defaults = {
                 sound = "Auction Window Open"
             },
         },
+        Alerts = {
+        },
         Filters = {
         },
         CustomFilters = "",
@@ -1180,10 +1182,40 @@ local generalOptions = {
                 },
             }
         },
+        Alerts = {
+            type = "group",
+            name = "Alerts",
+            order = 4,
+            args = {
+                header5 = {
+                    type = "header",
+                    name = "Alert",
+                    order = 1
+                },
+                itemMenu = {
+                    type = "execute",
+                    name = "Select Items to Configure",
+                    width = "Normal",
+                    func = function()
+
+                    end,
+                    order = 12,
+                },
+                filterAlerts = {
+                    type = "group",
+                    name = "Item Alert Options",
+                    inline = true,
+                    order = 500,
+                    args = {
+
+                    },
+                },
+            },
+        },
         Debug = {
             type = "group",
             name = "Debug",
-            order = 4,
+            order = 5,
             args = {
                 header5 = {
                     type = "header",
@@ -1216,6 +1248,23 @@ local generalOptions = {
         }
     }
 }
+
+function GT:CreateItemAlertOptions()
+    local alertOptions = generalOptions.args.Alerts.args.filterAlerts.args
+
+    for _, itemID in ipairs(GT.IDs) do
+        if not alertOptions[itemID] then
+            alertOptions[tostring(itemID)] = {
+                type = "group",
+                name = tostring(itemID),
+                inline = true,
+                order = itemID,
+                args = {}
+            }
+        end
+    end
+    AceConfigRegistry:NotifyChange(GT.metaData.name)
+end
 
 local filterOptions = {
     type = "group",
