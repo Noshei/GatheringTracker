@@ -1664,6 +1664,17 @@ function GT:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.priceSources = InitializePriceSource()
 
+    GT.gameVersion = "retail"
+    if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
+        GT.gameVersion = "classic"
+    elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 3) then
+        GT.gameVersion = "season"
+    elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+        GT.gameVersion = "era"
+    else
+        GT.gameVersion = "retail"
+    end
+
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
     GT.db.RegisterCallback(GT, "OnProfileCopied", "RefreshConfig")
