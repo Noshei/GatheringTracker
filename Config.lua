@@ -561,6 +561,13 @@ local generalOptions = {
                         GT.db.profile.General.includeReagent = key
                         GT:InventoryUpdate("Include Reagent", true)
                     end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 205
                 },
                 includeWarband = {
@@ -572,6 +579,13 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.includeWarband = key
                         GT:InventoryUpdate("Include Warband", true)
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
                     end,
                     order = 206
                 },
@@ -1261,10 +1275,6 @@ local filterOptions = {
                         GT:CreateCustomFilterOptions()
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Custom Filter Changed", true)
-                        GT:CreateCustomFiltersList(
-                            GT.baseFrame.button,
-                            GT.baseFrame.button.rootDescription
-                        )
                     end,
                     order = 2
                 },
@@ -1332,8 +1342,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         local overlay = {}
 
                         if tonumber(itemData.id) <= #GT.ItemData.Other.Other then
-                            border = nil
-                            borderColor = nil
+                            border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                            borderColor = { 1, 1, 1, 0.8 }
                             overlay = nil
                         else
                             local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
@@ -1549,8 +1559,8 @@ function GT:CreateCustomFilterOptions()
                             local overlay = {}
 
                             if itemID <= #GT.ItemData.Other.Other then
-                                border = nil
-                                borderColor = nil
+                                border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                                borderColor = { 1, 1, 1, 0.8 }
                                 overlay = nil
                             else
                                 local rarity = C_Item.GetItemQualityByID(itemID) or 1
@@ -1663,17 +1673,6 @@ end
 function GT:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.priceSources = InitializePriceSource()
-
-    GT.gameVersion = "retail"
-    if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
-        GT.gameVersion = "classic"
-    elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 3) then
-        GT.gameVersion = "season"
-    elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-        GT.gameVersion = "era"
-    else
-        GT.gameVersion = "retail"
-    end
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")

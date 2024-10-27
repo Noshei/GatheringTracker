@@ -36,6 +36,17 @@ GT.metaData = {
     notes = C_AddOns.GetAddOnMetadata("GatheringTracker", "Notes"),
 }
 
+GT.gameVersion = "retail"
+if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
+    GT.gameVersion = "classic"
+elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 3) then
+    GT.gameVersion = "season"
+elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+    GT.gameVersion = "era"
+else
+    GT.gameVersion = "retail"
+end
+
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version
 
 function GT:OnEnable()
@@ -603,11 +614,16 @@ function GT:SetupItemRows()
             local itemsPerHour = GT:CalculateItemsPerHour(itemID)
             local goldPerHour = itemsPerHour * (pricePerItem or 0)
 
+            local iconQuality = nil
+            if GT.gameVersion == "retail" then
+                iconQuality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID)
+            end
+
             if totalItemCount > 0 or GT.db.profile.General.allFiltered then
                 GT:InitiateFrameProcess(
                     tonumber(itemID),
                     C_Item.GetItemIconByID(itemID),
-                    C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID),
+                    iconQuality,
                     C_Item.GetItemQualityByID(itemID),
                     GT:GetItemRowData(itemID),
                     totalItemCount,

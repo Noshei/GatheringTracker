@@ -6,7 +6,7 @@
 ## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
-## IconTexture: 3692438
+## IconTexture: Interface\Addons\GatheringTracker\Media\GT_Icon
 
 embeds.xml
 GatheringTracker.lua
