@@ -39,7 +39,7 @@ GT.metaData = {
 GT.gameVersion = "retail"
 if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
     GT.gameVersion = "classic"
-elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 3) then
+elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) then
     GT.gameVersion = "season"
 elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
     GT.gameVersion = "era"
