@@ -282,6 +282,13 @@ local generalOptions = {
                             return true
                         end
                     end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 120
                 },
                 showFollower = {
@@ -296,6 +303,13 @@ local generalOptions = {
                     end,
                     disabled = function()
                         if GT.db.profile.General.instanceHide or GT.db.profile.General.groupHide then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
                             return false
                         else
                             return true
