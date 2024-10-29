@@ -91,9 +91,9 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
 end
 
 function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
-                               totalItemCount, pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
+                               pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
     GT.Debug("CreateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText,
-        totalItemCount, pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
+        pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
 
     if displayText == nil then
         return
@@ -101,7 +101,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     local frame = GT:DisplayFrameBase(id)
 
-    frame.displayedCharacters = #displayText
+    --frame.displayedCharacters = #displayText
 
     GT.Display.Frames[id] = frame
 
@@ -118,11 +118,17 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     local frameHeight = frame:GetHeight()
     frame.text = {}
 
-    GT:DisplayFrameCounts(frame, id, displayText)
-
-    if totalItemCount and GT:GroupDisplayCheck() then
-        GT:DisplayFrameTotal(frame, id, totalItemCount)
+    if type(displayText) == "table" then
+        for index, text in ipairs(displayText) do
+            GT:DisplayFrameCounts(frame, id, text, index)
+        end
+    else
+        GT:DisplayFrameCounts(frame, id, displayText)
     end
+
+    --[[if totalItemCount and GT:GroupDisplayCheck() then
+        GT:DisplayFrameTotal(frame, id, totalItemCount)
+    end]]
 
     if pricePerItem and GT.db.profile.General.perItemPrice then
         GT:DisplayFramePricePer(frame, id, pricePerItem)
@@ -249,20 +255,19 @@ end
         search-highlight-largeNumber
 ]]
 
-function GT:DisplayFrameCounts(frame, id, displayText)
-    for i, text in ipairs(displayText) do
-        local anchor = frame.icon
-        if i > 1 then
-            anchor = frame.text[i - 1]
-        end
-        if type(text) == "number" then
-            text = math.ceil(text - 0.5)
-        else
-            text = text
-        end
-        frame.text[i] = CreateTextDisplay(frame, id, text, "count", frame:GetHeight(), anchor)
-        GT:CheckColumnSize(i, frame.text[i])
+function GT:DisplayFrameCounts(frame, id, text, index)
+    index = index or 1
+    local anchor = frame.icon
+    if index > 1 then
+        anchor = frame.text[index - 1]
     end
+    if type(text) == "number" then
+        text = math.ceil(text - 0.5)
+    else
+        text = text
+    end
+    frame.text[index] = CreateTextDisplay(frame, id, text, "count", frame:GetHeight(), anchor)
+    GT:CheckColumnSize(index, frame.text[index])
 end
 
 function GT:DisplayFrameTotal(frame, id, totalItemCount)

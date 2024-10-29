@@ -41,7 +41,6 @@ GT.defaults = {
             totalColor = { 0.098, 1, 0.078 },
             totalSize = 20,
             totalFont = "Fira Mono Medium",
-            groupType = 0,
             stacksOnIcon = false,
             includeBank = false,
             includeReagent = false,
@@ -50,13 +49,13 @@ GT.defaults = {
             ignoreAmount = 0,
             perItemPrice = false,
             debugOption = 0,
-            characterValue = false,
-            hideOthers = false,
-            displayAlias = false,
             rarityBorder = true,
             multiColumn = false,
             numRows = 1,
             instanceHide = false,
+            groupHide = false,
+            showDelve = false,
+            showFollower = false,
             itemsPerHour = false,
             goldPerHour = false,
             collapseDisplay = false,
@@ -85,8 +84,6 @@ GT.defaults = {
         },
         CustomFilters = "",
         CustomFiltersTable = {
-        },
-        Aliases = {
         },
         miniMap = {
             hide = true,
@@ -240,113 +237,71 @@ local generalOptions = {
                 },
                 header1 = {
                     type = "header",
-                    name = "Group Options",
+                    name = "Auto Hide Options",
                     order = 100
                 },
-                groupType = {
-                    type = "select",
-                    name = "Group Mode",
-                    desc = "Disabled: Hides the display when in a group\n" ..
-                        "Group Only: Only shows the display when in a group\n" ..
-                        "Group and Solo: Shows the display when in a group or Solo",
-                    width = 1.40,
-                    values = { [0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo" },
-                    get = function() return GT.db.profile.General.groupType end,
-                    set = function(_, key)
-                        GT:ToggleGroupMode(key)
-                    end,
-                    order = 101
-                },
-                spacer1 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 102
-                },
-                hideOthers = {
+                groupHide = {
                     type = "toggle",
-                    name = "Hide Other Party Members",
-                    desc = "When selected only your character will be displayed when you are in a group.\n" ..
-                        "Information will still be sent to and received from party members.",
+                    name = "Hide in Group",
+                    desc = "When selected the display will be hidden when you are in a group.\n" ..
+                        "Delves and Follower Dungeons count as groups.",
                     width = 1.70,
-                    get = function() return GT.db.profile.General.hideOthers end,
+                    get = function() return GT.db.profile.General.groupHide end,
                     set = function(_, key)
-                        GT.db.profile.General.hideOthers = key
-                        if key then
-                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", false)
-                        else
-                            GT:InventoryUpdate("Toggle Hide Other Party Members", false)
-                        end
+                        GT.db.profile.General.groupHide = key
+                        GT:SetDisplayState()
+                    end,
+                    order = 110
+                },
+                instanceHide = {
+                    type = "toggle",
+                    name = "Hide in Instance Content",
+                    desc = "When selected the display will be hidden in instance content.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.instanceHide end,
+                    set = function(_, key)
+                        GT.db.profile.General.instanceHide = key
+                        GT:SetDisplayState()
+                    end,
+                    order = 120
+                },
+                showDelve = {
+                    type = "toggle",
+                    name = "Show In Delves",
+                    desc = "When selected the display will be shown in Delves regardless of how Hide in Instance Content and Hide in Group are configured.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.showDelve end,
+                    set = function(_, key)
+                        GT.db.profile.General.showDelve = key
+                        GT:SetDisplayState()
                     end,
                     disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        else
+                        if GT.db.profile.General.instanceHide or GT.db.profile.General.groupHide then
                             return false
+                        else
+                            return true
                         end
                     end,
-                    order = 103
+                    order = 120
                 },
-                displayAlias = {
+                showFollower = {
                     type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Display Characters Alias",
-                    desc = "When selected the character aliases will be displayed above their count column.",
+                    name = "Show in Follower Dungeons",
+                    desc = "When selected the display will be shown in Follower Dungeons regardless of how Hide in Instance Content and Hide in Group are configured.",
                     width = 1.70,
-                    image = function() return 413577 end,
-                    imageCoords = { { 24, 24 } },
-                    get = function() return GT.db.profile.General.displayAlias end,
+                    get = function() return GT.db.profile.General.showFollower end,
                     set = function(_, key)
-                        GT.db.profile.General.displayAlias = key
-                        if not GT:GroupDisplayCheck() then
-                            return
-                        end
-                        if not key then
-                            GT:RemoveDiaplayRow(0)
-                            GT:AllignRows()
-                        end
-                        GT:InventoryUpdate("Toggle Characters Alias", false)
+                        GT.db.profile.General.showFollower = key
+                        GT:SetDisplayState()
                     end,
                     disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        else
+                        if GT.db.profile.General.instanceHide or GT.db.profile.General.groupHide then
                             return false
-                        end
-                    end,
-
-                    order = 105
-                },
-                characterValue = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Display Per Character Value",
-                    desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.\n" ..
-                        "Price Source is required for this option to be enabled.",
-                    width = 1.70,
-                    image = function() return 133784 end,
-                    imageCoords = { { 24, 24 } },
-                    get = function() return GT.db.profile.General.characterValue end,
-                    set = function(_, key)
-                        GT.db.profile.General.characterValue = key
-                        if not GT:GroupDisplayCheck() then
-                            return
-                        end
-                        if not key then
-                            GT:RemoveDiaplayRow(9999999999)
-                        end
-                        GT:InventoryUpdate("Toggle Per Character Value", false)
-                    end,
-                    disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        elseif not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                            return true
                         else
-                            return false
+                            return true
                         end
                     end,
-                    order = 106
+                    order = 130
                 },
                 header2 = {
                     type = "header",
@@ -388,22 +343,6 @@ local generalOptions = {
                     type = "header",
                     name = "Other",
                     order = 300
-                },
-                instanceHide = {
-                    type = "toggle",
-                    name = "Hide in Instance Content",
-                    desc = "When selected the display will be hidden in instance content.",
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.instanceHide end,
-                    set = function(_, key)
-                        GT.db.profile.General.instanceHide = key
-                        if key and IsInInstance() then
-                            GT.baseFrame.frame:Hide()
-                        else
-                            GT.baseFrame.frame:Show()
-                        end
-                    end,
-                    order = 310
                 },
                 allFiltered = {
                     type = "toggle",
@@ -491,7 +430,6 @@ local generalOptions = {
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
                             GT.db.profile.General.goldPerHour = false
-                            GT.db.profile.General.characterValue = false
                         end
                         GT:RebuildDisplay("TSM Price Source Option Changed")
                     end,
@@ -1632,15 +1570,6 @@ local function UpdateChangedorRemovedSavedVariables()
         GT.db.profile.General.debugOption = 0
     end
 
-    --Change groupType to int from bool
-    if type(GT.db.profile.General.groupType) == "boolean" then
-        if GT.db.profile.General.groupType then
-            GT.db.profile.General.groupType = 1
-        else
-            GT.db.profile.General.groupType = 0
-        end
-    end
-
     if GT.db.profile.Filters["gold"] then
         GT.db.profile.Filters["gold"] = nil
         GT.db.profile.Filters[1] = true
@@ -1743,8 +1672,6 @@ function GT:OnInitialize()
     end
 
     GT:InitializeBroker()
-
-    GT:SetChatType()
 
     --Pause Notifications to prevent spam after reloading the UI
     GT.NotificationPause = true

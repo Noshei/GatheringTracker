@@ -51,6 +51,7 @@ for index, category in ipairs(GT.categoriesOrder) do
 end
 
 local ItemData = {
+    -- Classic
     { id = 2447, name = "Peacebloom", order = 1, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Herb" },
     { id = 765, name = "Silverleaf", order = 2, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Herb" },
     { id = 2449, name = "Earthroot", order = 3, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Herb" },
@@ -316,6 +317,7 @@ local ItemData = {
     { id = 13926, name = "Golden Pearl", order = 4, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Other" },
     { id = 12811, name = "Righteous Orb", order = 5, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Other" },
     { id = 12809, name = "Guardian Stone", order = 6, retail = true, classic = true, era = true, season = true, expansion = "Classic", category = "Other" },
+    -- BC
     { id = 22710, name = "Bloodthistle", order = 1, retail = true, classic = true, expansion = "BC", category = "Herb" },
     { id = 22785, name = "Felweed", order = 2, retail = true, classic = true, expansion = "BC", category = "Herb" },
     { id = 22786, name = "Dreaming Glory", order = 3, retail = true, classic = true, expansion = "BC", category = "Herb" },
@@ -411,6 +413,7 @@ local ItemData = {
     { id = 22450, name = "Void Crystal", order = 6, retail = true, classic = true, expansion = "BC", category = "Enchanting" },
     { id = 39342, name = "Nether Pigment", order = 1, retail = true, classic = true, expansion = "BC", category = "Pigment" },
     { id = 43108, name = "Ebon Pigment", order = 2, retail = true, classic = true, expansion = "BC", category = "Pigment" },
+    -- Wrath
     { id = 36901, name = "Goldclover", order = 1, retail = true, classic = true, expansion = "Wrath", category = "Herb" },
     { id = 39970, name = "Fire Leaf", order = 2, retail = true, classic = true, expansion = "Wrath", category = "Herb" },
     { id = 36904, name = "Tiger Lily", order = 3, retail = true, classic = true, expansion = "Wrath", category = "Herb" },
@@ -501,6 +504,7 @@ local ItemData = {
     { id = 34057, name = "Abyss Crystal", order = 6, retail = true, classic = true, expansion = "Wrath", category = "Enchanting" },
     { id = 39343, name = "Azure Pigment", order = 1, retail = true, classic = true, expansion = "Wrath", category = "Pigment" },
     { id = 43109, name = "Icy Pigment", order = 2, retail = true, classic = true, expansion = "Wrath", category = "Pigment" },
+    -- Cata
     { id = 52983, name = "Cinderbloom", order = 1, retail = true, classic = true, expansion = "Cata", category = "Herb" },
     { id = 52985, name = "Azsharas Veil", order = 2, retail = true, classic = true, expansion = "Cata", category = "Herb" },
     { id = 52984, name = "Stormvine", order = 3, retail = true, classic = true, expansion = "Cata", category = "Herb" },
@@ -573,6 +577,7 @@ local ItemData = {
     { id = 52722, name = "Maelstrom Crystal", order = 6, retail = true, classic = true, expansion = "Cata", category = "Enchanting" },
     { id = 61979, name = "Ashen Pigment", order = 1, retail = true, classic = true, expansion = "Cata", category = "Pigment" },
     { id = 61980, name = "Burning Embers", order = 2, retail = true, classic = true, expansion = "Cata", category = "Pigment" },
+    -- MoP
     { id = 72234, name = "Green Tea Leaf", order = 1, retail = true, expansion = "MoP", category = "Herb" },
     { id = 72237, name = "Rain Poppy", order = 2, retail = true, expansion = "MoP", category = "Herb" },
     { id = 72235, name = "Silkweed", order = 3, retail = true, expansion = "MoP", category = "Herb" },
@@ -633,6 +638,7 @@ local ItemData = {
     { id = 74248, name = "Sha Crystal", order = 6, retail = true, expansion = "MoP", category = "Enchanting" },
     { id = 79251, name = "Shadow Pigment", order = 1, retail = true, expansion = "MoP", category = "Pigment" },
     { id = 79253, name = "Misty Pigment", order = 2, retail = true, expansion = "MoP", category = "Pigment" },
+    -- WoD
     { id = 109124, name = "Frostweed", order = 1, retail = true, expansion = "WoD", category = "Herb" },
     { id = 109127, name = "Starflower", order = 2, retail = true, expansion = "WoD", category = "Herb" },
     { id = 109125, name = "Fireweed", order = 3, retail = true, expansion = "WoD", category = "Herb" },
@@ -671,6 +677,7 @@ local ItemData = {
     { id = 115504, name = "Fractured Temporal Crystal", order = 4, retail = true, expansion = "WoD", category = "Enchanting" },
     { id = 113588, name = "Temporal Crystal", order = 5, retail = true, expansion = "WoD", category = "Enchanting" },
     { id = 114931, name = "Cerulean Pigment", order = 1, retail = true, expansion = "WoD", category = "Pigment" },
+    -- Legion
     { id = 124101, name = "Aethril", order = 1, retail = true, expansion = "Legion", category = "Herb" },
     { id = 151565, name = "Astral Glory", order = 2, retail = true, expansion = "Legion", category = "Herb" },
     { id = 124102, name = "Dreamleaf", order = 3, retail = true, expansion = "Legion", category = "Herb" },
@@ -730,6 +737,7 @@ local ItemData = {
     { id = 128304, name = "Yseralline Seed", order = 1, retail = true, expansion = "Legion", category = "Pigment" },
     { id = 129032, name = "Roseate Pigment", order = 2, retail = true, expansion = "Legion", category = "Pigment" },
     { id = 129034, name = "Sallow Pigment", order = 3, retail = true, expansion = "Legion", category = "Pigment" },
+    -- BFA
     { id = 152507, name = "Akundas Bite", order = 1, retail = true, expansion = "BFA", category = "Herb" },
     { id = 152505, name = "Riverbud", order = 2, retail = true, expansion = "BFA", category = "Herb" },
     { id = 152511, name = "Sea Stalk", order = 3, retail = true, expansion = "BFA", category = "Herb" },
@@ -811,6 +819,7 @@ local ItemData = {
     { id = 153635, name = "Ultramarine Pigment", order = 2, retail = true, expansion = "BFA", category = "Pigment" },
     { id = 168662, name = "Maroon Pigment", order = 3, retail = true, expansion = "BFA", category = "Pigment" },
     { id = 153669, name = "Viridescent Pigment", order = 4, retail = true, expansion = "BFA", category = "Pigment" },
+    -- SL
     { id = 169701, name = "Death Blossom", order = 1, retail = true, expansion = "SL", category = "Herb" },
     { id = 168589, name = "Marrowroot", order = 2, retail = true, expansion = "SL", category = "Herb" },
     { id = 168586, name = "Rising Glory", order = 3, retail = true, expansion = "SL", category = "Herb" },
@@ -893,6 +902,7 @@ local ItemData = {
     { id = 189154, name = "Vespoid Lattice", order = 17, retail = true, expansion = "SL", category = "Synthesis" },
     { id = 189155, name = "Viperid Lattice", order = 18, retail = true, expansion = "SL", category = "Synthesis" },
     { id = 189156, name = "Vombata Lattice", order = 19, retail = true, expansion = "SL", category = "Synthesis" },
+    -- DF
     { id = 191460, name = "Hochenblume", order = 1, quality = 1, retail = true, expansion = "DF", category = "Herb" },
     { id = 191461, name = "Hochenblume", order = 2, quality = 2, retail = true, expansion = "DF", category = "Herb" },
     { id = 191462, name = "Hochenblume", order = 3, quality = 3, retail = true, expansion = "DF", category = "Herb" },
@@ -1051,6 +1061,7 @@ local ItemData = {
     { id = 204460, name = "Zaralek Glowspores", order = 4, retail = true, expansion = "DF", category = "Other" },
     { id = 208212, name = "Dreaming Essence", order = 5, retail = true, expansion = "DF", category = "Other" },
     { id = 207702, name = "Wartorn Scrap", order = 7, retail = true, expansion = "DF", category = "Other" },
+    -- TWW
     { id = 210796, name = "Mycobloom", order = 1, quality = 1, retail = true, expansion = "TWW", category = "Herb" },
     { id = 210797, name = "Mycobloom", order = 2, quality = 2, retail = true, expansion = "TWW", category = "Herb" },
     { id = 210798, name = "Mycobloom", order = 3, quality = 3, retail = true, expansion = "TWW", category = "Herb" },
@@ -1305,6 +1316,7 @@ local ItemData = {
     { id = 210814, name = "Artisans Acuity", order = 1, retail = true, expansion = "TWW", category = "Other" },
     { id = 221754, name = "Ringing Deeps Ingot", order = 2, retail = true, expansion = "TWW", category = "Other" },
     { id = 221756, name = "Vial of Kaheti Oils", order = 3, retail = true, expansion = "TWW", category = "Other" },
+    -- SoD
     { id = 215430, name = "Gnomeregan Fallout", order = 1, season = true, expansion = "SoD", category = "Phase 2" },
     { id = 213427, name = "Grime Encrusted Salvage", order = 2, season = true, expansion = "SoD", category = "Phase 2" },
     { id = -1, name = "Herbalism", order = 1, season = true, expansion = "SoD", category = "Phase 3" },
@@ -1324,6 +1336,7 @@ local ItemData = {
     { id = 219487, name = "Starshell", order = 15, season = true, expansion = "SoD", category = "Phase 3" },
     { id = -1, name = "Other", order = 16, season = true, expansion = "SoD", category = "Phase 3" },
     { id = 221021, name = "Nightmare Seed", order = 17, season = true, expansion = "SoD", category = "Phase 3" },
+    -- Other
     { id = 1, name = "Current Gold", order = 1, icon = "Interface\\Addons\\GatheringTracker\\Media\\Ability_Racial_PackHobgoblin", desc = "Displays the current Gold on the character, rounded to the nearest whole number.", retail = true, classic = true, era = true, season = true, expansion = "Other", category = "Other" },
     { id = 2, name = "Open Bag Space", order = 2, icon = "Interface\\Addons\\GatheringTracker\\Media\\Garrison_Building_Storehouse", desc = "Displays the number of open bag space.", retail = true, classic = true, era = true, season = true, expansion = "Other", category = "Other" },
 }

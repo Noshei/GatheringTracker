@@ -141,28 +141,24 @@ function GT:NotificationHandler(mode, id, amount, value)
 
     if mode == "PLAYER_ENTERING_WORLD" then
         GT.Debug("Generate Notification Table", 1)
-        for i = 1, #GT.sender do
-            if GT.sender[1].name == GT.Player then
-                local playerTotal = 0
-                for itemID, data in pairs(GT.InventoryData) do
-                    if GT:TableFind(GT.IDs, tonumber(itemID)) then
-                        id = tonumber(itemID)
-                        amount = data.counts[i]
-                        playerTotal = playerTotal + amount
-                        NotificationCheck("Count", true)
-                        if GT.db.profile.General.tsmPrice > 0 then
-                            local eprice = GT:GetItemPrice(itemID)
-                            value = math.ceil(eprice * amount)
-                            NotificationCheck("Gold", true)
-                        end
-                    end
-                end
-                id = "all"
-                amount, value = GT:CalculatePlayerTotals(i, true, GT.db.profile.General.sessionOnly)
+        local playerTotal = 0
+        for itemID, data in pairs(GT.InventoryData) do
+            if GT:TableFind(GT.IDs, tonumber(itemID)) then
+                id = tonumber(itemID)
+                amount = data.count
+                playerTotal = playerTotal + amount
                 NotificationCheck("Count", true)
-                NotificationCheck("Gold", true)
+                if GT.db.profile.General.tsmPrice > 0 then
+                    local eprice = GT:GetItemPrice(itemID)
+                    value = math.ceil(eprice * amount)
+                    NotificationCheck("Gold", true)
+                end
             end
         end
+        id = "all"
+        amount, value = GT:CalculatePlayerTotal(true, GT.db.profile.General.sessionOnly)
+        NotificationCheck("Count", true)
+        NotificationCheck("Gold", true)
     end
 end
 

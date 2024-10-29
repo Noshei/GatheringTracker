@@ -2,9 +2,6 @@
     <Binding name="Toggle Gathering Tracker" category="Gathering Tracker">
         GatheringTracker:ToggleGatheringTracker()
     </Binding>
-    <Binding name="Toggle Group Mode" category="Gathering Tracker">
-        GatheringTracker:ToggleGroupMode()
-    </Binding>
     <Binding name="Toggle Count Notifications" category="Gathering Tracker">
         GatheringTracker:ToggleCountNotifications()
     </Binding>
