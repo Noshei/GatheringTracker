@@ -646,6 +646,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.multiColumn end,
                     set = function(_, key)
                         GT.db.profile.General.multiColumn = key
+                        GT:AllignRows()
                     end,
                     order = 301
                 },
@@ -1347,130 +1348,6 @@ for expansion, expansionData in pairs(GT.ItemData) do
     end
 end
 
-local tempAliasCharacter = ""
-local tempAliasName = ""
-
-local aliasOptions = {
-    type = "group",
-    name = "Alias",
-    args = {
-        aliasHeading = {
-            type = "description",
-            name =
-            "Input desired character aliases below.\n\nIf enabled, the alias will be displayed above each character column.\n\nIt is recommended that the first character of each alias be distinct, as in some situations only the first character of an alias will be displayed.\n",
-            width = "full",
-            fontSize = "medium",
-            order = 1
-        },
-        aliasHeading2 = {
-            type = "description",
-            name = "Leave alias field blank to remove a characters alias.",
-            width = "full",
-            fontSize = "medium",
-            order = 2
-        },
-        characterInput = {
-            type = "input",
-            name = "Character Name",
-            width = "Normal",
-            usage = "Enter character name",
-            validate = function(_, key)
-                if string.match(key, "[%p%s%d]+") then return false end
-                return true
-            end,
-            get = function() return tempAliasCharacter end,
-            set = function(_, key)
-                tempAliasCharacter = key
-            end,
-            order = 10
-        },
-        aliasInput = {
-            type = "input",
-            name = "Alias",
-            width = "Normal",
-            usage = "Enter alias",
-            get = function() return tempAliasName end,
-            set = function(_, key)
-                if key == "" then
-                    tempAliasName = "Reset This Alias"
-                else
-                    tempAliasName = key
-                end
-            end,
-            order = 11
-        },
-        addAlias = {
-            type = "execute",
-            name = "Add Alias",
-            width = "Normal",
-            func = function()
-                --check if any aliases exist, if none exist, add the alias to the table.
-                --If there are any aliases, we find check if the requested alias exists and update or remove it.
-                --if no alias was supplied, check if an alias exists for that character and remove it.
-                if tempAliasCharacter ~= "" and tempAliasName ~= "" then
-                    if #GT.db.profile.Aliases > 0 then
-                        local exists = 0
-                        for index, aliases in pairs(GT.db.profile.Aliases) do
-                            if aliases.name == tempAliasCharacter then
-                                exists = index
-                            end
-                        end
-                        if exists > 0 then
-                            if tempAliasName == "Reset This Alias" then
-                                table.remove(GT.db.profile.Aliases, exists)
-                                GT:UpdateAliases(tempAliasCharacter)
-                            else
-                                GT.db.profile.Aliases[exists].alias = tempAliasName
-                                GT:UpdateAliases()
-                            end
-                        else
-                            local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
-                            table.insert(GT.db.profile.Aliases, aliasTable)
-                            GT:UpdateAliases()
-                        end
-                    else
-                        local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
-                        table.insert(GT.db.profile.Aliases, aliasTable)
-                        GT:UpdateAliases()
-                    end
-                    tempAliasCharacter = ""
-                    tempAliasName = ""
-                elseif tempAliasCharacter ~= "" and tempAliasName == "" then
-                    for index, aliases in pairs(GT.db.profile.Aliases) do
-                        if aliases.name == tempAliasCharacter then
-                            table.remove(GT.db.profile.Aliases, index)
-                            GT:UpdateAliases(tempAliasCharacter)
-                            AceConfigRegistry:NotifyChange("GT/Alias")
-                        end
-                    end
-                end
-            end,
-            order = 12
-        },
-        aliasHeader = {
-            type = "header",
-            name = "Active Aliases",
-            order = 14
-        },
-    }
-}
-
-function GT:UpdateAliases(removeCharacter)
-    if removeCharacter then
-        aliasOptions.args[removeCharacter] = nil
-    else
-        for index, aliasInfo in ipairs(GT.db.profile.Aliases) do
-            aliasOptions.args[aliasInfo.name] = {
-                type = "description",
-                name = aliasInfo.name .. " = " .. aliasInfo.alias,
-                fontSize = "large",
-                order = (1000 + index)
-            }
-        end
-    end
-    AceConfigRegistry:NotifyChange("GT/Alias")
-end
-
 function GT:CreateCustomFilterOptions()
     if GT.db.profile.CustomFilters then
         for arg, data in pairs(filterOptions.args.custom.args) do
@@ -1644,15 +1521,10 @@ function GT:OnInitialize()
     GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
     GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
 
-    AceConfigRegistry:RegisterOptionsTable("GT/Alias", aliasOptions)
-    GT.Options.Alias = AceConfigDialog:AddToBlizOptions("GT/Alias", "Alias", GT.metaData.name)
-    GT.Options.Alias:SetScript("OnHide", GT.OptionsHide)
-
     AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
     GT.Options.Profiles = AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
     GT.Options.Profiles:SetScript("OnHide", GT.OptionsHide)
 
-    GT:UpdateAliases()
     GT:CreateCustomFilterOptions()
 
     local function openOptions()

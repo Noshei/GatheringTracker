@@ -614,6 +614,7 @@ function GT:SetupTotalsRow()
         true,
         GT.db.profile.General.sessionOnly
     )
+    priceTotal = playerPrice
     table.insert(playerTotals, playerTotal)
     if GT.db.profile.General.sessionItems and not GT.db.profile.General.sessionOnly then
         local playerTotalSession, playerPriceSession = GT:CalculatePlayerTotal(
@@ -819,10 +820,6 @@ function GT:UpdateInventoryData(itemTable)
             GT.InventoryData[itemID].count = value
             if GT.InventoryData[itemID].startAmount == -1 then
                 GT.InventoryData[itemID].startAmount = value
-            end
-
-            if GT.GlobalStartTime > 0 and GT.InventoryData[itemID].startTime > GT.GlobalStartTime then
-                GT.InventoryData[itemID].startAmount = 0
             end
 
             GT.InventoryData[itemID].sessionCount =
