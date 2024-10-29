@@ -109,45 +109,11 @@ function GT:GenerateFiltersMenu(frame)
     local function FiltersMenu(frame, rootDescription)
         rootDescription:SetTag("GatheringTracker_Filter_Menu")
         for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
-            local function IsSelected_Expansion()
-                local checked = true
-                for category, categoryData in pairs(GT.ItemData[expansion]) do
-                    for _, itemData in ipairs(categoryData) do
-                        if itemData.id ~= -1 and checked == true then
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                checked = GT.db.profile.Filters[itemData.id]
-                            else
-                                checked = false
-                                break
-                            end
-                        end
-                    end
-                end
-                return checked
-            end
-
-            local function SetSelected_Expansion()
-                GT.Debug("Expansion Button Clicked", 2, expansion)
-                local key = not IsSelected_Expansion()
-                for category, categoryData in pairs(GT.ItemData[expansion]) do
-                    for _, itemData in ipairs(categoryData) do
-                        if not (itemData.id == -1) then
-                            GT.db.profile.Filters[itemData.id] = key or nil
-                            GT:RemoveItemData(key, itemData.id)
-                        end
-                    end
-                end
-
-                GT:RebuildIDTables()
-                GT:InventoryUpdate(expansion .. " clicked", false)
-            end
-
-            frame[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
-            for categoryIndex, category in ipairs(GT.categoriesOrder) do
-                if GT.ItemData[expansion][category] then
-                    local function IsSelected_Category()
-                        local checked = true
-                        for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+            if GT.ItemData[expansion] then
+                local function IsSelected_Expansion()
+                    local checked = true
+                    for category, categoryData in pairs(GT.ItemData[expansion]) do
+                        for _, itemData in ipairs(categoryData) do
                             if itemData.id ~= -1 and checked == true then
                                 if GT.db.profile.Filters[itemData.id] == true then
                                     checked = GT.db.profile.Filters[itemData.id]
@@ -157,110 +123,142 @@ function GT:GenerateFiltersMenu(frame)
                                 end
                             end
                         end
-                        return checked
                     end
-                    local function SetSelected_Category()
-                        GT.Debug("Category Button Clicked", 2, expansion, category)
-                        local key = not IsSelected_Category()
-                        for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                    return checked
+                end
+
+                local function SetSelected_Expansion()
+                    GT.Debug("Expansion Button Clicked", 2, expansion)
+                    local key = not IsSelected_Expansion()
+                    for category, categoryData in pairs(GT.ItemData[expansion]) do
+                        for _, itemData in ipairs(categoryData) do
                             if not (itemData.id == -1) then
                                 GT.db.profile.Filters[itemData.id] = key or nil
                                 GT:RemoveItemData(key, itemData.id)
                             end
                         end
-
-                        GT:RebuildIDTables()
-                        GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                     end
 
-                    frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
-                    if category == "Knowledge" then
-                        local columns = 3
-                    end
-                    frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
-                    for _, itemData in ipairs(GT.ItemData[expansion][category]) do
-                        local function IsSelected_Item()
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                return true
-                            else
-                                return false
+                    GT:RebuildIDTables()
+                    GT:InventoryUpdate(expansion .. " clicked", false)
+                end
+
+                frame[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
+                for categoryIndex, category in ipairs(GT.categoriesOrder) do
+                    if GT.ItemData[expansion][category] then
+                        local function IsSelected_Category()
+                            local checked = true
+                            for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                                if itemData.id ~= -1 and checked == true then
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = GT.db.profile.Filters[itemData.id]
+                                    else
+                                        checked = false
+                                        break
+                                    end
+                                end
                             end
+                            return checked
                         end
-                        local function SetSelected_Item()
-                            GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
-                            if GT.db.profile.Filters[itemData.id] == true then
-                                GT.db.profile.Filters[itemData.id] = nil
-                            else
-                                GT.db.profile.Filters[itemData.id] = true
+                        local function SetSelected_Category()
+                            GT.Debug("Category Button Clicked", 2, expansion, category)
+                            local key = not IsSelected_Category()
+                            for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                                if not (itemData.id == -1) then
+                                    GT.db.profile.Filters[itemData.id] = key or nil
+                                    GT:RemoveItemData(key, itemData.id)
+                                end
                             end
 
                             GT:RebuildIDTables()
-                            GT:RemoveItemData(IsSelected_Item(), itemData.id)
-                            GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
+                            GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                         end
 
-                        if itemData.id == -1 then
-                            local divider = frame[expansion][category]:CreateTitle(itemData.name)
-                        else
-                            local name = itemData.name
-
-                            if itemData.quality then
-                                if itemData.quality == 1 then
-                                    name = "|cff784335" .. name .. "*"
-                                elseif itemData.quality == 2 then
-                                    name = "|cff96979E" .. name .. "**"
-                                elseif itemData.quality == 3 then
-                                    name = "|cffDCC15F" .. name .. "***"
+                        frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
+                        if category == "Knowledge" then
+                            local columns = 3
+                        end
+                        frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
+                        for _, itemData in ipairs(GT.ItemData[expansion][category]) do
+                            local function IsSelected_Item()
+                                if GT.db.profile.Filters[itemData.id] == true then
+                                    return true
+                                else
+                                    return false
                                 end
                             end
-
-                            frame[expansion][category][itemData.name] = frame[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
-                            frame[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
-                                local leftTexture = text:AttachTexture()
-
-                                leftTexture:SetDrawLayer("BACKGROUND", 0)
-                                leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
-
-                                --if category ~= "Knowledge" then
-                                text:SetHeight(26)
-                                leftTexture:SetSize(24, 24)
-                                --else
-                                --    leftTexture:SetSize(18, 18)
-                                --end
-
-                                if itemData.icon then
-                                    leftTexture:SetTexture(itemData.icon)
+                            local function SetSelected_Item()
+                                GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
+                                if GT.db.profile.Filters[itemData.id] == true then
+                                    GT.db.profile.Filters[itemData.id] = nil
                                 else
-                                    leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
+                                    GT.db.profile.Filters[itemData.id] = true
                                 end
 
-                                text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+                                GT:RebuildIDTables()
+                                GT:RemoveItemData(IsSelected_Item(), itemData.id)
+                                GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
+                            end
 
-                                local leftTextureRarity = text:AttachTexture()
-                                leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
-                                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
-                                if rarity <= 1 then
-                                    leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
-                                else
-                                    leftTextureRarity:SetAtlas("bags-glow-white")
-                                end
-                                local R, G, B = C_Item.GetItemQualityColor(rarity)
-                                leftTextureRarity:SetVertexColor(R, G, B, 0.8)
-                                leftTextureRarity:SetAllPoints(leftTexture)
+                            if itemData.id == -1 then
+                                local divider = frame[expansion][category]:CreateTitle(itemData.name)
+                            else
+                                local name = itemData.name
 
                                 if itemData.quality then
-                                    local leftTextureQuality = text:AttachTexture()
-                                    leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
                                     if itemData.quality == 1 then
-                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
+                                        name = "|cff784335" .. name .. "*"
                                     elseif itemData.quality == 2 then
-                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
+                                        name = "|cff96979E" .. name .. "**"
                                     elseif itemData.quality == 3 then
-                                        leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
+                                        name = "|cffDCC15F" .. name .. "***"
                                     end
-                                    leftTextureQuality:SetAllPoints(leftTexture)
                                 end
-                            end)
+
+                                frame[expansion][category][itemData.name] = frame[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
+                                frame[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
+                                    local leftTexture = text:AttachTexture()
+
+                                    leftTexture:SetDrawLayer("BACKGROUND", 0)
+                                    leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
+
+                                    text:SetHeight(26)
+                                    leftTexture:SetSize(24, 24)
+
+                                    if itemData.icon then
+                                        leftTexture:SetTexture(itemData.icon)
+                                    else
+                                        leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
+                                    end
+
+                                    text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+
+                                    local leftTextureRarity = text:AttachTexture()
+                                    leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
+                                    local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                                    if rarity <= 1 then
+                                        leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+                                    else
+                                        leftTextureRarity:SetAtlas("bags-glow-white")
+                                    end
+                                    local R, G, B = C_Item.GetItemQualityColor(rarity)
+                                    leftTextureRarity:SetVertexColor(R, G, B, 0.8)
+                                    leftTextureRarity:SetAllPoints(leftTexture)
+
+                                    if itemData.quality then
+                                        local leftTextureQuality = text:AttachTexture()
+                                        leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
+                                        if itemData.quality == 1 then
+                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
+                                        elseif itemData.quality == 2 then
+                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
+                                        elseif itemData.quality == 3 then
+                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
+                                        end
+                                        leftTextureQuality:SetAllPoints(leftTexture)
+                                    end
+                                end)
+                            end
                         end
                     end
                 end

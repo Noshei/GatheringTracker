@@ -1,12 +1,12 @@
-## Interface: 110005
+## Interface: 11504, 40401, 110005
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 2.6.7
+## Version: 3.0.0
 ## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
-## IconTexture: 3692438
+## IconTexture: Interface\Addons\GatheringTracker\Media\GT_Icon
 
 embeds.xml
 GatheringTracker.lua

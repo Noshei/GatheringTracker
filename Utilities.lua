@@ -130,44 +130,6 @@ function GT:SetTSMPriceSource()
     end
 end
 
-function GT:GroupDisplayCheck()
-    GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
-    --Checks if we should display group data
-    if GT.SimulateGroupRunning then
-        GT.Debug("Group Display Check Result", 3, "Simulate Group")
-        return true
-    end
-    if GT.db.profile.General.groupType == 0 then
-        GT.Debug("Group Display Check Result", 3, "Group Mode Off")
-        return false
-    end
-
-    if IsInGroup() == false then
-        GT.Debug("Group Display Check Result", 3, "Not in Group")
-        return false
-    end
-
-    if GT.db.profile.General.hideOthers == true then
-        GT.Debug("Group Display Check Result", 3, "Hide Others Enabled")
-        return false
-    end
-
-    -- follower dungeons act like normal groups, but we dont want to treat them like a group
-    if C_LFGInfo.IsInLFGFollowerDungeon() == true then
-        GT.Debug("Group Display Check Result", 3, "In Follower Dungeon")
-        return false
-    end
-
-    -- if we are in a group, but dont have data from group members, then remain in solo display
-    if #GT.sender < 2 then
-        GT.Debug("Group Display Check Result", 3, "No Group Data")
-        return false
-    end
-
-    GT.Debug("Group Display Check Result", 3, "Display Group")
-    return true
-end
-
 function GT:IsInGroup()
     -- Extention of IsInGroup to return false when in follower dungeons
     if C_LFGInfo.IsInLFGFollowerDungeon() == true then
@@ -179,44 +141,47 @@ function GT:IsInGroup()
     return IsInGroup()
 end
 
-function GT:SetChatType()
-    local soloMode = GT.db.profile.General.groupType == 0 or GT.db.profile.General.groupType == 2
-    local groupMode = GT.db.profile.General.groupType > 0
-    if GT.SimulateGroupRunning then --used to simulate being in a group
-        GT.groupMode = "PARTY"
-        return
-    end
-    if IsInGroup() == false and soloMode then
-        GT.groupMode = "WHISPER"
-        return
-    end
-    if IsInRaid() and groupMode then
-        GT.groupMode = "RAID"
-        return
-    end
-    if IsInGroup() and groupMode then
-        GT.groupMode = "PARTY"
-        return
-    end
-end
+---Determins if the display should be shown or hidden based on the Auto Hide Options
+---@return boolean DisplayVisibility true to show the display or false to hide it
+function GT:DisplayVisibility()
+    local instance = IsInInstance()
+    local group = IsInGroup()
+    local follower = C_LFGInfo.IsInLFGFollowerDungeon()
+    local delve = select(3, GetInstanceInfo()) == 208
 
-function GT:CheckModeStatus()
-    --returns TRUE when we should process an inventory update
-    local soloMode = GT.db.profile.General.groupType == 0
-    local groupMode = GT.db.profile.General.groupType == 1
-    GT.Debug("Check Mode Status", 2, soloMode, groupMode, IsInGroup())
-    if GT.SimulateGroupRunning then --used to simulate being in a group
-        return true
-    end
-    if GT.db.profile.General.groupType == 2 then --group mode set to Both
-        return true
-    end
-    if soloMode == IsInGroup() then --group mode Disabled and we are IN a group
+    if group and GT.db.profile.General.groupHide then
+        if delve and GT.db.profile.General.showDelve then
+            GT.Debug("DisplayVisibility", 1, "Group", "Delve", group,
+                GT.db.profile.General.groupHide, delve, GT.db.profile.General.showDelve)
+            return true
+        end
+        if follower and GT.db.profile.General.showFollower then
+            GT.Debug("DisplayVisibility", 1, "Group", "Follower", group,
+                GT.db.profile.General.groupHide, follower, GT.db.profile.General.showFollower)
+            return true
+        end
+        GT.Debug("DisplayVisibility", 1, "Group", group,
+            GT.db.profile.General.groupHide)
         return false
     end
-    if groupMode ~= IsInGroup() then --group mode Enabled and we are NOT in a group
+    if instance and GT.db.profile.General.instanceHide then
+        if delve and GT.db.profile.General.showDelve then
+            GT.Debug("DisplayVisibility", 1, "Instance", "Delve", instance,
+                GT.db.profile.General.instanceHide, delve, GT.db.profile.General.showDelve)
+            return true
+        end
+        if follower and GT.db.profile.General.showFollower then
+            GT.Debug("DisplayVisibility", 1, "Instance", "Follower", instance,
+                GT.db.profile.General.instanceHide, follower, GT.db.profile.General.showFollower)
+            return true
+        end
+        GT.Debug("DisplayVisibility", 1, "Instance", instance,
+            GT.db.profile.General.instanceHide)
         return false
     end
+    GT.Debug("DisplayVisibility", 1, "fallback", instance, GT.db.profile.General.instanceHide,
+        group, GT.db.profile.General.groupHide, follower,
+        GT.db.profile.General.showFollower, delve, GT.db.profile.General.showDelve)
     return true
 end
 
@@ -308,17 +273,16 @@ function GT:GetItemPrice(itemID)
     return price
 end
 
-function GT:SimulateGroup(case)
-    --[[
-        This is for testing purposes only.
-        It will simulate the effects of another player being in a group with you that also has the addon.
-    ]]
+--[[function GT:SimulateGroup(case)
+    --This is for testing purposes only.
+    --It will simulate the effects of another player being in a group with you that also has the addon.
+
     GT.Debug("Simulate Group", 1)
     GT.SimulateGroupRunning = true
 
     local message = ""
     if case == 1 then
-        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
+        GT:GROUP_ROSTER_UPDATE("Simulate Group")
         message = "1=4824 2=1 2447=452 2449=483 2450=85 2452=10 785=60 " ..
             "765=490 2592=10 3685=10 2589=80 7100=40 6663=10 39354=50 171831=45"
     elseif case == 2 then
@@ -332,6 +296,6 @@ function GT:SimulateGroup(case)
         GT:DataMessageReceived("GT_Data", message, "GROUP", "SimulatedGroup")
     else
         GT.SimulateGroupRunning = nil
-        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
+        GT:GROUP_ROSTER_UPDATE("Simulate Group")
     end
-end
+end]]

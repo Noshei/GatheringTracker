@@ -26,7 +26,8 @@
     "SlashCmdList",
     "Settings",
     "SetDesaturation",
-    "CLOSE"
+    "CLOSE",
+    "C_Seasons"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch"
