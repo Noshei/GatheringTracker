@@ -149,6 +149,10 @@ function GT:DisplayVisibility()
     local follower = C_LFGInfo.IsInLFGFollowerDungeon()
     local delve = select(3, GetInstanceInfo()) == 208
 
+    if GT.db.profile.General.combatHide and GT.combat then
+        return false
+    end
+
     if group and GT.db.profile.General.groupHide then
         if delve and GT.db.profile.General.showDelve then
             GT.Debug("DisplayVisibility", 1, "Group", "Delve", group,
@@ -272,30 +276,3 @@ function GT:GetItemPrice(itemID)
     end
     return price
 end
-
---[[function GT:SimulateGroup(case)
-    --This is for testing purposes only.
-    --It will simulate the effects of another player being in a group with you that also has the addon.
-
-    GT.Debug("Simulate Group", 1)
-    GT.SimulateGroupRunning = true
-
-    local message = ""
-    if case == 1 then
-        GT:GROUP_ROSTER_UPDATE("Simulate Group")
-        message = "1=4824 2=1 2447=452 2449=483 2450=85 2452=10 785=60 " ..
-            "765=490 2592=10 3685=10 2589=80 7100=40 6663=10 39354=50 171831=45"
-    elseif case == 2 then
-        message = "1=4824 2=2 2447=4520 2449=4830 2450=850 2452=10 785=600 " ..
-            "765=4900 2592=100 3685=10 2589=80 7100=400 6663=10 39354=50 171831=450"
-    elseif case == 3 then
-        message = "1=4824 2=3 2447=45200 2449=4830 2450=850 2452=100 785=600 " ..
-            "765=4900 2592=1000 3685=10 2589=800 7100=400 6663=100 39354=50 171831=450"
-    end
-    if case then
-        GT:DataMessageReceived("GT_Data", message, "GROUP", "SimulatedGroup")
-    else
-        GT.SimulateGroupRunning = nil
-        GT:GROUP_ROSTER_UPDATE("Simulate Group")
-    end
-end]]

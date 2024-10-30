@@ -56,6 +56,7 @@ GT.defaults = {
             groupHide = false,
             showDelve = false,
             showFollower = false,
+            combatHide = false,
             itemsPerHour = false,
             goldPerHour = false,
             collapseDisplay = false,
@@ -316,6 +317,22 @@ local generalOptions = {
                         end
                     end,
                     order = 130
+                },
+                combatHide = {
+                    type = "toggle",
+                    name = "Hide in Combat",
+                    desc = "When selected the display will be hidden when you enter combat.\n" ..
+                        "This overrides the options for Show in Delves and Show in Follower Dungeons.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.combatHide end,
+                    set = function(_, key)
+                        GT.db.profile.General.combatHide = key
+                        if key then
+                            GT:RegisterEvent("PLAYER_REGEN_DISABLED")
+                            GT:RegisterEvent("PLAYER_REGEN_ENABLED")
+                        end
+                    end,
+                    order = 140
                 },
                 header2 = {
                     type = "header",

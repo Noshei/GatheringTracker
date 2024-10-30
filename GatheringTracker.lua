@@ -57,6 +57,10 @@ function GT:OnEnable()
         GT:RegisterEvent("PLAYER_MONEY", "InventoryUpdate")
         GT:RegisterEvent("GROUP_ROSTER_UPDATE")
         GT:RegisterEvent("PLAYER_ENTERING_WORLD")
+        if GT.db.profile.General.combatHide then
+            GT:RegisterEvent("PLAYER_REGEN_DISABLED")
+            GT:RegisterEvent("PLAYER_REGEN_ENABLED")
+        end
     else
         GT:OnDisable()
     end
@@ -73,6 +77,8 @@ function GT:OnDisable()
         GT:UnregisterEvent("PLAYER_MONEY")
         GT:UnregisterEvent("GROUP_ROSTER_UPDATE")
         GT:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        GT:UnregisterEvent("PLAYER_REGEN_DISABLED")
+        GT:UnregisterEvent("PLAYER_REGEN_ENABLED")
     else
         GT:OnEnable()
     end
@@ -105,6 +111,18 @@ function GT:BAG_UPDATE()
         GT:InventoryUpdate("BAG_UPDATE", true)
         GT:RefreshPerHourDisplay(false, true)
     end
+end
+
+---Fires when the player enters combat
+function GT:PLAYER_REGEN_DISABLED()
+    GT.combat = true
+    GT:SetDisplayState()
+end
+
+---Fires when the player exits combat
+function GT:PLAYER_REGEN_ENABLED()
+    GT.combat = false
+    GT:SetDisplayState()
 end
 
 function GT:SetDisplayState()
