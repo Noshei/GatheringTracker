@@ -20,10 +20,21 @@ function GT:AddComas(str)
     return #str % 3 == 0 and str:reverse():gsub("(%d%d%d)", "%1,"):reverse():sub(2) or str:reverse():gsub("(%d%d%d)", "%1,"):reverse()
 end
 
-function GT:TableFind(list, str)
+---Simple table find function to find a value in a table and return the teble index of the item
+---@param list table The table to search in
+---@param str integer|string the value to search for in the table
+---@param key? integer|string if the table values are tables as well this is the key to check in the inner table for the search string
+---@return integer|nil index the table index for the search string or nil if it isn't found
+function GT:TableFind(list, str, key)
     for i, v in ipairs(list) do
-        if tostring(str) == tostring(v) then
-            return i
+        if type(v) == "table" then
+            if tostring(str) == tostring(v[key]) then
+                return i
+            end
+        else
+            if tostring(str) == tostring(v) then
+                return i
+            end
         end
     end
 end
@@ -48,6 +59,8 @@ function GT.Debug(text, level, ...)
             color = "E300DB"   --#E300DB
         elseif level == 5 then
             color = "3990FA"   --#3990FA
+        elseif level == 6 then
+            color = "D9041D"   --#D9041D
         end
         ChatFrame1:AddMessage(
             "|cffff6f00"        --#ff6f00
@@ -229,18 +242,43 @@ function GT:SumTable(table)
     return sum
 end
 
+---This function adds or removes a single item from the GT.IDs table
+---@param itemID integer Id of the item to take action on
+---@param action boolean true to add an item to the IDs table, false to remove and item from the table
+function GT:UpdateIDTable(itemID, action)
+    GT.Debug("Update ID Table", 1, itemID, action)
+    local position = GT:TableFind(GT.IDs, itemID, "id")
+    if action and not position then
+        local item = {
+            id = itemID,
+            processed = false
+        }
+        table.insert(GT.IDs, item)
+    elseif not action and position then
+        table.remove(GT.IDs, position)
+    end
+end
+
 function GT:RebuildIDTables()
     GT.Debug("Rebuild ID Table", 1)
     GT.IDs = {}
-    for key, value in pairs(GT.db.profile.Filters) do
-        table.insert(GT.IDs, key)
+    for key in pairs(GT.db.profile.Filters) do
+        local item = {
+            id = key,
+            processed = false
+        }
+        table.insert(GT.IDs, item)
     end
     if GT.db.profile.CustomFiltersTable then
         for itemID, value in pairs(GT.db.profile.CustomFiltersTable) do
             if value then
                 itemID = tonumber(itemID)
+                local item = {
+                    id = itemID,
+                    processed = false
+                }
                 if not GT.db.profile.Filters[itemID] then
-                    table.insert(GT.IDs, itemID)
+                    table.insert(GT.IDs, item)
                 end
             end
         end

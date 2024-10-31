@@ -283,10 +283,11 @@ function GT:DestroyDisplay()
 end
 
 function GT:RemoveItemData(key, itemID)
-    GT.Debug("Remove Item Data", 3, key, itemID)
     if key then
         return
     end
+
+    GT.Debug("Remove Item Data", 3, key, itemID)
 
     if GT.InventoryData[itemID] then
         GT.Debug("Remove Item Data: remove Inventory", 3, key, itemID)
@@ -492,12 +493,10 @@ function GT:PrepareDataForDisplay(event, wait)
     GT:SetTSMPriceSource()
 
     if not GT.NotificationPause then
-        GT.Debug("Trigger Notification Handler for all", 2)
+        GT.Debug("Trigger Notification Handler for all", 6)
         local count, value = GT:CalculatePlayerTotal(true, GT.db.profile.General.sessionOnly)
         GT:NotificationHandler("all", "all", count, value)
     end
-
-    GT:CleanUpInventoryData()
 
     GT:SetupItemRows()
 
@@ -514,7 +513,7 @@ end
 function GT:SetupItemRows()
     GT.Debug("SetupItemRows", 1)
     for itemID, itemData in pairs(GT.InventoryData) do
-        GT.Debug("Setup Item Row", 2, itemID)
+        GT.Debug("Setup Item Row", 6, itemID)
         if itemID <= #GT.ItemData.Other.Other then
             GT:InitiateFrameProcess(
                 itemID,
@@ -531,20 +530,25 @@ function GT:SetupItemRows()
                 count = GT.InventoryData[itemID].count
             end
 
-            local pricePerItem = nil
-            if GT.priceSources then
-                pricePerItem = GT:GetItemPrice(itemID)
-            end
-            local priceTotalItem = count * (pricePerItem or 0)
-            local itemsPerHour = GT:CalculateItemsPerHour(itemID)
-            local goldPerHour = itemsPerHour * (pricePerItem or 0)
-
-            local iconQuality = nil
-            if GT.gameVersion == "retail" then
-                iconQuality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID)
-            end
-
             if count > 0 or GT.db.profile.General.allFiltered then
+                local pricePerItem = nil
+                local itemsPerHour = nil
+                local goldPerHour = nil
+                if GT.priceSources then
+                    pricePerItem = GT:GetItemPrice(itemID)
+                end
+                local priceTotalItem = count * (pricePerItem or 0)
+
+                if GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour then
+                    itemsPerHour = GT:CalculateItemsPerHour(itemID)
+                    goldPerHour = itemsPerHour * (pricePerItem or 0)
+                end
+
+                local iconQuality = nil
+                if GT.gameVersion == "retail" then
+                    iconQuality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID)
+                end
+
                 GT:InitiateFrameProcess(
                     tonumber(itemID),
                     C_Item.GetItemIconByID(itemID),
@@ -627,6 +631,8 @@ function GT:SetupTotalsRow()
     GT.Debug("SetupTotalsRow", 1)
     local playerTotals = {}
     local priceTotal = 0
+    local itemsPerHour = nil
+    local goldPerHour = nil
 
     local playerTotal, playerPrice = GT:CalculatePlayerTotal(
         true,
@@ -642,7 +648,9 @@ function GT:SetupTotalsRow()
         table.insert(playerTotals, playerTotalSession)
     end
     if playerTotal > 0 or GT.db.profile.General.collapseDisplay then
-        local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(playerTotal)
+        if GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour then
+            itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(playerTotal)
+        end
 
         GT:InitiateFrameProcess(
             9999999998,
@@ -713,17 +721,6 @@ function GT:RefreshPerHourDisplay(stop, wait)
     end
 end
 
-function GT:CleanUpInventoryData()
-    GT.Debug("CleanUpInventoryData", 1)
-    for itemID, itemData in pairs(GT.InventoryData) do
-        -- Removes Items that have a total count of 0
-        if itemData.count == 0 and not GT.db.profile.General.allFiltered then
-            GT.Debug("CleanUpInventoryData", 2, itemID, itemData.count)
-            GT:RemoveItemData(false, itemID)
-        end
-    end
-end
-
 function GT:InventoryUpdate(event, wait)
     GT.Debug("InventoryUpdate", 1, event, wait)
     if wait then
@@ -756,19 +753,18 @@ end
 
 function GT:ProcessData(event)
     GT.Debug("ProcessData", 1, event)
-    local itemTable = {}
 
-    for index, id in ipairs(GT.IDs) do
+    for index, data in ipairs(GT.IDs) do
         local itemCount = 0
-        if id == GT.ItemData.Other.Other[1].id then
+        if data.id == GT.ItemData.Other.Other[1].id then
             itemCount = math.floor((GetMoney() / 10000) + 0.5)
-        elseif id == GT.ItemData.Other.Other[2].id then
+        elseif data.id == GT.ItemData.Other.Other[2].id then
             for bagIndex = 0, 4 do
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end
         else
             itemCount = C_Item.GetItemCount(
-                id,
+                data.id,
                 GT.db.profile.General.includeBank,
                 false,
                 GT.db.profile.General.includeReagent,
@@ -776,80 +772,48 @@ function GT:ProcessData(event)
             )
         end
 
-        if itemCount > 0 or (itemCount == 0 and GT.InventoryData[id]) or GT.db.profile.General.allFiltered then
-            itemTable[id] = itemCount
-        end
-
         if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
             GT.Debug("Trigger Notification Handler for each", 5)
             GT.NotificationPause = false
-            GT:NotificationHandler("each", id, itemCount)
+            GT:NotificationHandler("each", data.id, itemCount)
         end
+
+        GT.InventoryData[data.id] = GT.InventoryData[data.id] or GT:ItemDataConstructor(data.id)
+        GT.InventoryData[data.id].count = itemCount
+
+        if not GT.IDs[index].processed then
+            GT.InventoryData[data.id].startAmount = itemCount
+            GT.IDs[index].processed = true
+        end
+
+        --[[if GT.InventoryData[data.id].startAmount == -1 then
+            GT.InventoryData[data.id].startAmount = itemCount
+        end]]
+
+        GT.InventoryData[data.id].sessionCount =
+            GT.InventoryData[data.id].count - GT.InventoryData[data.id].startAmount
     end
 
-    GT:UpdateInventoryData(itemTable)
-
-    GT:PrepareDataForDisplay("Process Solo Data")
-end
-
---- Creates a table from a string that is formatted with id=count and space seperated
----@param message string Message string
----@return table itemTable
-function GT:CreateItemTable(message)
-    GT.Debug("CreateItemTable", 3, message)
-    --create messageText table
-    local str = " " .. message .. "\n"
-    str = str:gsub("%s(%S-)=", "\n%1=")
-    local itemTable = {}
-
-    for itemID, value in string.gmatch(str, "(%S-)=(.-)\n") do
-        local itemID = tonumber(itemID)
-        ---@diagnostic disable-next-line: need-check-nil
-        itemTable[itemID] = value
+    if GT.GlobalStartTime == 0 then
+        GT.GlobalStartTime = time()
     end
 
-    return itemTable
+    GT:PrepareDataForDisplay("Process Data")
 end
 
 --- Creates an itemData Construct
 ---@param itemID integer ID of the item to create
 ---@return table itemData
 function GT:ItemDataConstructor(itemID)
-    GT.Debug("ItemDataConstructor", 1, itemID)
+    GT.Debug("ItemDataConstructor", 6, itemID)
 
     local itemData = {}
     itemData.count = 0
-    itemData.startAmount = -1
+    itemData.startAmount = 0
     itemData.sessionCount = 0
     itemData.startTime = time()
 
     return itemData
-end
-
---- Updates the Inventory data for a Sender
----@param itemTable table
-function GT:UpdateInventoryData(itemTable)
-    GT.Debug("UpdateInventoryData", 1)
-    for itemID, value in pairs(itemTable) do
-        GT.Debug("UpdateInventoryData", 3, itemID, value)
-        local value = tonumber(value)
-        if GT:TableFind(GT.IDs, itemID) then
-            GT.InventoryData[itemID] = GT.InventoryData[itemID] or GT:ItemDataConstructor(itemID)
-            GT.InventoryData[itemID].count = value
-            if GT.InventoryData[itemID].startAmount == -1 then
-                GT.InventoryData[itemID].startAmount = value
-            end
-
-            GT.InventoryData[itemID].sessionCount =
-                GT.InventoryData[itemID].count - GT.InventoryData[itemID].startAmount
-        else
-            itemTable[itemID] = nil
-        end
-    end
-
-    if GT.GlobalStartTime == 0 then
-        GT.GlobalStartTime = time()
-    end
 end
 
 ---@param calcSenderValue boolean If true calculates value of all filtered items from sender

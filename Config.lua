@@ -1186,6 +1186,7 @@ local generalOptions = {
                         [3] = "Debug",
                         [4] = "Trace (Very Spammy)",
                         [5] = "Notification Spam",
+                        [6] = "Mass Item Spam"
                     },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
@@ -1351,7 +1352,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             GT.db.profile.Filters[itemData.id] = nil
                         end
 
-                        GT:RebuildIDTables()
+                        GT:UpdateIDTable(itemData.id, key)
+                        GT:RemoveItemData(key, itemData.id)
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
                     width = 1.2,
@@ -1394,7 +1396,8 @@ function GT:CreateCustomFilterOptions()
                                 GT.db.profile.CustomFiltersTable[id] = false
                             end
 
-                            GT:RebuildIDTables()
+                            GT:UpdateIDTable(itemID, key)
+                            GT:RemoveItemData(key, itemID)
                             GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
                         end,
                         imageCoords = function()

@@ -134,12 +134,12 @@ function GT:GenerateFiltersMenu(frame)
                         for _, itemData in ipairs(categoryData) do
                             if not (itemData.id == -1) then
                                 GT.db.profile.Filters[itemData.id] = key or nil
+                                GT:UpdateIDTable(itemData.id, key)
                                 GT:RemoveItemData(key, itemData.id)
                             end
                         end
                     end
 
-                    GT:RebuildIDTables()
                     GT:InventoryUpdate(expansion .. " clicked", false)
                 end
 
@@ -166,11 +166,11 @@ function GT:GenerateFiltersMenu(frame)
                             for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                                 if not (itemData.id == -1) then
                                     GT.db.profile.Filters[itemData.id] = key or nil
+                                    GT:UpdateIDTable(itemData.id, key)
                                     GT:RemoveItemData(key, itemData.id)
                                 end
                             end
 
-                            GT:RebuildIDTables()
                             GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                         end
 
@@ -189,14 +189,11 @@ function GT:GenerateFiltersMenu(frame)
                             end
                             local function SetSelected_Item()
                                 GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
-                                if GT.db.profile.Filters[itemData.id] == true then
-                                    GT.db.profile.Filters[itemData.id] = nil
-                                else
-                                    GT.db.profile.Filters[itemData.id] = true
-                                end
+                                local key = not IsSelected_Item()
+                                GT.db.profile.Filters[itemData.id] = key or nil
 
-                                GT:RebuildIDTables()
-                                GT:RemoveItemData(IsSelected_Item(), itemData.id)
+                                GT:UpdateIDTable(itemData.id, key)
+                                GT:RemoveItemData(key, itemData.id)
                                 GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
                             end
 
@@ -373,10 +370,10 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         local key = not IsSelected_CustomFilter()
         for id, data in pairs(GT.db.profile.CustomFiltersTable) do
             GT.db.profile.CustomFiltersTable[tostring(id)] = key
+            GT:UpdateIDTable(id, key)
             GT:RemoveItemData(key, id)
         end
 
-        GT:RebuildIDTables()
         GT:InventoryUpdate("Custom Filters clicked", false)
     end
 
@@ -388,13 +385,10 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         end
         local function SetSelected_CustomFilterItem()
             GT.Debug("Custom Filter Item Button Clicked", 2, itemData.text)
-            if GT.db.profile.CustomFiltersTable[tostring(itemData.id)] == true then
-                GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = false
-            else
-                GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = true
-            end
+            local key = not IsSelected_CustomFilterItem()
+            GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = key
 
-            GT:RebuildIDTables()
+            GT:UpdateIDTable(itemData.id, key)
             GT:RemoveItemData(IsSelected_CustomFilterItem(), itemData.id)
             GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
@@ -434,8 +428,6 @@ function GT:CreateProfilesList(frame, rootDescription)
 
         local function SetSelected_Profile()
             GT.Debug("Profile Button Clicked", 2, name)
-            --this closes the menu when the profile is changed
-            --ToggleDropDownMenu(1, nil, GT.baseFrame.menu, "cursor", 0, 0, GT.baseFrame.filterMenu, nil)
             GT.db:SetProfile(name)
         end
 

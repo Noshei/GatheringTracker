@@ -37,7 +37,7 @@ function GT:NotificationHandler(mode, id, amount, value)
         end
 
         if passedValue >= threshold then
-            GT.Debug(notiType .. " Notifications Threshold Exceeded", 2, mode, id, amount, value)
+            GT.Debug(notiType .. " Notifications Threshold Exceeded", 5, mode, id, amount, value)
             if GT.db.profile.Notifications[notiType].interval == 1 then --Interval
                 if GT.Notifications[id] and GT.Notifications[id][notiType] > 0 then
                     if (passedValue - GT.Notifications[id][notiType]) >= threshold then
@@ -143,16 +143,14 @@ function GT:NotificationHandler(mode, id, amount, value)
         GT.Debug("Generate Notification Table", 1)
         local playerTotal = 0
         for itemID, data in pairs(GT.InventoryData) do
-            if GT:TableFind(GT.IDs, tonumber(itemID)) then
-                id = tonumber(itemID)
-                amount = data.count
-                playerTotal = playerTotal + amount
-                NotificationCheck("Count", true)
-                if GT.db.profile.General.tsmPrice > 0 then
-                    local eprice = GT:GetItemPrice(itemID)
-                    value = math.ceil(eprice * amount)
-                    NotificationCheck("Gold", true)
-                end
+            id = tonumber(itemID)
+            amount = data.count
+            playerTotal = playerTotal + amount
+            NotificationCheck("Count", true)
+            if GT.db.profile.General.tsmPrice > 0 then
+                local eprice = GT:GetItemPrice(itemID)
+                value = math.ceil(eprice * amount)
+                NotificationCheck("Gold", true)
             end
         end
         id = "all"
