@@ -41,7 +41,6 @@ GT.defaults = {
             totalColor = { 0.098, 1, 0.078 },
             totalSize = 20,
             totalFont = "Fira Mono Medium",
-            groupType = 0,
             stacksOnIcon = false,
             includeBank = false,
             includeReagent = false,
@@ -50,13 +49,14 @@ GT.defaults = {
             ignoreAmount = 0,
             perItemPrice = false,
             debugOption = 0,
-            characterValue = false,
-            hideOthers = false,
-            displayAlias = false,
             rarityBorder = true,
             multiColumn = false,
             numRows = 1,
             instanceHide = false,
+            groupHide = false,
+            showDelve = false,
+            showFollower = false,
+            combatHide = false,
             itemsPerHour = false,
             goldPerHour = false,
             collapseDisplay = false,
@@ -87,8 +87,6 @@ GT.defaults = {
         },
         CustomFilters = "",
         CustomFiltersTable = {
-        },
-        Aliases = {
         },
         miniMap = {
             hide = true,
@@ -242,113 +240,101 @@ local generalOptions = {
                 },
                 header1 = {
                     type = "header",
-                    name = "Group Options",
+                    name = "Auto Hide Options",
                     order = 100
                 },
-                groupType = {
-                    type = "select",
-                    name = "Group Mode",
-                    desc = "Disabled: Hides the display when in a group\n" ..
-                        "Group Only: Only shows the display when in a group\n" ..
-                        "Group and Solo: Shows the display when in a group or Solo",
-                    width = 1.40,
-                    values = { [0] = "Disabled", [1] = "Group Only", [2] = "Group and Solo" },
-                    get = function() return GT.db.profile.General.groupType end,
-                    set = function(_, key)
-                        GT:ToggleGroupMode(key)
-                    end,
-                    order = 101
-                },
-                spacer1 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 102
-                },
-                hideOthers = {
+                groupHide = {
                     type = "toggle",
-                    name = "Hide Other Party Members",
-                    desc = "When selected only your character will be displayed when you are in a group.\n" ..
-                        "Information will still be sent to and received from party members.",
+                    name = "Hide in Group",
+                    desc = "When selected the display will be hidden when you are in a group.\n" ..
+                        "Delves and Follower Dungeons count as groups.",
                     width = 1.70,
-                    get = function() return GT.db.profile.General.hideOthers end,
+                    get = function() return GT.db.profile.General.groupHide end,
                     set = function(_, key)
-                        GT.db.profile.General.hideOthers = key
+                        GT.db.profile.General.groupHide = key
+                        GT:SetDisplayState()
+                    end,
+                    order = 110
+                },
+                instanceHide = {
+                    type = "toggle",
+                    name = "Hide in Instance Content",
+                    desc = "When selected the display will be hidden in instance content.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.instanceHide end,
+                    set = function(_, key)
+                        GT.db.profile.General.instanceHide = key
+                        GT:SetDisplayState()
+                    end,
+                    order = 120
+                },
+                showDelve = {
+                    type = "toggle",
+                    name = "Show In Delves",
+                    desc = "When selected the display will be shown in Delves regardless of how Hide in Instance Content and Hide in Group are configured.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.showDelve end,
+                    set = function(_, key)
+                        GT.db.profile.General.showDelve = key
+                        GT:SetDisplayState()
+                    end,
+                    disabled = function()
+                        if GT.db.profile.General.instanceHide or GT.db.profile.General.groupHide then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    order = 120
+                },
+                showFollower = {
+                    type = "toggle",
+                    name = "Show in Follower Dungeons",
+                    desc = "When selected the display will be shown in Follower Dungeons regardless of how Hide in Instance Content and Hide in Group are configured.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.showFollower end,
+                    set = function(_, key)
+                        GT.db.profile.General.showFollower = key
+                        GT:SetDisplayState()
+                    end,
+                    disabled = function()
+                        if GT.db.profile.General.instanceHide or GT.db.profile.General.groupHide then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    order = 130
+                },
+                combatHide = {
+                    type = "toggle",
+                    name = "Hide in Combat",
+                    desc = "When selected the display will be hidden when you enter combat.\n" ..
+                        "This overrides the options for Show in Delves and Show in Follower Dungeons.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.combatHide end,
+                    set = function(_, key)
+                        GT.db.profile.General.combatHide = key
                         if key then
-                            GT:GROUP_ROSTER_UPDATE("Hide Other Party Members", false)
-                        else
-                            GT:InventoryUpdate("Toggle Hide Other Party Members", false)
+                            GT:RegisterEvent("PLAYER_REGEN_DISABLED")
+                            GT:RegisterEvent("PLAYER_REGEN_ENABLED")
                         end
                     end,
-                    disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        else
-                            return false
-                        end
-                    end,
-                    order = 103
-                },
-                displayAlias = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Display Characters Alias",
-                    desc = "When selected the character aliases will be displayed above their count column.",
-                    width = 1.70,
-                    image = function() return 413577 end,
-                    imageCoords = { { 24, 24 } },
-                    get = function() return GT.db.profile.General.displayAlias end,
-                    set = function(_, key)
-                        GT.db.profile.General.displayAlias = key
-                        if not GT:GroupDisplayCheck() then
-                            return
-                        end
-                        if not key then
-                            GT:RemoveDiaplayRow(0)
-                            GT:AllignRows()
-                        end
-                        GT:InventoryUpdate("Toggle Characters Alias", false)
-                    end,
-                    disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        else
-                            return false
-                        end
-                    end,
-
-                    order = 105
-                },
-                characterValue = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Display Per Character Value",
-                    desc = "When selected the gold value of the items gathered per character will be displayed above the totals row.\n" ..
-                        "Price Source is required for this option to be enabled.",
-                    width = 1.70,
-                    image = function() return 133784 end,
-                    imageCoords = { { 24, 24 } },
-                    get = function() return GT.db.profile.General.characterValue end,
-                    set = function(_, key)
-                        GT.db.profile.General.characterValue = key
-                        if not GT:GroupDisplayCheck() then
-                            return
-                        end
-                        if not key then
-                            GT:RemoveDiaplayRow(9999999999)
-                        end
-                        GT:InventoryUpdate("Toggle Per Character Value", false)
-                    end,
-                    disabled = function()
-                        if GT.db.profile.General.groupType == 0 then
-                            return true
-                        elseif not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                            return true
-                        else
-                            return false
-                        end
-                    end,
-                    order = 106
+                    order = 140
                 },
                 header2 = {
                     type = "header",
@@ -390,22 +376,6 @@ local generalOptions = {
                     type = "header",
                     name = "Other",
                     order = 300
-                },
-                instanceHide = {
-                    type = "toggle",
-                    name = "Hide in Instance Content",
-                    desc = "When selected the display will be hidden in instance content.",
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.instanceHide end,
-                    set = function(_, key)
-                        GT.db.profile.General.instanceHide = key
-                        if key and IsInInstance() then
-                            GT.baseFrame.frame:Hide()
-                        else
-                            GT.baseFrame.frame:Show()
-                        end
-                    end,
-                    order = 310
                 },
                 allFiltered = {
                     type = "toggle",
@@ -493,7 +463,6 @@ local generalOptions = {
                         if GT.db.profile.General.tsmPrice == 0 then
                             GT.db.profile.General.perItemPrice = false
                             GT.db.profile.General.goldPerHour = false
-                            GT.db.profile.General.characterValue = false
                         end
                         GT:RebuildDisplay("TSM Price Source Option Changed")
                     end,
@@ -563,6 +532,13 @@ local generalOptions = {
                         GT.db.profile.General.includeReagent = key
                         GT:InventoryUpdate("Include Reagent", true)
                     end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 205
                 },
                 includeWarband = {
@@ -574,6 +550,13 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.includeWarband = key
                         GT:InventoryUpdate("Include Warband", true)
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
                     end,
                     order = 206
                 },
@@ -682,6 +665,7 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.multiColumn end,
                     set = function(_, key)
                         GT.db.profile.General.multiColumn = key
+                        GT:AllignRows()
                     end,
                     order = 301
                 },
@@ -1234,6 +1218,7 @@ local generalOptions = {
                         [3] = "Debug",
                         [4] = "Trace (Very Spammy)",
                         [5] = "Notification Spam",
+                        [6] = "Mass Item Spam"
                     },
                     get = function()
                         if type(GT.db.profile.General.debugOption) == "boolean" then
@@ -1310,10 +1295,6 @@ local filterOptions = {
                         GT:CreateCustomFilterOptions()
                         GT:RebuildIDTables()
                         GT:InventoryUpdate("Custom Filter Changed", true)
-                        GT:CreateCustomFiltersList(
-                            GT.baseFrame.button,
-                            GT.baseFrame.button.rootDescription
-                        )
                     end,
                     order = 2
                 },
@@ -1381,8 +1362,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         local overlay = {}
 
                         if tonumber(itemData.id) <= #GT.ItemData.Other.Other then
-                            border = nil
-                            borderColor = nil
+                            border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                            borderColor = { 1, 1, 1, 0.8 }
                             overlay = nil
                         else
                             local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
@@ -1420,7 +1401,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             GT.db.profile.Filters[itemData.id] = nil
                         end
 
-                        GT:RebuildIDTables()
+                        GT:UpdateIDTable(itemData.id, key)
+                        GT:RemoveItemData(key, itemData.id)
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
                     width = 1.2,
@@ -1432,130 +1414,6 @@ for expansion, expansionData in pairs(GT.ItemData) do
             end
         end
     end
-end
-
-local tempAliasCharacter = ""
-local tempAliasName = ""
-
-local aliasOptions = {
-    type = "group",
-    name = "Alias",
-    args = {
-        aliasHeading = {
-            type = "description",
-            name =
-            "Input desired character aliases below.\n\nIf enabled, the alias will be displayed above each character column.\n\nIt is recommended that the first character of each alias be distinct, as in some situations only the first character of an alias will be displayed.\n",
-            width = "full",
-            fontSize = "medium",
-            order = 1
-        },
-        aliasHeading2 = {
-            type = "description",
-            name = "Leave alias field blank to remove a characters alias.",
-            width = "full",
-            fontSize = "medium",
-            order = 2
-        },
-        characterInput = {
-            type = "input",
-            name = "Character Name",
-            width = "Normal",
-            usage = "Enter character name",
-            validate = function(_, key)
-                if string.match(key, "[%p%s%d]+") then return false end
-                return true
-            end,
-            get = function() return tempAliasCharacter end,
-            set = function(_, key)
-                tempAliasCharacter = key
-            end,
-            order = 10
-        },
-        aliasInput = {
-            type = "input",
-            name = "Alias",
-            width = "Normal",
-            usage = "Enter alias",
-            get = function() return tempAliasName end,
-            set = function(_, key)
-                if key == "" then
-                    tempAliasName = "Reset This Alias"
-                else
-                    tempAliasName = key
-                end
-            end,
-            order = 11
-        },
-        addAlias = {
-            type = "execute",
-            name = "Add Alias",
-            width = "Normal",
-            func = function()
-                --check if any aliases exist, if none exist, add the alias to the table.
-                --If there are any aliases, we find check if the requested alias exists and update or remove it.
-                --if no alias was supplied, check if an alias exists for that character and remove it.
-                if tempAliasCharacter ~= "" and tempAliasName ~= "" then
-                    if #GT.db.profile.Aliases > 0 then
-                        local exists = 0
-                        for index, aliases in pairs(GT.db.profile.Aliases) do
-                            if aliases.name == tempAliasCharacter then
-                                exists = index
-                            end
-                        end
-                        if exists > 0 then
-                            if tempAliasName == "Reset This Alias" then
-                                table.remove(GT.db.profile.Aliases, exists)
-                                GT:UpdateAliases(tempAliasCharacter)
-                            else
-                                GT.db.profile.Aliases[exists].alias = tempAliasName
-                                GT:UpdateAliases()
-                            end
-                        else
-                            local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
-                            table.insert(GT.db.profile.Aliases, aliasTable)
-                            GT:UpdateAliases()
-                        end
-                    else
-                        local aliasTable = { name = tempAliasCharacter, alias = tempAliasName }
-                        table.insert(GT.db.profile.Aliases, aliasTable)
-                        GT:UpdateAliases()
-                    end
-                    tempAliasCharacter = ""
-                    tempAliasName = ""
-                elseif tempAliasCharacter ~= "" and tempAliasName == "" then
-                    for index, aliases in pairs(GT.db.profile.Aliases) do
-                        if aliases.name == tempAliasCharacter then
-                            table.remove(GT.db.profile.Aliases, index)
-                            GT:UpdateAliases(tempAliasCharacter)
-                            AceConfigRegistry:NotifyChange("GT/Alias")
-                        end
-                    end
-                end
-            end,
-            order = 12
-        },
-        aliasHeader = {
-            type = "header",
-            name = "Active Aliases",
-            order = 14
-        },
-    }
-}
-
-function GT:UpdateAliases(removeCharacter)
-    if removeCharacter then
-        aliasOptions.args[removeCharacter] = nil
-    else
-        for index, aliasInfo in ipairs(GT.db.profile.Aliases) do
-            aliasOptions.args[aliasInfo.name] = {
-                type = "description",
-                name = aliasInfo.name .. " = " .. aliasInfo.alias,
-                fontSize = "large",
-                order = (1000 + index)
-            }
-        end
-    end
-    AceConfigRegistry:NotifyChange("GT/Alias")
 end
 
 function GT:CreateCustomFilterOptions()
@@ -1587,7 +1445,8 @@ function GT:CreateCustomFilterOptions()
                                 GT.db.profile.CustomFiltersTable[id] = false
                             end
 
-                            GT:RebuildIDTables()
+                            GT:UpdateIDTable(itemID, key)
+                            GT:RemoveItemData(key, itemID)
                             GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
                         end,
                         imageCoords = function()
@@ -1598,8 +1457,8 @@ function GT:CreateCustomFilterOptions()
                             local overlay = {}
 
                             if itemID <= #GT.ItemData.Other.Other then
-                                border = nil
-                                borderColor = nil
+                                border = { "Interface\\Common\\WhiteIconFrame", "texture" }
+                                borderColor = { 1, 1, 1, 0.8 }
                                 overlay = nil
                             else
                                 local rarity = C_Item.GetItemQualityByID(itemID) or 1
@@ -1671,15 +1530,6 @@ local function UpdateChangedorRemovedSavedVariables()
         GT.db.profile.General.debugOption = 0
     end
 
-    --Change groupType to int from bool
-    if type(GT.db.profile.General.groupType) == "boolean" then
-        if GT.db.profile.General.groupType then
-            GT.db.profile.General.groupType = 1
-        else
-            GT.db.profile.General.groupType = 0
-        end
-    end
-
     if GT.db.profile.Filters["gold"] then
         GT.db.profile.Filters["gold"] = nil
         GT.db.profile.Filters[1] = true
@@ -1740,15 +1590,10 @@ function GT:OnInitialize()
     GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
     GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
 
-    AceConfigRegistry:RegisterOptionsTable("GT/Alias", aliasOptions)
-    GT.Options.Alias = AceConfigDialog:AddToBlizOptions("GT/Alias", "Alias", GT.metaData.name)
-    GT.Options.Alias:SetScript("OnHide", GT.OptionsHide)
-
     AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
     GT.Options.Profiles = AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
     GT.Options.Profiles:SetScript("OnHide", GT.OptionsHide)
 
-    GT:UpdateAliases()
     GT:CreateCustomFilterOptions()
 
     local function openOptions()
@@ -1782,8 +1627,6 @@ function GT:OnInitialize()
     end
 
     GT:InitializeBroker()
-
-    GT:SetChatType()
 
     --Pause Notifications to prevent spam after reloading the UI
     GT.NotificationPause = true

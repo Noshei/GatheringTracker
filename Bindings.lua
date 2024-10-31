@@ -32,45 +32,6 @@ function GT:ToggleGatheringTracker()
     end
 end
 
-function GT:ToggleGroupMode(settingKey)
-    GT.Debug("Toggle Group Mode", 1, GT.db.profile.General.groupType, settingKey)
-    if settingKey then
-        GT.db.profile.General.groupType = settingKey
-    else
-        if GT.db.profile.General.groupType == 0 then
-            GT.db.profile.General.groupType = 1
-        elseif GT.db.profile.General.groupType > 0 then
-            GT.db.profile.General.groupType = 0
-        end
-    end
-    local key = GT.db.profile.General.groupType
-    local mode = "Enabled"
-    local color = "ff00ff"
-
-    GT:SetChatType()
-
-    if key > 0 then
-        if IsInRaid() or IsInGroup() then
-            mode = "Enabled"
-            color = "00ff00"
-        else
-            mode = "Enabled, but you aren't in a group"
-            color = "ff0000"
-        end
-    else
-        mode = "Disabled"
-        color = "ff0000"
-    end
-
-    if GT:CheckModeStatus() then
-        GT:InventoryUpdate("Group Mode Toggle", true)
-    else
-        GT:ClearDisplay()
-    end
-
-    ChatFrame1:AddMessage("|cffff6f00" .. GT.metaData.name .. ":|r |cff" .. color .. "Group Mode " .. mode .. "|r")
-end
-
 function GT:ToggleCountNotifications()
     GT.Debug("Toggle Count Notifications", 1, GT.db.profile.Notifications.Count.enable)
     local key = not GT.db.profile.Notifications.Count.enable
@@ -105,16 +66,10 @@ function GT:ResetSession()
     GT.GlobalStartTime = time()
     for itemID, itemData in pairs(GT.InventoryData) do
         itemData.startTime = time()
-        itemData.startAmount = {}
-        for senderIndex, value in ipairs(itemData.counts) do
-            itemData.startAmount[senderIndex] = value
-            itemData.sessionCounts[senderIndex] = 0
-        end
-        itemData.startTotal = GT:SumTable(itemData.startAmount)
+        itemData.startAmount = itemData.count
+        itemData.sessionCount = 0
     end
-    for senderIndex, senderData in ipairs(GT.sender) do
-        senderData.sessionData = {}
-    end
+
     GT:RefreshPerHourDisplay(false, true)
     GT:RebuildDisplay("Reset Session")
 end

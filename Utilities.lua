@@ -20,10 +20,21 @@ function GT:AddComas(str)
     return #str % 3 == 0 and str:reverse():gsub("(%d%d%d)", "%1,"):reverse():sub(2) or str:reverse():gsub("(%d%d%d)", "%1,"):reverse()
 end
 
-function GT:TableFind(list, str)
+---Simple table find function to find a value in a table and return the teble index of the item
+---@param list table The table to search in
+---@param str integer|string the value to search for in the table
+---@param key? integer|string if the table values are tables as well this is the key to check in the inner table for the search string
+---@return integer|nil index the table index for the search string or nil if it isn't found
+function GT:TableFind(list, str, key)
     for i, v in ipairs(list) do
-        if tostring(str) == tostring(v) then
-            return i
+        if type(v) == "table" then
+            if tostring(str) == tostring(v[key]) then
+                return i
+            end
+        else
+            if tostring(str) == tostring(v) then
+                return i
+            end
         end
     end
 end
@@ -48,6 +59,8 @@ function GT.Debug(text, level, ...)
             color = "E300DB"   --#E300DB
         elseif level == 5 then
             color = "3990FA"   --#3990FA
+        elseif level == 6 then
+            color = "D9041D"   --#D9041D
         end
         ChatFrame1:AddMessage(
             "|cffff6f00"        --#ff6f00
@@ -130,44 +143,6 @@ function GT:SetTSMPriceSource()
     end
 end
 
-function GT:GroupDisplayCheck()
-    GT.Debug("Group Display Check", 2, GT.db.profile.General.groupType)
-    --Checks if we should display group data
-    if GT.SimulateGroupRunning then
-        GT.Debug("Group Display Check Result", 3, "Simulate Group")
-        return true
-    end
-    if GT.db.profile.General.groupType == 0 then
-        GT.Debug("Group Display Check Result", 3, "Group Mode Off")
-        return false
-    end
-
-    if IsInGroup() == false then
-        GT.Debug("Group Display Check Result", 3, "Not in Group")
-        return false
-    end
-
-    if GT.db.profile.General.hideOthers == true then
-        GT.Debug("Group Display Check Result", 3, "Hide Others Enabled")
-        return false
-    end
-
-    -- follower dungeons act like normal groups, but we dont want to treat them like a group
-    if C_LFGInfo.IsInLFGFollowerDungeon() == true then
-        GT.Debug("Group Display Check Result", 3, "In Follower Dungeon")
-        return false
-    end
-
-    -- if we are in a group, but dont have data from group members, then remain in solo display
-    if #GT.sender < 2 then
-        GT.Debug("Group Display Check Result", 3, "No Group Data")
-        return false
-    end
-
-    GT.Debug("Group Display Check Result", 3, "Display Group")
-    return true
-end
-
 function GT:IsInGroup()
     -- Extention of IsInGroup to return false when in follower dungeons
     if C_LFGInfo.IsInLFGFollowerDungeon() == true then
@@ -179,44 +154,51 @@ function GT:IsInGroup()
     return IsInGroup()
 end
 
-function GT:SetChatType()
-    local soloMode = GT.db.profile.General.groupType == 0 or GT.db.profile.General.groupType == 2
-    local groupMode = GT.db.profile.General.groupType > 0
-    if GT.SimulateGroupRunning then --used to simulate being in a group
-        GT.groupMode = "PARTY"
-        return
-    end
-    if IsInGroup() == false and soloMode then
-        GT.groupMode = "WHISPER"
-        return
-    end
-    if IsInRaid() and groupMode then
-        GT.groupMode = "RAID"
-        return
-    end
-    if IsInGroup() and groupMode then
-        GT.groupMode = "PARTY"
-        return
-    end
-end
+---Determins if the display should be shown or hidden based on the Auto Hide Options
+---@return boolean DisplayVisibility true to show the display or false to hide it
+function GT:DisplayVisibility()
+    local instance = IsInInstance()
+    local group = IsInGroup()
+    local follower = C_LFGInfo.IsInLFGFollowerDungeon()
+    local delve = select(3, GetInstanceInfo()) == 208
 
-function GT:CheckModeStatus()
-    --returns TRUE when we should process an inventory update
-    local soloMode = GT.db.profile.General.groupType == 0
-    local groupMode = GT.db.profile.General.groupType == 1
-    GT.Debug("Check Mode Status", 2, soloMode, groupMode, IsInGroup())
-    if GT.SimulateGroupRunning then --used to simulate being in a group
-        return true
-    end
-    if GT.db.profile.General.groupType == 2 then --group mode set to Both
-        return true
-    end
-    if soloMode == IsInGroup() then --group mode Disabled and we are IN a group
+    if GT.db.profile.General.combatHide and GT.combat then
         return false
     end
-    if groupMode ~= IsInGroup() then --group mode Enabled and we are NOT in a group
+
+    if group and GT.db.profile.General.groupHide then
+        if delve and GT.db.profile.General.showDelve then
+            GT.Debug("DisplayVisibility", 1, "Group", "Delve", group,
+                GT.db.profile.General.groupHide, delve, GT.db.profile.General.showDelve)
+            return true
+        end
+        if follower and GT.db.profile.General.showFollower then
+            GT.Debug("DisplayVisibility", 1, "Group", "Follower", group,
+                GT.db.profile.General.groupHide, follower, GT.db.profile.General.showFollower)
+            return true
+        end
+        GT.Debug("DisplayVisibility", 1, "Group", group,
+            GT.db.profile.General.groupHide)
         return false
     end
+    if instance and GT.db.profile.General.instanceHide then
+        if delve and GT.db.profile.General.showDelve then
+            GT.Debug("DisplayVisibility", 1, "Instance", "Delve", instance,
+                GT.db.profile.General.instanceHide, delve, GT.db.profile.General.showDelve)
+            return true
+        end
+        if follower and GT.db.profile.General.showFollower then
+            GT.Debug("DisplayVisibility", 1, "Instance", "Follower", instance,
+                GT.db.profile.General.instanceHide, follower, GT.db.profile.General.showFollower)
+            return true
+        end
+        GT.Debug("DisplayVisibility", 1, "Instance", instance,
+            GT.db.profile.General.instanceHide)
+        return false
+    end
+    GT.Debug("DisplayVisibility", 1, "fallback", instance, GT.db.profile.General.instanceHide,
+        group, GT.db.profile.General.groupHide, follower,
+        GT.db.profile.General.showFollower, delve, GT.db.profile.General.showDelve)
     return true
 end
 
@@ -260,18 +242,43 @@ function GT:SumTable(table)
     return sum
 end
 
+---This function adds or removes a single item from the GT.IDs table
+---@param itemID integer Id of the item to take action on
+---@param action boolean true to add an item to the IDs table, false to remove and item from the table
+function GT:UpdateIDTable(itemID, action)
+    GT.Debug("Update ID Table", 1, itemID, action)
+    local position = GT:TableFind(GT.IDs, itemID, "id")
+    if action and not position then
+        local item = {
+            id = itemID,
+            processed = false
+        }
+        table.insert(GT.IDs, item)
+    elseif not action and position then
+        table.remove(GT.IDs, position)
+    end
+end
+
 function GT:RebuildIDTables()
     GT.Debug("Rebuild ID Table", 1)
     GT.IDs = {}
-    for key, value in pairs(GT.db.profile.Filters) do
-        table.insert(GT.IDs, key)
+    for key in pairs(GT.db.profile.Filters) do
+        local item = {
+            id = key,
+            processed = false
+        }
+        table.insert(GT.IDs, item)
     end
     if GT.db.profile.CustomFiltersTable then
         for itemID, value in pairs(GT.db.profile.CustomFiltersTable) do
             if value then
                 itemID = tonumber(itemID)
+                local item = {
+                    id = itemID,
+                    processed = false
+                }
                 if not GT.db.profile.Filters[itemID] then
-                    table.insert(GT.IDs, itemID)
+                    table.insert(GT.IDs, item)
                 end
             end
         end
@@ -306,32 +313,4 @@ function GT:GetItemPrice(itemID)
         price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
     end
     return price
-end
-
-function GT:SimulateGroup(case)
-    --[[
-        This is for testing purposes only.
-        It will simulate the effects of another player being in a group with you that also has the addon.
-    ]]
-    GT.Debug("Simulate Group", 1)
-    GT.SimulateGroupRunning = true
-
-    local message = ""
-    if case == 1 then
-        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
-        message = "1=4824 2=1 2447=452 2449=483 2450=85 2452=10 785=60 " ..
-            "765=490 2592=10 3685=10 2589=80 7100=40 6663=10 39354=50 171831=45"
-    elseif case == 2 then
-        message = "1=4824 2=2 2447=4520 2449=4830 2450=850 2452=10 785=600 " ..
-            "765=4900 2592=100 3685=10 2589=80 7100=400 6663=10 39354=50 171831=450"
-    elseif case == 3 then
-        message = "1=4824 2=3 2447=45200 2449=4830 2450=850 2452=100 785=600 " ..
-            "765=4900 2592=1000 3685=10 2589=800 7100=400 6663=100 39354=50 171831=450"
-    end
-    if case then
-        GT:DataMessageReceived("GT_Data", message, "GROUP", "SimulatedGroup")
-    else
-        GT.SimulateGroupRunning = nil
-        GT:GROUP_ROSTER_UPDATE("Simulate Group", false)
-    end
 end
