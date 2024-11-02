@@ -1188,11 +1188,9 @@ local generalOptions = {
                 filterAlerts = {
                     type = "group",
                     name = "Item Alert Options",
-                    inline = true,
+                    --inline = true,
                     order = 500,
-                    args = {
-
-                    },
+                    args = {},
                 },
             },
         },
@@ -1237,14 +1235,58 @@ local generalOptions = {
 function GT:CreateItemAlertOptions()
     local alertOptions = generalOptions.args.Alerts.args.filterAlerts.args
 
-    for _, itemID in ipairs(GT.IDs) do
-        if not alertOptions[itemID] then
-            alertOptions[tostring(itemID)] = {
+    alertOptions["all"] = {
+        type = "group",
+        name = "All",
+        inline = true,
+        order = 0,
+        args = {
+            all_Enable = {
+                type = "toggle",
+                name = "All Enable",
+                desc = "Check to enable gold notification.\n\nRequires TSM.",
+                width = "full",
+                get = function()
+                    if GT.db.profile.Alerts.All and GT.db.profile.Alerts.All.enable then
+                        return GT.db.profile.Alerts.All.enable
+                    end
+                    return false
+                end,
+                set = function(_, key)
+                    GT.db.profile.Alerts.All = GT.db.profile.Alerts.All or {}
+                    GT.db.profile.Alerts.All.enable = key
+                end,
+                order = 1
+            },
+        }
+    }
+
+    for _, data in ipairs(GT.IDs) do
+        if not alertOptions[data.id] then
+            alertOptions[tostring(data.id)] = {
                 type = "group",
-                name = tostring(itemID),
+                name = tostring(data.id),
                 inline = true,
-                order = itemID,
-                args = {}
+                order = data.id,
+                args = {
+                    [tostring(data.id) .. "_Enable"] = {
+                        type = "toggle",
+                        name = tostring(data.id) .. "_Enable",
+                        desc = "Check to enable gold notification.\n\nRequires TSM.",
+                        width = "full",
+                        get = function()
+                            if GT.db.profile.Alerts[tostring(data.id)] and GT.db.profile.Alerts[tostring(data.id)].enable then
+                                return GT.db.profile.Alerts[tostring(data.id)].enable
+                            end
+                            return false
+                        end,
+                        set = function(_, key)
+                            GT.db.profile.Alerts[tostring(data.id)] = GT.db.profile.Alerts[tostring(data.id)] or {}
+                            GT.db.profile.Alerts[tostring(data.id)].enable = key
+                        end,
+                        order = 1
+                    },
+                },
             }
         end
     end
@@ -1582,6 +1624,7 @@ function GT:OnInitialize()
 
     UpdateChangedorRemovedSavedVariables()
 
+
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
     GT.Options.Main = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
     GT.Options.Main:SetScript("OnHide", GT.OptionsHide)
@@ -1633,4 +1676,6 @@ function GT:OnInitialize()
 
     GT:RebuildIDTables()
     GT:CreateBaseFrame()
+
+    GT:CreateItemAlertOptions()
 end
