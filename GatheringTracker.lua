@@ -792,6 +792,11 @@ function GT:ProcessData(event)
 
         GT.InventoryData[data.id].sessionCount =
             GT.InventoryData[data.id].count - GT.InventoryData[data.id].startAmount
+
+        if GT.InventoryData[data.id].sessionCount < 0 then
+            GT.InventoryData[data.id].sessionCount = 0
+            GT.InventoryData[data.id].startAmount = itemCount
+        end
     end
 
     if GT.GlobalStartTime == 0 then

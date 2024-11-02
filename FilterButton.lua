@@ -369,7 +369,7 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         GT.Debug("Custom Filters Button Clicked", 2)
         local key = not IsSelected_CustomFilter()
         for id, data in pairs(GT.db.profile.CustomFiltersTable) do
-            GT.db.profile.CustomFiltersTable[tostring(id)] = key
+            GT.db.profile.CustomFiltersTable[id] = key
             GT:UpdateIDTable(id, key)
             GT:RemoveItemData(key, id)
         end
@@ -381,12 +381,12 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
 
     for itemIndex, itemData in ipairs(customFiltersList) do
         local function IsSelected_CustomFilterItem()
-            return GT.db.profile.CustomFiltersTable[tostring(itemData.id)]
+            return GT.db.profile.CustomFiltersTable[itemData.id]
         end
         local function SetSelected_CustomFilterItem()
             GT.Debug("Custom Filter Item Button Clicked", 2, itemData.text)
             local key = not IsSelected_CustomFilterItem()
-            GT.db.profile.CustomFiltersTable[tostring(itemData.id)] = key
+            GT.db.profile.CustomFiltersTable[itemData.id] = key
 
             GT:UpdateIDTable(itemData.id, key)
             GT:RemoveItemData(IsSelected_CustomFilterItem(), itemData.id)

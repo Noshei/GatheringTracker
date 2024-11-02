@@ -32,6 +32,7 @@
     "CANCEL",
 ],
 "Lua.diagnostics.disable": [
-    "assign-type-mismatch"
+    "assign-type-mismatch",
+    "cast-local-type"
 ]
 }

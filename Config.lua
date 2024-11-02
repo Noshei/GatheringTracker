@@ -1327,11 +1327,13 @@ local filterOptions = {
                         GT.db.profile.CustomFilters = key
                         local tempFilterTable = {}
                         for itemID in string.gmatch(GT.db.profile.CustomFilters, "[%d]+") do
+                            itemID = tonumber(itemID) or 0
                             if GT.db.profile.CustomFiltersTable[itemID] then
                                 tempFilterTable[itemID] = GT.db.profile.CustomFiltersTable[itemID]
                             else
                                 tempFilterTable[itemID] = true
                             end
+                            GT:RemoveItemData(tempFilterTable[itemID], itemID)
                         end
                         GT.db.profile.CustomFiltersTable = tempFilterTable
                         GT:CreateCustomFilterOptions()
@@ -1467,9 +1469,8 @@ function GT:CreateCustomFilterOptions()
         end
         for id, value in pairs(GT.db.profile.CustomFiltersTable) do
             --Create a local item to get data from the server
-            local itemID = tonumber(id) or 1
-            local item = Item:CreateFromItemID(itemID)
-            GT.Debug("Create Custom Filter Options", 2, itemID)
+            local item = Item:CreateFromItemID(id)
+            GT.Debug("Create Custom Filter Options", 2, id)
             --Waits for the data to be returned from the server
             if not item:IsItemEmpty() then
                 item:ContinueOnItemLoad(function()
@@ -1487,8 +1488,8 @@ function GT:CreateCustomFilterOptions()
                                 GT.db.profile.CustomFiltersTable[id] = false
                             end
 
-                            GT:UpdateIDTable(itemID, key)
-                            GT:RemoveItemData(key, itemID)
+                            GT:UpdateIDTable(id, key)
+                            GT:RemoveItemData(key, id)
                             GT:InventoryUpdate("Filters Custom " .. itemName .. " option clicked", true)
                         end,
                         imageCoords = function()
@@ -1498,12 +1499,12 @@ function GT:CreateCustomFilterOptions()
                             local borderColor = {}
                             local overlay = {}
 
-                            if itemID <= #GT.ItemData.Other.Other then
+                            if id <= #GT.ItemData.Other.Other then
                                 border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                                 borderColor = { 1, 1, 1, 0.8 }
                                 overlay = nil
                             else
-                                local rarity = C_Item.GetItemQualityByID(itemID) or 1
+                                local rarity = C_Item.GetItemQualityByID(id) or 1
                                 if rarity <= 1 then
                                     border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                                 else
@@ -1520,7 +1521,7 @@ function GT:CreateCustomFilterOptions()
 
                             return data
                         end,
-                        order = (itemID + 1000)
+                        order = (id + 1000)
                     }
                     AceConfigRegistry:NotifyChange("GT/Filter")
                 end)
@@ -1580,6 +1581,13 @@ local function UpdateChangedorRemovedSavedVariables()
     if GT.db.profile.Filters["bag"] then
         GT.db.profile.Filters["bag"] = nil
         GT.db.profile.Filters[2] = true
+    end
+
+    for id, value in pairs(GT.db.profile.CustomFiltersTable) do
+        if type(id) ~= "number" then
+            GT.db.profile.CustomFiltersTable[id] = nil
+            GT.db.profile.CustomFiltersTable[tonumber(id)] = value
+        end
     end
 end
 
