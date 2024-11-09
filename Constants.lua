@@ -1,6 +1,29 @@
 ---@class GT
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
+GT.HighlightTextures = {
+    ["Border 1"] = {
+        atlas = "Looting_ItemCard_HighlightState",
+        texture = "interface\\lootframe\\lootframe",
+        textureCoords = { 0.001953125, 0.583984375, 0.5224609375, 0.5966796875 },
+    },
+    ["Border 2"] = {
+        atlas = "ClickCastList-ButtonHighlight",
+        texture = "interface\\buttons\\listbuttons",
+        textureCoords = { 0.001953125, 0.76953125, 0.095703125, 0.185546875 },
+    },
+    ["Top/Bottom 1"] = {
+        atlas = "Adventures_MissionList_Highlight",
+        texture = "interface\\garrison\\adventuremissionslist",
+        textureCoords = { 0.0009765625, 0.82421875, 0.1875, 0.369140625 },
+    },
+    ["Top/Bottom 2"] = {
+        atlas = "search-highlight-large",
+        texture = "interface\\common\\search",
+        textureCoords = { 0.001953125, 0.501953125, 0.234375, 0.6015625 },
+    },
+}
+
 local expansionsOrder = {
     "Classic",
     "BC",

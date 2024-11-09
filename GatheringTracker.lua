@@ -786,10 +786,6 @@ function GT:ProcessData(event)
             GT.IDs[index].processed = true
         end
 
-        --[[if GT.InventoryData[data.id].startAmount == -1 then
-            GT.InventoryData[data.id].startAmount = itemCount
-        end]]
-
         GT.InventoryData[data.id].sessionCount =
             GT.InventoryData[data.id].count - GT.InventoryData[data.id].startAmount
 

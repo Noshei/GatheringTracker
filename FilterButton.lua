@@ -39,7 +39,7 @@ function GT:ToggleFilterButton(show)
     end
 end
 
-function GT:FiltersButton(profileChanged)
+function GT:FiltersButton()
     if not GT.db.profile.General.filtersButton then
         GT:ToggleFilterButton(false)
         return
@@ -175,9 +175,6 @@ function GT:GenerateFiltersMenu(frame)
                         end
 
                         frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
-                        if category == "Knowledge" then
-                            local columns = 3
-                        end
                         frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
                         for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                             local function IsSelected_Item()
@@ -270,7 +267,7 @@ function GT:GenerateFiltersMenu(frame)
         GT.baseFrame.button.rootDescription = rootDescription
     end
 
-    MenuUtil.CreateContextMenu(frame, FiltersMenu)
+    GT.baseFrame.button.menu = MenuUtil.CreateContextMenu(frame, FiltersMenu)
 end
 
 function GT:FiltersButtonFade(alpha)
@@ -396,11 +393,26 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.text, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
         frame["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
             local leftTexture = text:AttachTexture()
-            leftTexture:SetSize(18, 18)
+
+            leftTexture:SetDrawLayer("BACKGROUND", 0)
             leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
+            text:SetHeight(26)
+            leftTexture:SetSize(24, 24)
             leftTexture:SetTexture(tonumber(itemData.icon))
 
             text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+
+            local leftTextureRarity = text:AttachTexture()
+            leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
+            local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+            if rarity <= 1 then
+                leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+            else
+                leftTextureRarity:SetAtlas("bags-glow-white")
+            end
+            local R, G, B = C_Item.GetItemQualityColor(rarity)
+            leftTextureRarity:SetVertexColor(R, G, B, 0.8)
+            leftTextureRarity:SetAllPoints(leftTexture)
         end)
     end
 end
@@ -429,6 +441,7 @@ function GT:CreateProfilesList(frame, rootDescription)
         local function SetSelected_Profile()
             GT.Debug("Profile Button Clicked", 2, name)
             GT.db:SetProfile(name)
+            GT.baseFrame.button.menu:Close()
         end
 
         frame["Profiles"][name] = frame["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)

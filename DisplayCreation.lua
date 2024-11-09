@@ -126,10 +126,6 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         GT:DisplayFrameCounts(frame, id, displayText)
     end
 
-    --[[if totalItemCount and GT:GroupDisplayCheck() then
-        GT:DisplayFrameTotal(frame, id, totalItemCount)
-    end]]
-
     if pricePerItem and GT.db.profile.General.perItemPrice then
         GT:DisplayFramePricePer(frame, id, pricePerItem)
     end

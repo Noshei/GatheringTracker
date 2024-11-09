@@ -39,6 +39,24 @@ function GT:TableFind(list, str, key)
     end
 end
 
+---Converts decimal RGB to Hexcode
+---@param r number
+---@param g number
+---@param b number
+---@param a? number
+---@return string Hexcode
+function GT:RGBtoHex(r, g, b, a)
+    r = Round(r * 255)
+    g = Round(g * 255)
+    b = Round(b * 255)
+    local hex = ("%.2X%.2X%.2X"):format(r, g, b)
+    if a then
+        a = Round(a * 255)
+        hex = ("%.2X%.2X%.2X%.2X"):format(a, r, g, b)
+    end
+    return hex
+end
+
 function GT.Debug(text, level, ...)
     if not GT.db.profile or GT.db.profile.General.debugOption == 0 then
         return
