@@ -1246,21 +1246,20 @@ local generalOptions = {
     }
 }
 
-local function AddAlertType(itemData, alertType, order)
+local function AddAlertType(itemData, alertType, order, alertIndex)
+    GT.Debug("AddAlertType", 4, itemData.id, itemData.name, alertType, order, alertIndex)
     local alertOptions = generalOptions.args.Alerts.args[tostring(itemData.id)].args
-    local typeCount = 1
-    while alertOptions[alertType .. "_" .. typeCount] do
-        typeCount = typeCount + 1
-    end
-
+    GT.db.profile.Alerts[itemData.id].alerts[alertType] = GT.db.profile.Alerts[itemData.id].alerts[alertType] or {}
+    local typeCount = alertIndex or (#GT.db.profile.Alerts[itemData.id].alerts[alertType] + 1)
+    GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] = GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] or {}
+    local DB = GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount]
     local typeName = alertType .. "_" .. typeCount
-    GT.db.profile.Alerts[itemData.id].alerts[typeName] = GT.db.profile.Alerts[itemData.id].alerts[typeName] or {}
-    local DB = GT.db.profile.Alerts[itemData.id].alerts[typeName]
+    DB.order = order or DB.order
 
     alertOptions[typeName] = {
         type = "group",
         name = alertType .. " Alert " .. typeCount,
-        order = order + typeCount,
+        order = DB.order + typeCount,
         inline = true,
         disabled = function()
             if not GT.db.profile.General.alertsEnable then
@@ -1296,7 +1295,10 @@ local function AddAlertType(itemData, alertType, order)
                 confirm = true,
                 func = function()
                     alertOptions[typeName] = nil
-                    GT.db.profile.Alerts[itemData.id].alerts[typeName] = nil
+                    GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] = nil
+                    if #GT.db.profile.Alerts[itemData.id].alerts[alertType] == 0 then
+                        GT.db.profile.Alerts[itemData.id].alerts[alertType] = nil
+                    end
                     AceConfigRegistry:NotifyChange(GT.metaData.name)
                 end,
                 order = 2,
@@ -1313,12 +1315,12 @@ local function AddAlertType(itemData, alertType, order)
                     end
                     return true
                 end,
-                get = function() return DB.triggerValue or 0 end,
+                get = function() return tostring(DB.triggerValue or 0) end,
                 set = function(_, key)
                     if key == '' or key == nil then
-                        key = '0'
+                        key = 0
                     end
-                    DB.triggerValue = key
+                    DB.triggerValue = tonumber(key)
                 end,
                 order = 3
             },
@@ -1350,6 +1352,9 @@ local function AddAlertType(itemData, alertType, order)
                 get = function() return DB.triggerMultiple end,
                 set = function(_, key)
                     DB.triggerMultiple = key
+                    if not DB.triggerValueMultiple then
+                        DB.triggerValueMultiple = DB.triggerValue or 0
+                    end
                 end,
                 order = 5
             },
@@ -1596,13 +1601,22 @@ function GT:InitializeAlertOptions(itemData)
         GT:CreateAlertOptions(itemData)
     else
         for id, data in pairs(GT.db.profile.Alerts) do
+            local itemData = {}
+            local function AddAlertsForItem()
+                if GT.db.profile.Alerts[id].alerts then
+                    for type, alerts in pairs(GT.db.profile.Alerts[id].alerts) do
+                        for index, alertData in ipairs(alerts) do
+                            AddAlertType(itemData, type, nil, index)
+                        end
+                    end
+                end
+            end
             if id > 2 then
                 GT.Debug("Create Alerts Table", 2, "Normal Item", id)
                 local item = Item:CreateFromItemID(id)
                 item:ContinueOnItemLoad(function()
-                    local itemID = tostring(id)
                     local itemInfo = { C_Item.GetItemInfo(id) }
-                    local itemData = {
+                    itemData = {
                         id = id,
                         name = itemInfo[1],
                         icon = itemInfo[10],
@@ -1612,10 +1626,11 @@ function GT:InitializeAlertOptions(itemData)
                         itemData.quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(id)
                     end
                     GT:CreateAlertOptions(itemData)
+                    AddAlertsForItem()
                 end)
             else
                 GT.Debug("Create Alerts Table", 2, "Special Item", id)
-                local itemData = {
+                itemData = {
                     id = id,
                 }
                 if id == 1 then
@@ -1624,6 +1639,7 @@ function GT:InitializeAlertOptions(itemData)
                     itemData["name"] = "Total Items"
                 end
                 GT:CreateAlertOptions(itemData)
+                AddAlertsForItem()
             end
         end
     end
@@ -1631,6 +1647,7 @@ function GT:InitializeAlertOptions(itemData)
 end
 
 function GT:CreateAlertOptions(itemData)
+    GT.Debug("Create Alert Options", 3, itemData.id, itemData.name)
     local alertOptions = generalOptions.args.Alerts.args
 
     alertOptions[tostring(itemData.id)] = {

@@ -39,6 +39,17 @@ function GT:TableFind(list, str, key)
     end
 end
 
+---Gets the number of key,value pairs in an array
+---@param array table
+---@return number
+function GT:GetArraySize(array)
+    local size = 0
+    for _, _ in pairs(array) do
+        size = size + 1
+    end
+    return size
+end
+
 ---Converts decimal RGB to Hexcode
 ---@param r number
 ---@param g number

@@ -348,11 +348,21 @@ function GT:AllignColumns()
         return
     end
     for i, id in ipairs(GT.Display.Order) do
-        for index, string in ipairs(GT.Display.Frames[id].text) do
-            if not GT.Display.ColumnSize[index] then
-                GT:CheckColumnSize(index, GT.Display.Frames[id].text[index])
+        if id > #GT.ItemData.Other.Other then
+            for index, string in ipairs(GT.Display.Frames[id].text) do
+                if not GT.Display.ColumnSize[index] then
+                    GT:CheckColumnSize(index, GT.Display.Frames[id].text[index])
+                end
+                string:SetWidth(GT.Display.ColumnSize[index])
             end
-            string:SetWidth(GT.Display.ColumnSize[index])
+        else
+            local offset = GT.db.profile.General.iconWidth + 3 + 8 --3 is the offset from the icon, 8 is the offset to the next column
+            local parentWidth = GT.Display.Frames[id]:GetWidth()
+            local width = parentWidth - offset
+            if width < GT.Display.ColumnSize[1] then
+                width = GT.Display.ColumnSize[1]
+            end
+            GT.Display.Frames[id].text[1]:SetWidth(width)
         end
     end
     GT:SetDisplayFrameWidth()
@@ -534,6 +544,7 @@ function GT:SetupItemRows()
                 local pricePerItem = nil
                 local itemsPerHour = nil
                 local goldPerHour = nil
+                local displayText = GT:GetItemRowData(itemID)
                 if GT.priceSources then
                     pricePerItem = GT:GetItemPrice(itemID)
                 end
@@ -549,12 +560,14 @@ function GT:SetupItemRows()
                     iconQuality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID)
                 end
 
+                GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem)
+
                 GT:InitiateFrameProcess(
-                    tonumber(itemID),
+                    itemID,
                     C_Item.GetItemIconByID(itemID),
                     iconQuality,
                     C_Item.GetItemQualityByID(itemID),
-                    GT:GetItemRowData(itemID),
+                    displayText,
                     pricePerItem,
                     priceTotalItem,
                     itemsPerHour,
@@ -567,6 +580,9 @@ function GT:SetupItemRows()
     end
 end
 
+---generates the count data that will be displayed for a given item
+---@param itemID number
+---@return table|number displayText table if both session and total count are enabled, otherwise number
 function GT:GetItemRowData(itemID)
     GT.Debug("GetItemRowData", 2, itemID)
 

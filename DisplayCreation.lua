@@ -37,6 +37,11 @@ local function FramePool_Resetter(framePool, frame)
         GT.Pools.texturePool:Release(frame.iconRarity)
         frame.iconRarity = nil
     end
+    if frame.highlight then
+        frame.highlight:SetVertexColor(1, 1, 1, 1)
+        GT.Pools.texturePool:Release(frame.highlight)
+        frame.highlight = nil
+    end
     if frame.text == nil then
         return
     end
@@ -101,11 +106,9 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     local frame = GT:DisplayFrameBase(id)
 
-    --frame.displayedCharacters = #displayText
-
     GT.Display.Frames[id] = frame
 
-    --GT:DisplayFrameHighlight(frame)
+    GT:DisplayFrameHighlight(frame)
 
     GT:DisplayFrameIcon(frame, iconId, id)
 
@@ -238,18 +241,10 @@ function GT:DisplayFrameHighlight(frame)
     frame.highlight = GT.Pools.texturePool:Acquire()
     frame.highlight:SetParent(frame)
     frame.highlight:SetDrawLayer("BACKGROUND", 7)
-    frame.highlight:SetAtlas("communities-create-avatar-border-hover")
+    frame.highlight:SetAtlas("Looting_ItemCard_HighlightState")
     frame.highlight:SetAllPoints(frame)
     frame.highlight:Hide()
 end
---[[
-    Possible textures to use for the highlight:
-        Looting_ItemCard_HighlightState (best option as it is visible and colors well)
-        ClickCastList-ButtonHighlight (good option, but less visible)
-        Adventures_MissionList_Highlight
-        communitiesfinder_card_highlight
-        search-highlight-largeNumber
-]]
 
 function GT:DisplayFrameCounts(frame, id, text, index)
     index = index or 1
