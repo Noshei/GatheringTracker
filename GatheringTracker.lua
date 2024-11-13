@@ -348,11 +348,22 @@ function GT:AllignColumns()
         return
     end
     for i, id in ipairs(GT.Display.Order) do
-        for index, string in ipairs(GT.Display.Frames[id].text) do
-            if not GT.Display.ColumnSize[index] then
-                GT:CheckColumnSize(index, GT.Display.Frames[id].text[index])
+        if id > #GT.ItemData.Other.Other then
+            for index, string in ipairs(GT.Display.Frames[id].text) do
+                if not GT.Display.ColumnSize[index] then
+                    GT:CheckColumnSize(index, GT.Display.Frames[id].text[index], id)
+                end
+                string:SetWidth(GT.Display.ColumnSize[index])
             end
-            string:SetWidth(GT.Display.ColumnSize[index])
+        else
+            -- 3 is the offset from the icon, 8 is the offset to the next column
+            local offset = GT.db.profile.General.iconWidth + 3 + 8
+            local parentWidth = GT.Display.Frames[id]:GetWidth()
+            local width = GT.Display.Frames[id].text[1]:GetUnboundedStringWidth()
+            if GT.Display.ColumnSize[1] and width < GT.Display.ColumnSize[1] then
+                width = GT.Display.ColumnSize[1]
+            end
+            GT.Display.Frames[id].text[1]:SetWidth(width)
         end
     end
     GT:SetDisplayFrameWidth()
@@ -364,9 +375,51 @@ function GT:SetDisplayFrameWidth()
     local textWidth = GT:SumTable(GT.Display.ColumnSize)
     local offsets = (#GT.Display.ColumnSize * 8) + 3
     local iconWidth = GT.db.profile.General.iconWidth
+    if GT.Display.Frames[1] or GT.Display.Frames[3] then
+        for i = 1, #GT.ItemData.Other.Other, 2 do
+            if GT.Display.Frames[i] then
+                local otherWidth = GT.Display.Frames[i].text[1]:GetUnboundedStringWidth()
+                if otherWidth > textWidth then
+                    textWidth = otherWidth
+                    offsets = 11
+                end
+            end
+        end
+    end
     local width = iconWidth + textWidth + offsets
     for i, id in ipairs(GT.Display.Order) do
         GT.Display.Frames[id]:SetWidth(width)
+    end
+end
+
+function GT:UpdateTimer(frame)
+    if frame and frame.timer then
+        C_Timer.After(1, function()
+            if not frame.timer then
+                return
+            end
+            local sesstionTime = time() - GT.GlobalStartTime
+            local format = ""
+            if sesstionTime <= 86400 then
+                format = "%H:%M:%S"
+            end
+            if sesstionTime <= 3600 then
+                format = "00:%M:%S"
+            end
+            if sesstionTime <= 60 then
+                format = "00:00:%S"
+            end
+
+            local timer = date(format, sesstionTime)
+            frame.text[1]:SetText(timer)
+
+            local width = frame.text[1]:GetUnboundedStringWidth()
+            if GT.Display.ColumnSize[1] and width < GT.Display.ColumnSize[1] then
+                width = GT.Display.ColumnSize[1]
+            end
+            frame.text[1]:SetWidth(width)
+            GT:UpdateTimer(frame)
+        end)
     end
 end
 
@@ -414,15 +467,19 @@ function GT:UpdateDisplayFrame(id, displayText, pricePerItem, priceTotalItem,
             if type(text) == "number" then
                 text = math.ceil(text - 0.5)
             end
-            frame.text[textIndex]:SetText(text)
-            GT:CheckColumnSize(textIndex, frame.text[textIndex])
+            if id ~= 3 then
+                frame.text[textIndex]:SetText(text)
+            end
+            GT:CheckColumnSize(textIndex, frame.text[textIndex], id)
         end
     else
         if type(displayText) == "number" then
             displayText = math.ceil(displayText - 0.5)
         end
-        frame.text[1]:SetText(displayText)
-        GT:CheckColumnSize(1, frame.text[1])
+        if id ~= 3 then
+            frame.text[1]:SetText(displayText)
+        end
+        GT:CheckColumnSize(1, frame.text[1], id)
     end
 
     if pricePerItem and GT.db.profile.General.perItemPrice then
@@ -434,51 +491,51 @@ function GT:UpdateDisplayFrame(id, displayText, pricePerItem, priceTotalItem,
         end
         if frame.pricePerItem then
             frame.text[frame.pricePerItem]:SetText(text)
-            GT:CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem])
+            GT:CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem], id)
         end
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
         if frame.priceTotalItem then
             frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
-            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
+            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem], id)
         end
     end
 
     if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
         if frame.priceTotalItem then
             frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
-            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem])
+            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem], id)
         end
     end
 
     if itemsPerHour and GT.db.profile.General.itemsPerHour then
-        GT:UpdateItemsPerHour(frame, itemsPerHour)
+        GT:UpdateItemsPerHour(frame, itemsPerHour, id)
     end
 
     if goldPerHour and GT.db.profile.General.goldPerHour then
-        GT:UpdateGoldPerHour(frame, goldPerHour)
+        GT:UpdateGoldPerHour(frame, goldPerHour, id)
     end
 
     GT:SetAnchor(frame)
 end
 
-function GT:UpdateItemsPerHour(frame, itemsPerHour)
+function GT:UpdateItemsPerHour(frame, itemsPerHour, id)
     if not frame.itemsPerHour then
         return
     end
 
     frame.text[frame.itemsPerHour]:SetText(math.ceil(itemsPerHour - 0.5) .. "/h")
-    GT:CheckColumnSize(frame.itemsPerHour, frame.text[frame.itemsPerHour])
+    GT:CheckColumnSize(frame.itemsPerHour, frame.text[frame.itemsPerHour], id)
 end
 
-function GT:UpdateGoldPerHour(frame, goldPerHour)
+function GT:UpdateGoldPerHour(frame, goldPerHour, id)
     if not frame.goldPerHour then
         return
     end
 
     frame.text[frame.goldPerHour]:SetText(math.ceil(goldPerHour - 0.5) .. "g/h")
-    GT:CheckColumnSize(frame.goldPerHour, frame.text[frame.goldPerHour])
+    GT:CheckColumnSize(frame.goldPerHour, frame.text[frame.goldPerHour], id)
 end
 
 function GT:PrepareDataForDisplay(event, wait)
@@ -688,12 +745,12 @@ function GT:RefreshPerHourDisplay(stop, wait)
 
             if itemFrame.itemsPerHour and GT.db.profile.General.itemsPerHour then
                 itemsPerHour = GT:CalculateItemsPerHour(itemID)
-                GT:UpdateItemsPerHour(itemFrame, itemsPerHour)
+                GT:UpdateItemsPerHour(itemFrame, itemsPerHour, itemID)
             end
 
             if itemFrame.goldPerHour and GT.db.profile.General.goldPerHour then
                 goldPerHour = itemsPerHour * (pricePerItem or 0)
-                GT:UpdateGoldPerHour(itemFrame, goldPerHour)
+                GT:UpdateGoldPerHour(itemFrame, goldPerHour, itemID)
             end
         elseif itemID == 9999999998 then
             local playerTotals = {}
@@ -706,11 +763,11 @@ function GT:RefreshPerHourDisplay(stop, wait)
 
             local itemsPerHour, goldPerHour = GT:CalculateItemsPerHourTotal(totalItemCount)
             if itemFrame.itemsPerHour and GT.db.profile.General.itemsPerHour then
-                GT:UpdateItemsPerHour(itemFrame, itemsPerHour)
+                GT:UpdateItemsPerHour(itemFrame, itemsPerHour, itemID)
             end
 
             if itemFrame.goldPerHour and GT.db.profile.General.goldPerHour then
-                GT:UpdateGoldPerHour(itemFrame, goldPerHour)
+                GT:UpdateGoldPerHour(itemFrame, goldPerHour, itemID)
             end
         end
     end
@@ -762,6 +819,8 @@ function GT:ProcessData(event)
             for bagIndex = 0, 4 do
                 itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
             end
+        elseif data.id == GT.ItemData.Other.Other[3].id then
+            itemCount = 123456
         else
             itemCount = C_Item.GetItemCount(
                 data.id,
@@ -785,10 +844,6 @@ function GT:ProcessData(event)
             GT.InventoryData[data.id].startAmount = itemCount
             GT.IDs[index].processed = true
         end
-
-        --[[if GT.InventoryData[data.id].startAmount == -1 then
-            GT.InventoryData[data.id].startAmount = itemCount
-        end]]
 
         GT.InventoryData[data.id].sessionCount =
             GT.InventoryData[data.id].count - GT.InventoryData[data.id].startAmount

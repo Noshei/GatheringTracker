@@ -285,8 +285,11 @@ function GT:RebuildIDTables()
     end
 end
 
-function GT:CheckColumnSize(index, frame)
+function GT:CheckColumnSize(index, frame, itemID)
     local width = frame:GetUnboundedStringWidth()
+    if itemID <= #GT.ItemData.Other.Other then
+        return
+    end
     if GT.Display.ColumnSize[index] == nil or GT.Display.ColumnSize[index] < width then
         GT.Display.ColumnSize[index] = width
         return

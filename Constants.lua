@@ -1339,6 +1339,7 @@ local ItemData = {
     -- Other
     { id = 1, name = "Current Gold", order = 1, icon = "Interface\\Addons\\GatheringTracker\\Media\\Ability_Racial_PackHobgoblin", desc = "Displays the current Gold on the character, rounded to the nearest whole number.", retail = true, classic = true, era = true, season = true, expansion = "Other", category = "Other" },
     { id = 2, name = "Open Bag Space", order = 2, icon = "Interface\\Addons\\GatheringTracker\\Media\\Garrison_Building_Storehouse", desc = "Displays the number of open bag space.", retail = true, classic = true, era = true, season = true, expansion = "Other", category = "Other" },
+    { id = 3, name = "Session Timer", order = 3, icon = 134377, desc = "Displays a timer starting from the first gather after being enabled.", retail = true, classic = true, era = true, season = true, expansion = "Other", category = "Other" },
 }
 
 GT.ItemData = {}
