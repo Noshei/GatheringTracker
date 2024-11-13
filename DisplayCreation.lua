@@ -58,6 +58,9 @@ local function FramePool_Resetter(framePool, frame)
     if frame.priceTotalItem then
         frame.priceTotalItem = nil
     end
+    if frame.timer then
+        frame.timer = nil
+    end
     frame:SetScript("OnEnter", nil)
     frame:SetMouseClickEnabled(false)
     frame:SetMouseMotionEnabled(false)
@@ -90,8 +93,15 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
 
     string:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
     string:SetJustifyH("LEFT") --add option for this?
-    string:SetText(text)
+    if id ~= 3 then
+        string:SetText(text)
+    end
     string:Show()
+    if id == 3 then
+        frame.timer = true
+        string:SetText("00:00:00")
+        GT:UpdateTimer(frame)
+    end
     return string
 end
 
@@ -258,12 +268,22 @@ function GT:DisplayFrameCounts(frame, id, text, index)
         text = text
     end
     frame.text[index] = CreateTextDisplay(frame, id, text, "count", frame:GetHeight(), anchor)
-    GT:CheckColumnSize(index, frame.text[index])
+
+    if id <= #GT.ItemData.Other.Other then
+        -- 3 is the offset from the icon, 8 is the offset to the next column
+        local offset = GT.db.profile.General.iconWidth + 3 + 8
+        local parentWidth = frame:GetWidth()
+        local width = parentWidth - offset
+        local stringWidth = frame.text[index]:GetUnboundedStringWidth()
+        frame.text[index]:SetWidth(stringWidth)
+    end
+
+    GT:CheckColumnSize(index, frame.text[index], id)
 end
 
 function GT:DisplayFrameTotal(frame, id, totalItemCount)
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "[" .. math.ceil(totalItemCount - 0.5) .. "]", "totalItemCount", frame:GetHeight(), frame.text[#frame.text])
-    GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
+    GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.totalItemCount = #frame.text
 end
 
@@ -275,24 +295,24 @@ function GT:DisplayFramePricePer(frame, id, pricePerItem)
         text = ""
     end
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "pricePerItem", frame:GetHeight(), frame.text[#frame.text])
-    GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
+    GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.pricePerItem = #frame.text
 end
 
 function GT:DisplayFramePriceTotal(frame, id, priceTotalItem)
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, "(" .. math.ceil(priceTotalItem - 0.5) .. "g)", "priceTotalItem", frame:GetHeight(), frame.text[#frame.text])
-    GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
+    GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.priceTotalItem = #frame.text
 end
 
 function GT:DisplayFrameItemsPerHour(frame, id, itemsPerHour)
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, math.ceil(itemsPerHour - 0.5) .. "/h", "itemsPerHour", frame:GetHeight(), frame.text[#frame.text])
-    GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
+    GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.itemsPerHour = #frame.text
 end
 
 function GT:DisplayFrameGoldPerHour(frame, id, goldPerHour)
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, math.ceil(goldPerHour - 0.5) .. "g/h", "goldPerHour", frame:GetHeight(), frame.text[#frame.text])
-    GT:CheckColumnSize(#frame.text, frame.text[#frame.text])
+    GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.goldPerHour = #frame.text
 end

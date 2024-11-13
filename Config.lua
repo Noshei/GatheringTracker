@@ -24,6 +24,7 @@ local unpack = unpack
 GT.defaults = {
     profile = {
         General = {
+            fixSettings = 0,
             enable = true,
             unlock = false,
             filtersButton = false,
@@ -667,6 +668,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.multiColumn = key
                         GT:AllignRows()
+                        GT:AllignColumns()
                     end,
                     order = 301
                 },
@@ -683,6 +685,7 @@ local generalOptions = {
                         GT.db.profile.General.numRows = key
                         if not GT.db.profile.General.collapseDisplay then
                             GT:AllignRows()
+                            GT:AllignColumns()
                         end
                     end,
                     disabled = function()
@@ -810,14 +813,14 @@ local generalOptions = {
                             if itemID < 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     textFrame:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
 
                                 local frameHeight = math.max(GT.db.profile.General.iconHeight, key)
                                 itemFrame:SetHeight(frameHeight + 3)
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             end
                         end
@@ -839,11 +842,11 @@ local generalOptions = {
                             if itemID < 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     textFrame:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             end
                         end
@@ -888,14 +891,14 @@ local generalOptions = {
                             if itemID >= 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     textFrame:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
 
                                 local frameHeight = math.max(GT.db.profile.General.iconHeight, key)
                                 itemFrame:SetHeight(frameHeight + 3)
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             end
                         end
@@ -917,11 +920,11 @@ local generalOptions = {
                             if itemID >= 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
                                     textFrame:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             else
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
-                                    GT:CheckColumnSize(textIndex, textFrame)
+                                    GT:CheckColumnSize(textIndex, textFrame, itemID)
                                 end
                             end
                         end
@@ -1944,6 +1947,49 @@ function GT:CreateCustomFilterOptions()
     end
 end
 
+function GatheringTracker_OnAddonCompartmentClick(addonName, button)
+    if (button == "LeftButton") then
+        GT:ToggleGatheringTracker()
+    elseif (button == "RightButton") then
+        Settings.OpenToCategory(GT.metaData.name, true)
+    end
+end
+
+local function UpdateChangedorRemovedSavedVariables()
+    -- Increment when adding anything to function
+    local fixConstant = 1
+    if GT.db.profile.General.fixSettings < fixConstant then
+        --Change debug to int instead of bool
+        if type(GT.db.profile.General.debugOption) == "boolean" then
+            GT.db.profile.General.debugOption = 0
+        end
+
+        if GT.db.profile.Filters["gold"] then
+            GT.db.profile.Filters["gold"] = nil
+            GT.db.profile.Filters[1] = true
+        end
+
+        if GT.db.profile.Filters["bag"] then
+            GT.db.profile.Filters["bag"] = nil
+            GT.db.profile.Filters[2] = true
+        end
+
+        local tempFilterTable = {}
+        for itemID in string.gmatch(GT.db.profile.CustomFilters, "[%d]+") do
+            itemID = tonumber(itemID) or 0
+            if GT.db.profile.CustomFiltersTable[itemID] then
+                tempFilterTable[itemID] = GT.db.profile.CustomFiltersTable[itemID]
+            else
+                tempFilterTable[itemID] = true
+            end
+            GT:RemoveItemData(tempFilterTable[itemID], itemID)
+        end
+        GT.db.profile.CustomFiltersTable = tempFilterTable
+
+        GT.db.profile.General.fixSettings = fixConstant
+    end
+end
+
 function GT:RefreshConfig(event, db, profile)
     GT.Debug("Refresh Config", 1, event, profile, db.profile.General.enable, GT.Enabled)
     if db.profile.General.enable and not GT.Enabled and event == "OnProfileChanged" then
@@ -1953,6 +1999,9 @@ function GT:RefreshConfig(event, db, profile)
     if not db.profile.General.enable and GT.Enabled and event == "OnProfileChanged" then
         GT.Enabled = false
         GT:OnDisable()
+    end
+    if event == "OnProfileChanged" then
+        UpdateChangedorRemovedSavedVariables()
     end
 
     GT.baseFrame.backdrop:ClearAllPoints()
@@ -1966,45 +2015,9 @@ function GT:RefreshConfig(event, db, profile)
 
     GT:RebuildIDTables()
     GT:ClearDisplay()
-    GT:FiltersButton()
+    GT:FiltersButton(true)
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateCustomFilterOptions()
-end
-
-function GatheringTracker_OnAddonCompartmentClick(addonName, button)
-    if (button == "LeftButton") then
-        GT:ToggleGatheringTracker()
-    elseif (button == "RightButton") then
-        Settings.OpenToCategory(GT.metaData.name, true)
-    end
-end
-
-local function UpdateChangedorRemovedSavedVariables()
-    --Change debug to int instead of bool
-    if type(GT.db.profile.General.debugOption) == "boolean" then
-        GT.db.profile.General.debugOption = 0
-    end
-
-    if GT.db.profile.Filters["gold"] then
-        GT.db.profile.Filters["gold"] = nil
-        GT.db.profile.Filters[1] = true
-    end
-
-    if GT.db.profile.Filters["bag"] then
-        GT.db.profile.Filters["bag"] = nil
-        GT.db.profile.Filters[2] = true
-    end
-
-    if GT.db.profile.Aliases then
-        GT.db.profile.Aliases = nil
-    end
-
-    for id, value in pairs(GT.db.profile.CustomFiltersTable) do
-        if type(id) ~= "number" then
-            GT.db.profile.CustomFiltersTable[id] = nil
-            GT.db.profile.CustomFiltersTable[tonumber(id)] = value
-        end
-    end
 end
 
 local function InitializePriceSource()
