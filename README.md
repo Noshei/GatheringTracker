@@ -1,8 +1,26 @@
-# GatheringTracker
-Gathering Tracker is a simple addon that lets you display how many of any item you have gathered.
-![Gathering Tracker](https://github.com/Noshei/GatheringTracker/blob/master/.previews/GT2.png?raw=true)
+<h1 align="center"> GatheringTracker </h1> <br>
 
-## Features:
+<div align="center">
+    <a href="https://www.curseforge.com/wow/addons/gathering-tracker" target="_blank">
+        <img alt="CurseForge Downloads" src="https://img.shields.io/curseforge/dt/406104?style=for-the-badge&label=CurseForge"> 
+    </a>
+    <a href="https://www.curseforge.com/wow/addons/gathering-tracker" target="_blank">
+        <img alt="CurseForge Version" src="https://img.shields.io/curseforge/v/406104?style=for-the-badge">
+    </a>
+    <a href="https://www.curseforge.com/wow/addons/gathering-tracker" target="_blank">
+        <img alt="CurseForge Game Versions" src="https://img.shields.io/curseforge/game-versions/406104?style=for-the-badge">
+    </a>
+</div>
+
+<div align="center">
+  <img width="70%" src=".previews/GT2.png?" />
+</div>
+<p align="center" style="font-style: italic">
+  Gathering Tracker provides a HUD to track any item.
+</p>
+
+## Features
+
  - Supported on all versions of WoW
  - Display AH Price Data
    - Currently supports: TradeSkillMaster, Auctionator, and RECrystallize
@@ -12,6 +30,7 @@ Gathering Tracker is a simple addon that lets you display how many of any item y
 
 
 ## Commands:
+
 /gt or /gatheringtracker will open the addon configurations
 
  
