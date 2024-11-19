@@ -34,15 +34,16 @@ GT.metaData = {
     notes = C_AddOns.GetAddOnMetadata("GatheringTracker", "Notes"),
 }
 
-GT.gameVersion = "retail"
-if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
-    GT.gameVersion = "classic"
-elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) then
+local gameVersions = {
+    [WOW_PROJECT_MAINLINE or 1] = "retail",
+    [WOW_PROJECT_CLASSIC or 2] = "era",
+    [WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5] = "bc",
+    [WOW_PROJECT_WRATH_CLASSIC or 11] = "wrath",
+    [WOW_PROJECT_CATACLYSM_CLASSIC or 14] = "cata"
+}
+GT.gameVersion = gameVersions[WOW_PROJECT_ID] or "retail"
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) then
     GT.gameVersion = "season"
-elseif WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-    GT.gameVersion = "era"
-else
-    GT.gameVersion = "retail"
 end
 
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version

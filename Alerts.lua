@@ -18,6 +18,7 @@ local type = type
 local unpack = unpack
 
 GT.AlertSystem = {}
+GT.Alerts = {}
 
 ---Entry point to the Alert System
 ---@param itemID number ID of the item to run the alert system for
@@ -123,4 +124,75 @@ end
 
 function GT.AlertSystem:TriggerAlert(itemID, alertTable)
     GT.Debug("Trigger Alert", 2, itemID, alertTable.type, alertTable.index)
+end
+
+local function SetAlertTypeTriggerValue(self, value)
+    self.triggerValue = value
+end
+
+local function SetAlertTypeTriggered(self, triggered)
+    self.triggered = triggered
+end
+
+local function CreateAlertFrame(self)
+
+end
+
+local function GetAlertFrame(self)
+
+end
+
+local function AddAlertType(self, alertType, typeCount, triggerValue)
+    local AlertType = {}
+    AlertType.alertType = alertType
+    AlertType.typeCount = typeCount
+    AlertType.triggerValue = triggerValue
+    AlertType.triggered = false
+
+    -- Methods
+    AlertType.SetAlertTypeTriggerValue = SetAlertTypeTriggerValue
+    AlertType.SetAlertTypeTriggered = SetAlertTypeTriggered
+    AlertType.CreateAlertFrame = CreateAlertFrame
+    AlertType.GetAlertFrame = GetAlertFrame
+
+    self[alertType] = self[alertType] or {}
+    self[alertType][typeCount] = AlertType
+
+    return AlertType
+end
+
+local function GetAlertType(self, alertType, typeCount)
+    if not self[alertType] then
+        return nil
+    end
+    if not self[alertType][typeCount] then
+        return nil
+    end
+    return self[alertType][typeCount]
+end
+
+function GT.AlertSystem:AddAlert(itemID)
+    local alert = {}
+
+    -- Methods
+    alert.AddAlertType = AddAlertType
+    alert.GetAlertType = GetAlertType
+
+    GT.Alerts[itemID] = alert
+
+    return alert
+end
+
+function GT.AlertSystem:GetAlert(itemID)
+    if not GT.Alerts[itemID] then
+        return nil
+    end
+    return GT.Alerts[itemID]
+end
+
+function GT.AlertSystem:RemoveAlert(itemID)
+    if not GT.Alerts[itemID] then
+        return nil
+    end
+    GT.Alerts[itemID] = nil
 end

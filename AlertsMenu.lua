@@ -40,9 +40,6 @@ function GT:GenerateAlertsMenu(frame)
                                 GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
                                 local key = not IsSelected_Item()
                                 if key then
-                                    GT.db.profile.Alerts[itemData.id] = {}
-                                    GT.db.profile.Alerts[itemData.id].enable = true
-                                    GT.db.profile.Alerts[itemData.id].alerts = {}
                                     local alertItemData = {
                                         id = itemData.id,
                                         name = itemData.name,
@@ -52,7 +49,13 @@ function GT:GenerateAlertsMenu(frame)
                                     if GT.gameVersion == "retail" then
                                         alertItemData.quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemData.id)
                                     end
-                                    GT:InitializeAlertOptions(alertItemData)
+
+                                    GT.AlertSystem:AddAlert(alertItemData)
+                                    GT.db.profile.Alerts[alertItemData.id] = {}
+                                    GT.db.profile.Alerts[alertItemData.id].enable = true
+                                    GT.db.profile.Alerts[alertItemData.id].alerts = {}
+                                    GT.db.profile.Alerts[itemData.id].itemData = alertItemData
+                                    GT:InitializeAlertOptions("Menu_" .. alertItemData.name .. "_clicked", alertItemData)
                                 else
                                     GT.db.profile.Alerts[itemData.id] = nil
                                     GT:RemoveItemAlerts(itemData.id)
@@ -150,10 +153,12 @@ function GT:GenerateAlertsMenu(frame)
                 GT.Debug("Item Button Clicked", 2, itemData.name)
                 local key = not IsSelected_Item()
                 if key then
+                    GT.AlertSystem:AddAlert(itemData)
                     GT.db.profile.Alerts[itemData.id] = {}
                     GT.db.profile.Alerts[itemData.id].enable = true
                     GT.db.profile.Alerts[itemData.id].alerts = {}
-                    GT:InitializeAlertOptions(itemData)
+                    GT.db.profile.Alerts[itemData.id].itemData = itemData
+                    GT:InitializeAlertOptions("Menu_" .. itemData.name .. "_clicked", itemData)
                 else
                     GT.db.profile.Alerts[itemData.id] = nil
                     GT:RemoveItemAlerts(itemData.id)
@@ -208,10 +213,12 @@ function GT:CreateCustomFiltersAlertsList(frame, rootDescription)
             GT.Debug("Item Button Clicked", 2, itemData.name)
             local key = not IsSelected_CustomFilterItem()
             if key then
+                GT.AlertSystem:AddAlert(itemData)
                 GT.db.profile.Alerts[itemData.id] = {}
                 GT.db.profile.Alerts[itemData.id].enable = true
                 GT.db.profile.Alerts[itemData.id].alerts = {}
-                GT:InitializeAlertOptions(itemData)
+                GT.db.profile.Alerts[itemData.id].itemData = itemData
+                GT:InitializeAlertOptions("Menu_" .. itemData.name .. "_clicked", itemData)
             else
                 GT.db.profile.Alerts[itemData.id] = nil
                 GT:RemoveItemAlerts(itemData.id)

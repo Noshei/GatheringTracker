@@ -1,6 +1,7 @@
 --[[-----------------------------------------------------------------------------
 Checkbox Extended Widget
 Widget is an extension of the Checkbox Widget from AceGUI-3.0
+Updated to use newer checkbox atlas files instead of old textures
 We've hijacked ImageCoords from AceConfDisplay to be able to extend the new functions to AceConfig
 This Lib is not for general use outside of my own addons.
 Adds additional image options:
@@ -11,7 +12,7 @@ Adds additional image options:
 -------------------------------------------------------------------------------]]
 local AGNW = LibStub:NewLibrary("AceGUINosheiWidgets-1.0", 110002)
 
-local Type, Version = "NW_CheckBox", 1
+local Type, Version = "NW_CheckBox", 2
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -41,10 +42,14 @@ end
 Scripts
 -------------------------------------------------------------------------------]]
 local function Control_OnEnter(frame)
+    local self = frame.obj
+    self.background:SetVertexColor(0.35, 0.35, 0.35, 1)
     frame.obj:Fire("OnEnter")
 end
 
 local function Control_OnLeave(frame)
+    local self = frame.obj
+    self.background:SetVertexColor(0, 0, 0, 0)
     frame.obj:Fire("OnLeave")
 end
 
@@ -170,13 +175,16 @@ local methods = {
             highlight:SetTexCoord(0.5, 0.75, 0, 1)
         else
             size = 24
-            checkbg:SetTexture(130755) -- Interface\\Buttons\\UI-CheckBox-Up
-            checkbg:SetTexCoord(0, 1, 0, 1)
-            check:SetTexture(130751)   -- Interface\\Buttons\\UI-CheckBox-Check
-            check:SetTexCoord(0, 1, 0, 1)
+            --checkbg:SetTexture(130755) -- Interface\\Buttons\\UI-CheckBox-Up
+            --checkbg:SetTexCoord(0, 1, 0, 1)
+            checkbg:SetAtlas("checkbox-minimal", true)
+            check:SetAtlas("checkmark-minimal", true)
+            --check:SetTexture(130751)   -- Interface\\Buttons\\UI-CheckBox-Check
+            --check:SetTexCoord(0, 1, 0, 1)
             check:SetBlendMode("BLEND")
-            highlight:SetTexture(130753) -- Interface\\Buttons\\UI-CheckBox-Highlight
-            highlight:SetTexCoord(0, 1, 0, 1)
+            highlight:SetAtlas("checkbox-minimal", true)
+            --highlight:SetTexture(130753) -- Interface\\Buttons\\UI-CheckBox-Highlight
+            --highlight:SetTexCoord(0, 1, 0, 1)
         end
         checkbg:SetHeight(size)
         checkbg:SetWidth(size)
@@ -291,15 +299,22 @@ local function Constructor()
     frame:SetScript("OnMouseDown", CheckBox_OnMouseDown)
     frame:SetScript("OnMouseUp", CheckBox_OnMouseUp)
 
+    local background = frame:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints(frame)
+    background:SetTexture("Interface/Tooltips/UI-Tooltip-Background")
+    background:SetVertexColor(0, 0, 0, 0)
+
     local checkbg = frame:CreateTexture(nil, "ARTWORK")
     checkbg:SetWidth(24)
     checkbg:SetHeight(24)
     checkbg:SetPoint("TOPLEFT")
-    checkbg:SetTexture(130755) -- Interface\\Buttons\\UI-CheckBox-Up
+    checkbg:SetAtlas("checkbox-minimal", true)
+    --checkbg:SetTexture(130755) -- Interface\\Buttons\\UI-CheckBox-Up
 
     local check = frame:CreateTexture(nil, "OVERLAY")
     check:SetAllPoints(checkbg)
-    check:SetTexture(130751) -- Interface\\Buttons\\UI-CheckBox-Check
+    check:SetAtlas("checkmark-minimal", true)
+    --check:SetTexture(130751) -- Interface\\Buttons\\UI-CheckBox-Check
 
     local text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     text:SetJustifyH("LEFT")
@@ -308,7 +323,8 @@ local function Constructor()
     text:SetPoint("RIGHT")
 
     local highlight = frame:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetTexture(130753) -- Interface\\Buttons\\UI-CheckBox-Highlight
+    highlight:SetAtlas("checkbox-minimal", true)
+    --highlight:SetTexture(130753) -- Interface\\Buttons\\UI-CheckBox-Highlight
     highlight:SetBlendMode("ADD")
     highlight:SetAllPoints(checkbg)
 
@@ -325,6 +341,7 @@ local function Constructor()
 
     local widget = {
         checkbg = checkbg,
+        background = background,
         check = check,
         text = text,
         highlight = highlight,

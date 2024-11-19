@@ -1,14 +1,15 @@
 -- Widget is based on the AceGUIWidget-DropDown.lua supplied with AceGUI-3.0
--- Modified from AceGUISharedMediaWidgets-1.0 StatusbarWidget
 -- Widget created by Yssaril
+-- Forked from AceGUISharedMediaWidgets-1.0 to modify for my own use by Noshei
 
 local AceGUI = LibStub("AceGUI-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 
 local AGNW = LibStub("AceGUI-3.0-NosheiWidgets-1.0")
 
 do
-    local widgetType = "NW_Highlight"
-    local widgetVersion = 2
+    local widgetType = "NW_Font"
+    local widgetVersion = 1
 
     local contentFrameCache = {}
     local function ReturnSelf(self)
@@ -33,7 +34,7 @@ do
         else
             frame = CreateFrame("Button", nil, UIParent)
             --frame:SetWidth(200)
-            frame:SetHeight(26)
+            frame:SetHeight(18)
             --frame:SetHighlightTexture([[Interface\QuestFrame\UI-QuestTitleHighlight]], "ADD")
             frame:SetScript("OnClick", ContentOnClick)
             --[[local check = frame:CreateTexture("OVERLAY")
@@ -43,26 +44,19 @@ do
             check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
             check:Hide()
             frame.check = check]]
+
             local highlight = frame:CreateTexture(nil, "OVERLAY")
             highlight:SetAtlas("common-dropdown-customize-mouseover", true)
-            highlight:SetHeight(24)
+            highlight:SetHeight(18)
             highlight:ClearAllPoints()
             highlight:SetPoint("RIGHT", frame, "RIGHT", -1, 0)
             highlight:SetPoint("LEFT", frame, "LEFT", 1, 0)
             highlight:SetAlpha(0)
             frame.highlight = highlight
-            local bar = frame:CreateTexture("ARTWORK")
-            bar:SetHeight(22)
-            bar:SetPoint("LEFT", frame, "LEFT", 10, 0)
-            bar:SetPoint("RIGHT", frame, "RIGHT", -10, 0)
-            frame.bar = bar
+
             local text = frame:CreateFontString(nil, "OVERLAY", "GameFontWhite")
-
-            local font, size = text:GetFont()
-            text:SetFont(font, size, "OUTLINE")
-
-            text:SetPoint("TOPLEFT", frame, "TOPLEFT", 13, 0)
-            text:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -2, 0)
+            text:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, 0)
+            text:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -8, 0)
             text:SetJustifyH("LEFT")
             text:SetText("Test Test Test Test Test Test Test")
             frame.text = text
@@ -110,12 +104,16 @@ do
     end
 
     local function SetList(self, list) -- Set the list of values for the dropdown (key => value pairs)
-        self.list = list
+        self.list = list or Media:HashTable("font")
     end
 
-
     local function SetText(self, text) -- Set the text displayed in the box.
+        --self.frame.text:SetText(text or "")
         self.frame.dropButton.Text:SetText(text or "")
+        local font = self.list[text] ~= text and self.list[text] or Media:Fetch('font', text)
+        local _, size, outline = self.frame.dropButton.Text:GetFont()
+        --self.frame.text:SetFont(font, size, outline)
+        self.frame.dropButton.Text:SetFont(font, size, outline)
     end
 
     local function SetLabel(self, text) -- Set the text for the label.
@@ -163,19 +161,17 @@ do
             table.sort(sortedlist, textSort)
             for i, k in ipairs(sortedlist) do
                 local f = GetContentLine()
+                local _, size, outline = f.text:GetFont()
+                local font = self.list[k] ~= k and self.list[k] or Media:Fetch('font', k)
+                f.text:SetFont(font, size, outline)
                 f.text:SetText(k)
-                --print(k)
                 if k == self.value then
                     --f.check:Show()
                     f.text:SetTextColor(1, .82, 0)
                 else
                     f.text:SetTextColor(1, 1, 1)
                 end
-
-                local statusbar = self.list[k] ~= k and self.list[k]
-                f.bar:SetAtlas(statusbar)
                 f.obj = self
-                f.dropdown = self.dropdown
                 self.dropdown:AddFrame(f)
             end
             wipe(sortedlist)

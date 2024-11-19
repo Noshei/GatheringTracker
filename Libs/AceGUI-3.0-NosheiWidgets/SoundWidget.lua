@@ -1,14 +1,15 @@
 -- Widget is based on the AceGUIWidget-DropDown.lua supplied with AceGUI-3.0
--- Modified from AceGUISharedMediaWidgets-1.0 StatusbarWidget
 -- Widget created by Yssaril
+-- Forked from AceGUISharedMediaWidgets-1.0 to modify for my own use by Noshei
 
 local AceGUI = LibStub("AceGUI-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 
 local AGNW = LibStub("AceGUI-3.0-NosheiWidgets-1.0")
 
 do
-    local widgetType = "NW_Highlight"
-    local widgetVersion = 2
+    local widgetType = "NW_Sound"
+    local widgetVersion = 1
 
     local contentFrameCache = {}
     local function ReturnSelf(self)
@@ -26,6 +27,12 @@ do
         end
     end
 
+    local function ContentSpeakerOnClick(this, button)
+        local self = this.frame.obj
+        local sound = this.frame.text:GetText()
+        PlaySoundFile(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound', sound), "Master")
+    end
+
     local function GetContentLine()
         local frame
         if next(contentFrameCache) then
@@ -33,7 +40,7 @@ do
         else
             frame = CreateFrame("Button", nil, UIParent)
             --frame:SetWidth(200)
-            frame:SetHeight(26)
+            frame:SetHeight(18)
             --frame:SetHighlightTexture([[Interface\QuestFrame\UI-QuestTitleHighlight]], "ADD")
             frame:SetScript("OnClick", ContentOnClick)
             --[[local check = frame:CreateTexture("OVERLAY")
@@ -43,26 +50,36 @@ do
             check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
             check:Hide()
             frame.check = check]]
+
             local highlight = frame:CreateTexture(nil, "OVERLAY")
             highlight:SetAtlas("common-dropdown-customize-mouseover", true)
-            highlight:SetHeight(24)
+            highlight:SetHeight(18)
             highlight:ClearAllPoints()
             highlight:SetPoint("RIGHT", frame, "RIGHT", -1, 0)
             highlight:SetPoint("LEFT", frame, "LEFT", 1, 0)
             highlight:SetAlpha(0)
             frame.highlight = highlight
-            local bar = frame:CreateTexture("ARTWORK")
-            bar:SetHeight(22)
-            bar:SetPoint("LEFT", frame, "LEFT", 10, 0)
-            bar:SetPoint("RIGHT", frame, "RIGHT", -10, 0)
-            frame.bar = bar
+
+            local soundbutton = CreateFrame("Button", nil, frame)
+            soundbutton:SetWidth(16)
+            soundbutton:SetHeight(16)
+            soundbutton:SetPoint("RIGHT", frame, "RIGHT", -3, 0)
+            soundbutton.frame = frame
+            soundbutton:SetScript("OnClick", ContentSpeakerOnClick)
+            frame.soundbutton = soundbutton
+
+            local speaker = soundbutton:CreateTexture(nil, "BACKGROUND")
+            speaker:SetTexture("Interface\\Common\\VoiceChat-Speaker")
+            speaker:SetAllPoints(soundbutton)
+            frame.speaker = speaker
+            local speakeron = soundbutton:CreateTexture(nil, "HIGHLIGHT")
+            speakeron:SetTexture("Interface\\Common\\VoiceChat-On")
+            speakeron:SetAllPoints(soundbutton)
+            frame.speakeron = speakeron
+
             local text = frame:CreateFontString(nil, "OVERLAY", "GameFontWhite")
-
-            local font, size = text:GetFont()
-            text:SetFont(font, size, "OUTLINE")
-
-            text:SetPoint("TOPLEFT", frame, "TOPLEFT", 13, 0)
-            text:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -2, 0)
+            text:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, 0)
+            text:SetPoint("BOTTOMRIGHT", soundbutton, "BOTTOMLEFT", -2, 0)
             text:SetJustifyH("LEFT")
             text:SetText("Test Test Test Test Test Test Test")
             frame.text = text
@@ -110,11 +127,11 @@ do
     end
 
     local function SetList(self, list) -- Set the list of values for the dropdown (key => value pairs)
-        self.list = list
+        self.list = list or Media:HashTable("sound")
     end
 
-
     local function SetText(self, text) -- Set the text displayed in the box.
+        --self.frame.text:SetText(text or "")
         self.frame.dropButton.Text:SetText(text or "")
     end
 
@@ -136,8 +153,12 @@ do
         self.disabled = disabled
         if disabled then
             self.frame:Disable()
+            self.speaker:SetDesaturated(true)
+            self.speakeron:SetDesaturated(true)
         else
             self.frame:Enable()
+            self.speaker:SetDesaturated(false)
+            self.speakeron:SetDesaturated(false)
         end
     end
 
@@ -164,18 +185,13 @@ do
             for i, k in ipairs(sortedlist) do
                 local f = GetContentLine()
                 f.text:SetText(k)
-                --print(k)
                 if k == self.value then
                     --f.check:Show()
                     f.text:SetTextColor(1, .82, 0)
                 else
                     f.text:SetTextColor(1, 1, 1)
                 end
-
-                local statusbar = self.list[k] ~= k and self.list[k]
-                f.bar:SetAtlas(statusbar)
                 f.obj = self
-                f.dropdown = self.dropdown
                 self.dropdown:AddFrame(f)
             end
             wipe(sortedlist)
@@ -211,6 +227,12 @@ do
         this.obj:Fire("OnLeave")
     end
 
+    local function WidgetPlaySound(this)
+        local self = this.obj
+        local sound = self.frame.dropButton.Text:GetText()
+        PlaySoundFile(self.list[sound] ~= sound and self.list[sound] or Media:Fetch('sound', sound), "Master")
+    end
+
     local function Constructor()
         local frame = AGNW:GetBaseFrame()
         local self = {}
@@ -223,6 +245,27 @@ do
         frame.dropButton:SetScript("OnLeave", Drop_OnLeave)
         frame.dropButton:SetScript("OnClick", ToggleDrop)
         frame:SetScript("OnHide", OnHide)
+
+
+        local soundbutton = CreateFrame("Button", nil, frame)
+        soundbutton:SetWidth(16)
+        soundbutton:SetHeight(16)
+        soundbutton:SetFrameStrata("HIGH")
+        soundbutton:SetPoint("LEFT", frame.dropButton, "LEFT", 10, 0)
+        soundbutton:SetScript("OnClick", WidgetPlaySound)
+        soundbutton.obj = self
+        self.soundbutton = soundbutton
+        frame.dropButton.Text:SetPoint("LEFT", soundbutton, "RIGHT", 2, 0)
+
+
+        local speaker = soundbutton:CreateTexture(nil, "BACKGROUND")
+        speaker:SetTexture("Interface\\Common\\VoiceChat-Speaker")
+        speaker:SetAllPoints(soundbutton)
+        self.speaker = speaker
+        local speakeron = soundbutton:CreateTexture(nil, "HIGHLIGHT")
+        speakeron:SetTexture("Interface\\Common\\VoiceChat-On")
+        speakeron:SetAllPoints(soundbutton)
+        self.speakeron = speakeron
 
         self.alignoffset = 31
 
