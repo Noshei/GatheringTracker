@@ -1297,9 +1297,9 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
     local typeName = alertType .. "_" .. typeCount
     DB.order = order or DB.order
 
-    local Alert = GT.AlertSystem:GetAlert(itemData.id) or GT.AlertSystem:AddAlert(itemData.id)
-    local AlertType = Alert:AddAlertType(alertType, typeCount, (DB.triggerValue or 0))
-    local AlertFrame = AlertType:GetAlertFrame() or AlertType:CreateAlertFrame()
+    local Item = GT.AlertSystem:GetItem(itemData.id) or GT.AlertSystem:AddItem(itemData.id)
+    local Alert = Item:AddAlert(alertType, typeCount, (DB.triggerValue or 0))
+    local AlertFrame = Alert:GetAlertFrame() or Alert:CreateAlertFrame()
 
     alertOptions[typeName] = {
         type = "group",
@@ -1389,7 +1389,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                         key = 0
                     end
                     DB.triggerValue = tonumber(key)
-                    AlertType:SetAlertTypeTriggerValue(tonumber(key))
+                    Alert:SetAlertTypeTriggerValue(tonumber(key))
                 end,
                 order = 3
             },
@@ -1764,6 +1764,26 @@ function GT:CreateAlertOptions(itemData)
                 end,
                 order = 1
             },
+            removeItem = {
+                type = "execute",
+                name = "Remove Item",
+                desc = "Click to remove " .. itemData.name,
+                width = "normal",
+                confirm = true,
+                func = function()
+                    alertOptions[tostring(itemData.id)] = nil
+                    GT.db.profile.Alerts[itemData.id] = nil
+                    GT.AlertSystem:RemoveItem(itemData.id)
+                    AceConfigRegistry:NotifyChange(GT.metaData.name)
+                end,
+                disabled = function()
+                    if GT.db.profile.General.alertsEnable then
+                        return false
+                    end
+                    return true
+                end,
+                order = 2,
+            },
             addAlert = {
                 type = "execute",
                 name = "Add Alert",
@@ -1781,7 +1801,7 @@ function GT:CreateAlertOptions(itemData)
                     end
                     return false
                 end,
-                order = 2,
+                order = 3,
             },
         },
     }

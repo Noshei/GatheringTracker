@@ -126,42 +126,58 @@ function GT.AlertSystem:TriggerAlert(itemID, alertTable)
     GT.Debug("Trigger Alert", 2, itemID, alertTable.type, alertTable.index)
 end
 
-local function SetAlertTypeTriggerValue(self, value)
+---@param self Alert
+---@param value number
+local function SetAlertTriggerValue(self, value)
     self.triggerValue = value
 end
 
-local function SetAlertTypeTriggered(self, triggered)
+---@param self Alert
+---@param triggered boolean
+local function SetAlertTriggered(self, triggered)
     self.triggered = triggered
 end
+
 
 local function CreateAlertFrame(self)
 
 end
 
+
 local function GetAlertFrame(self)
 
 end
 
-local function AddAlertType(self, alertType, typeCount, triggerValue)
-    local AlertType = {}
-    AlertType.alertType = alertType
-    AlertType.typeCount = typeCount
-    AlertType.triggerValue = triggerValue
-    AlertType.triggered = false
+---@alias Alert table
+---@param self Alert
+---@param alertType string
+---@param typeCount number
+---@param triggerValue number
+---@return Alert
+local function AddAlert(self, alertType, typeCount, triggerValue)
+    local alert = {}
+    alert.alertType = alertType
+    alert.typeCount = typeCount
+    alert.triggerValue = triggerValue
+    alert.triggered = false
 
     -- Methods
-    AlertType.SetAlertTypeTriggerValue = SetAlertTypeTriggerValue
-    AlertType.SetAlertTypeTriggered = SetAlertTypeTriggered
-    AlertType.CreateAlertFrame = CreateAlertFrame
-    AlertType.GetAlertFrame = GetAlertFrame
+    alert.SetAlertTriggerValue = SetAlertTriggerValue
+    alert.SetAlertTriggered = SetAlertTriggered
+    alert.CreateAlertFrame = CreateAlertFrame
+    alert.GetAlertFrame = GetAlertFrame
 
     self[alertType] = self[alertType] or {}
-    self[alertType][typeCount] = AlertType
+    self[alertType][typeCount] = alert
 
-    return AlertType
+    return alert
 end
 
-local function GetAlertType(self, alertType, typeCount)
+---@param self Alert
+---@param alertType string
+---@param typeCount number
+---@return table|nil
+local function GetAlert(self, alertType, typeCount)
     if not self[alertType] then
         return nil
     end
@@ -171,28 +187,34 @@ local function GetAlertType(self, alertType, typeCount)
     return self[alertType][typeCount]
 end
 
-function GT.AlertSystem:AddAlert(itemID)
-    local alert = {}
+---@alias AlertItem table
+---@param itemID number
+---@return AlertItem
+function GT.AlertSystem:AddItem(itemID)
+    local item = {}
 
     -- Methods
-    alert.AddAlertType = AddAlertType
-    alert.GetAlertType = GetAlertType
+    item.AddAlert = AddAlert
+    item.GetAlert = GetAlert
 
-    GT.Alerts[itemID] = alert
+    GT.Alerts[itemID] = item
 
-    return alert
+    return item
 end
 
-function GT.AlertSystem:GetAlert(itemID)
+---@param itemID number
+---@return AlertItem|nil
+function GT.AlertSystem:GetItem(itemID)
     if not GT.Alerts[itemID] then
-        return nil
+        return
     end
     return GT.Alerts[itemID]
 end
 
-function GT.AlertSystem:RemoveAlert(itemID)
+---@param itemID number
+function GT.AlertSystem:RemoveItem(itemID)
     if not GT.Alerts[itemID] then
-        return nil
+        return
     end
     GT.Alerts[itemID] = nil
 end

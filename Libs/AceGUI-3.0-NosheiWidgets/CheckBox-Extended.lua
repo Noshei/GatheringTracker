@@ -96,7 +96,16 @@ local methods = {
         self:SetDescription(nil)
     end,
 
-    -- ["OnRelease"] = nil,
+    ["OnRelease"] = function(self)
+        if self.border then
+            self.border:SetTexture(nil)
+            self.border:SetAtlas(nil)
+        end
+        if self.overlay then
+            self.overlay:SetTexture(nil)
+            self.overlay:SetAtlas(nil)
+        end
+    end,
 
     ["OnWidthSet"] = function(self, width)
         if self.desc then

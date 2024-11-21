@@ -50,7 +50,7 @@ function GT:GenerateAlertsMenu(frame)
                                         alertItemData.quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemData.id)
                                     end
 
-                                    GT.AlertSystem:AddAlert(alertItemData)
+                                    GT.AlertSystem:AddItem(alertItemData.id)
                                     GT.db.profile.Alerts[alertItemData.id] = {}
                                     GT.db.profile.Alerts[alertItemData.id].enable = true
                                     GT.db.profile.Alerts[alertItemData.id].alerts = {}
@@ -153,7 +153,7 @@ function GT:GenerateAlertsMenu(frame)
                 GT.Debug("Item Button Clicked", 2, itemData.name)
                 local key = not IsSelected_Item()
                 if key then
-                    GT.AlertSystem:AddAlert(itemData)
+                    GT.AlertSystem:AddItem(itemData.id)
                     GT.db.profile.Alerts[itemData.id] = {}
                     GT.db.profile.Alerts[itemData.id].enable = true
                     GT.db.profile.Alerts[itemData.id].alerts = {}
@@ -213,7 +213,7 @@ function GT:CreateCustomFiltersAlertsList(frame, rootDescription)
             GT.Debug("Item Button Clicked", 2, itemData.name)
             local key = not IsSelected_CustomFilterItem()
             if key then
-                GT.AlertSystem:AddAlert(itemData)
+                GT.AlertSystem:AddItem(itemData.id)
                 GT.db.profile.Alerts[itemData.id] = {}
                 GT.db.profile.Alerts[itemData.id].enable = true
                 GT.db.profile.Alerts[itemData.id].alerts = {}
