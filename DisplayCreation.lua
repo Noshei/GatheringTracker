@@ -251,7 +251,6 @@ function GT:DisplayFrameHighlight(frame)
     frame.highlight = GT.Pools.texturePool:Acquire()
     frame.highlight:SetParent(frame)
     frame.highlight:SetDrawLayer("BACKGROUND", 7)
-    frame.highlight:SetAtlas("Looting_ItemCard_HighlightState")
     frame.highlight:SetAllPoints(frame)
     frame.highlight:Hide()
 end

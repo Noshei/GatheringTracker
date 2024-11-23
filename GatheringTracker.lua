@@ -212,6 +212,7 @@ function GT:ToggleBaseLock(key)
         frame:SetMovable(true)
         frame:EnableMouse(true)
         frame:SetMouseClickEnabled(true)
+        frame:SetSize(GT.baseFrame.frame:GetSize())
         frame:SetScript("OnMouseDown", function(self, button)
             if button == "LeftButton" and not self.isMoving then
                 self:StartMoving()
