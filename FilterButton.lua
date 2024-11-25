@@ -264,10 +264,11 @@ function GT:GenerateFiltersMenu(frame)
         --add Profiles to filterMenu
         GT:CreateProfilesList(frame, rootDescription)
 
-        GT.baseFrame.button.rootDescription = rootDescription
+        GT.baseFrame.menu.rootDescription = rootDescription
     end
 
-    GT.baseFrame.button.menu = MenuUtil.CreateContextMenu(frame, FiltersMenu)
+    GT.baseFrame.menu = GT.baseFrame.menu or {}
+    GT.baseFrame.menu = MenuUtil.CreateContextMenu(frame, FiltersMenu)
 end
 
 function GT:FiltersButtonFade(alpha)
@@ -441,7 +442,7 @@ function GT:CreateProfilesList(frame, rootDescription)
         local function SetSelected_Profile()
             GT.Debug("Profile Button Clicked", 2, name)
             GT.db:SetProfile(name)
-            GT.baseFrame.button.menu:Close()
+            GT.baseFrame.menu:Close()
         end
 
         frame["Profiles"][name] = frame["Profiles"]:CreateCheckbox(name, IsSelected_Profile, SetSelected_Profile)
