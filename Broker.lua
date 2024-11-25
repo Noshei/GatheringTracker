@@ -37,6 +37,7 @@ function GT:InitializeBroker()
             tooltip:AddLine(GT.metaData.name .. " |cffff6f00v" .. GT.metaData.version .. "|r")
             tooltip:AddLine(" ")
             tooltip:AddLine("|cff8080ffLeft-Click|r to open the Filter Menu")
+            tooltip:AddLine("|cff8080ffShift + Left-Click|r to reset Session")
             tooltip:AddLine("|cff8080ffRight-Click|r to open the addon options")
         end,
     })

@@ -138,9 +138,9 @@ local generalOptions = {
                         "Right Click opens the addon options.\n" ..
                         "Shift + Left Click resets Session Data.",
                     width = 1.70,
-                    get = function() return not GT.db.profile.miniMap.hide end,
+                    get = function() return GT.db.profile.miniMap.hide end,
                     set = function(_, key)
-                        GT.db.profile.miniMap.hide = not key
+                        GT.db.profile.miniMap.hide = key
                         GT:MinimapHandler(key)
                     end,
                     order = 3
@@ -1299,7 +1299,6 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
 
     local Item = GT.AlertSystem:GetItem(itemData.id) or GT.AlertSystem:AddItem(itemData.id)
     local Alert = Item:AddAlert(alertType, typeCount, (DB.triggerValue or 0))
-    local AlertFrame = Alert:GetAlertFrame() or Alert:CreateAlertFrame()
 
     alertOptions[typeName] = {
         type = "group",
@@ -1505,21 +1504,6 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             order = 103
         }
     elseif alertType == "Screen Flash" then
-        GT.Display.Alerts = GT.Display.Alerts or {}
-        if not GT.Display.Alerts.ScreenFlash then
-            local frame = CreateFrame("Frame", "GT_Alerts_ScreenFlash", GT.baseFrame.frame)
-            frame:SetPoint("CENTER")
-            frame:SetSize(GetScreenWidth(), GetScreenHeight())
-            frame:SetFrameStrata("TOOLTIP")
-
-            frame.texture = frame:CreateTexture("GT_Alerts_ScreenFlash_Texture")
-            frame.texture:SetTexture("Interface\\Addons\\GatheringTracker\\Media\\ScreenFlash")
-            frame.texture:SetAllPoints()
-            frame.texture:SetBlendMode("ADD")
-            frame.texture:Hide()
-
-            GT.Display.Alerts.ScreenFlash = frame
-        end
         alertOptions[typeName].args.flashDuration = {
             type = "range",
             dialogControl = "NW_Slider",
@@ -1567,19 +1551,8 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 102
         }
-    elseif alertType == "Text" then
-        GT.Display.Alerts = GT.Display.Alerts or {}
-        if not GT.Display.Alerts.TextPopup then
-            local frame = CreateFrame("Frame", "GT_Alerts_TextPopup", GT.baseFrame.frame)
-            frame:SetPoint("CENTER")
-            frame:SetFrameStrata("TOOLTIP")
-
-            frame.texture = frame:CreateFontString("GT_Alerts_TextPopup_Texture")
-            frame.texture:SetAllPoints()
-            frame.texture:Hide()
-
-            GT.Display.Alerts.TextPopup = frame
-        end
+        --removing text option for now, may revisit after Alerts is released
+        --[[elseif alertType == "Text" then
         alertOptions[typeName].args.textDuration = {
             type = "range",
             dialogControl = "NW_Slider",
@@ -1595,7 +1568,6 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 100
         }
-
         alertOptions[typeName].args.textColor = {
             type = "color",
             name = "Display Text Color",
@@ -1625,7 +1597,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 103
         }
-        alertOptions[typeName].args.flashPreview = {
+        alertOptions[typeName].args.textPreview = {
             type = "description",
             dialogControl = "NW_Label",
             name = function()
@@ -1647,7 +1619,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             width = "full",
             fontSize = "medium",
             order = 104
-        }
+        }]]
     end
     AceConfigRegistry:NotifyChange(GT.metaData.name)
 end
@@ -1663,9 +1635,9 @@ local function AlertTypeMenu(frame, itemData)
         rootDescription:CreateButton("Screen Flash", function()
             AddAlertType(itemData, "Screen Flash", 30)
         end)
-        rootDescription:CreateButton("Text", function()
+        --[[rootDescription:CreateButton("Text", function()
             AddAlertType(itemData, "Text", 40)
-        end)
+        end)]]
     end)
 end
 
@@ -2117,6 +2089,7 @@ function GT:RefreshConfig(event, db, profile)
         GT.db.profile.General.yPos
     )
 
+    GT:MinimapHandler(GT.db.profile.miniMap.hide)
     GT:RebuildIDTables()
     GT:ClearDisplay()
     GT:FiltersButton()
@@ -2212,14 +2185,16 @@ function GT:OnInitialize()
         GT:OnDisable()
     end
 
-    GT:InitializeBroker()
-
     --Pause Notifications to prevent spam after reloading the UI
     GT.NotificationPause = true
 
+    GT:InitializeBroker()
     GT:RebuildIDTables()
     GT:CreateBaseFrame()
+    GT:FiltersButton()
+    GT:InitializePools()
 
+    GT.AlertSystem:CreateAlertFrames()
     GT:InitializeAlertOptions("OnInitialize")
 
     GT.temp = generalOptions

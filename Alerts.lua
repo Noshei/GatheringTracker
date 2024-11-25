@@ -20,6 +20,51 @@ local unpack = unpack
 GT.AlertSystem = {}
 GT.Alerts = {}
 
+function GT.AlertSystem:CreateAlertFrames()
+    GT.Display.Alerts = GT.Display.Alerts or {}
+    local flash = CreateFrame("Frame", "GT_Alerts_ScreenFlash", GT.baseFrame.frame)
+    flash:SetPoint("CENTER")
+    flash:SetSize(GetScreenWidth(), GetScreenHeight())
+    flash:SetFrameStrata("TOOLTIP")
+
+    flash.texture = flash:CreateTexture("GT_Alerts_ScreenFlash_Texture")
+    flash.texture:SetTexture("Interface\\Addons\\GatheringTracker\\Media\\ScreenFlash")
+    flash.texture:SetAllPoints(flash)
+    flash.texture:SetBlendMode("ADD")
+    flash.texture:Hide()
+
+    GT.Display.Alerts.ScreenFlash = flash
+
+
+    --[[local text = CreateFrame("Frame", "GT_Alerts_TextPopup", GT.baseFrame.frame)
+    text:SetPoint("CENTER")
+    text:SetFrameStrata("TOOLTIP")
+
+    text.texture = text:CreateFontString("GT_Alerts_TextPopup_Texture")
+    text.texture:SetAllPoints(text)
+    text.texture:Hide()
+
+    text.mover = CreateFrame("Frame", "GT_Alerts_TextPopup_Mover", text, BackdropTemplateMixin and "BackdropTemplate")
+    text.mover:SetWidth(300)
+    text.mover:SetHeight(300)
+    text.mover:SetAllPoints(text)
+    text.mover:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = { left = 3, right = 3, top = 5, bottom = 3 },
+    })
+    text.mover:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+    text.mover:SetBackdropBorderColor(0.4, 0.4, 0.4)
+    text.mover:SetFrameStrata("FULLSCREEN_DIALOG")
+    text.mover:SetClampedToScreen(true)
+    text.mover:SetMouseClickEnabled(false)
+
+    GT.Display.Alerts.TextPopup = text]]
+end
+
 ---Entry point to the Alert System
 ---@param itemID number ID of the item to run the alert system for
 ---@param displayText table|number
@@ -126,6 +171,7 @@ function GT.AlertSystem:TriggerAlert(itemID, alertTable)
     GT.Debug("Trigger Alert", 2, itemID, alertTable.type, alertTable.index)
 end
 
+
 ---@param self Alert
 ---@param value number
 local function SetAlertTriggerValue(self, value)
@@ -136,16 +182,6 @@ end
 ---@param triggered boolean
 local function SetAlertTriggered(self, triggered)
     self.triggered = triggered
-end
-
-
-local function CreateAlertFrame(self)
-
-end
-
-
-local function GetAlertFrame(self)
-
 end
 
 ---@alias Alert table
@@ -164,8 +200,6 @@ local function AddAlert(self, alertType, typeCount, triggerValue)
     -- Methods
     alert.SetAlertTriggerValue = SetAlertTriggerValue
     alert.SetAlertTriggered = SetAlertTriggered
-    alert.CreateAlertFrame = CreateAlertFrame
-    alert.GetAlertFrame = GetAlertFrame
 
     self[alertType] = self[alertType] or {}
     self[alertType][typeCount] = alert

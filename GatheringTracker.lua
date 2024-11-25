@@ -171,9 +171,6 @@ function GT:CreateBaseFrame()
         backdrop = backdrop,
     }
     GT.baseFrame = baseFrame
-
-    GT:FiltersButton()
-    GT:InitializePools()
 end
 
 function GT:UpdateBaseFrameSize()
