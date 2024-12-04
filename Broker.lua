@@ -29,6 +29,8 @@ function GT:InitializeBroker()
                 GT:ResetSession()
             elseif button == "LeftButton" then
                 GT:GenerateFiltersMenu(frame)
+            elseif button == "RightButton" and IsShiftKeyDown() then
+                GT.AlertSystem:ResetAlerts()
             elseif button == "RightButton" then
                 Settings.OpenToCategory(GT.metaData.name, true)
             end
@@ -37,12 +39,15 @@ function GT:InitializeBroker()
             tooltip:AddLine(GT.metaData.name .. " |cffff6f00v" .. GT.metaData.version .. "|r")
             tooltip:AddLine(" ")
             tooltip:AddLine("|cff8080ffLeft-Click|r to open the Filter Menu")
+            tooltip:AddLine("|cff8080ffShift + Left-Click|r to reset Session")
             tooltip:AddLine("|cff8080ffRight-Click|r to open the addon options")
+            tooltip:AddLine("|cff8080ffShift + Right-Click|r to reset Alert Triggers")
         end,
     })
 
     -- Register with LibDBIcon
     LibDBIcon:Register(GT.metaData.name, dataObj, GT.db.profile.miniMap)
+    LibDBIcon:Hide(GT.metaData.name)
 end
 
 function GT:MinimapHandler(key)

@@ -37,6 +37,11 @@ local function FramePool_Resetter(framePool, frame)
         GT.Pools.texturePool:Release(frame.iconRarity)
         frame.iconRarity = nil
     end
+    if frame.highlight then
+        frame.highlight:SetVertexColor(1, 1, 1, 1)
+        GT.Pools.texturePool:Release(frame.highlight)
+        frame.highlight = nil
+    end
     if frame.text == nil then
         return
     end
@@ -112,6 +117,8 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     local frame = GT:DisplayFrameBase(id)
 
     GT.Display.Frames[id] = frame
+
+    GT:DisplayFrameHighlight(frame)
 
     GT:DisplayFrameIcon(frame, iconId, id)
 
@@ -238,6 +245,14 @@ function GT:DisplayFrameRarity(frame, iconRarity)
     frame.iconRarity:SetVertexColor(R, G, B, 0.8)
     frame.iconRarity:SetAllPoints(frame.icon)
     frame.iconRarity:Show()
+end
+
+function GT:DisplayFrameHighlight(frame)
+    frame.highlight = GT.Pools.texturePool:Acquire()
+    frame.highlight:SetParent(frame)
+    frame.highlight:SetDrawLayer("BACKGROUND", 7)
+    frame.highlight:SetAllPoints(frame)
+    frame.highlight:Hide()
 end
 
 function GT:DisplayFrameCounts(frame, id, text, index)

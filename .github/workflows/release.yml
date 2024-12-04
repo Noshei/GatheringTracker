@@ -4,11 +4,11 @@ name: Release AddOn # description of this workflow, can be anything you want
 on:
   push:
     tags:
-      - '**'
+      - "**"
 
 env:
-  #CF_API_KEY: ${{ secrets.CF_API_KEY }}
-  WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+  CF_API_KEY: ${{ secrets.CF_API_KEY }}
+  #WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
   WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
   # for github releases, this secret is automatically provided to the workflow
   GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
