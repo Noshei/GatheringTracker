@@ -7,6 +7,8 @@
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
 ## IconTexture: Interface\Addons\GatheringTracker\Media\GT_Icon
+## X-Curse-Project-ID: 406104
+## X-Wago-ID: Xb6XQbKp
 
 embeds.xml
 GatheringTracker.lua
@@ -14,7 +16,6 @@ DisplayCreation.lua
 DisplayCollapse.lua
 Utilities.lua
 FilterButton.lua
-NotificationHandler.lua
 Alerts.lua
 AlertsMenu.lua
 Constants.lua

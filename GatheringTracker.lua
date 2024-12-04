@@ -9,8 +9,6 @@ GT.Pools = {}
 GT.PlayerEnteringWorld = true
 GT.DebugCount = 0
 GT.Options = {}
-GT.Notifications = {}
-GT.NotificationPause = true
 GT.GlobalStartTime = 0
 
 -- Localize global functions
@@ -62,6 +60,8 @@ function GT:OnEnable()
             GT:RegisterEvent("PLAYER_REGEN_DISABLED")
             GT:RegisterEvent("PLAYER_REGEN_ENABLED")
         end
+
+        GT:MinimapHandler(GT.db.profile.miniMap.enable)
     else
         GT:OnDisable()
     end
@@ -97,8 +97,8 @@ function GT:PLAYER_ENTERING_WORLD()
     end
 
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
-    GT:wait(7, "NotificationHandler", "PLAYER_ENTERING_WORLD")
     GT:wait(7, "AnchorFilterButton", "PLAYER_ENTERING_WORLD")
+    GT:wait(8, "AllowAlertEffects", "AllowAlertEffects")
 end
 
 function GT:GROUP_ROSTER_UPDATE(event)
@@ -246,9 +246,6 @@ function GT:OptionsHide()
             GT.db.profile.General.unlock = false
             GT:ToggleBaseLock(false)
         end
-
-        --Pause Notifications to prevent spam after closing the settings
-        GT.NotificationPause = true
 
         --Do an inventory update if we dont have any information
         if #GT.InventoryData == 0 and GT.Enabled then
@@ -548,12 +545,6 @@ function GT:PrepareDataForDisplay(event, wait)
 
     GT:SetTSMPriceSource()
 
-    if not GT.NotificationPause then
-        GT.Debug("Trigger Notification Handler for all", 6)
-        local count, value = GT:CalculatePlayerTotal(true, GT.db.profile.General.sessionOnly)
-        GT:NotificationHandler("all", "all", count, value)
-    end
-
     GT:SetupItemRows()
 
     GT:SetupTotalsRow()
@@ -606,8 +597,6 @@ function GT:SetupItemRows()
                     iconQuality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemID)
                 end
 
-                GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem)
-
                 GT:InitiateFrameProcess(
                     itemID,
                     C_Item.GetItemIconByID(itemID),
@@ -619,6 +608,8 @@ function GT:SetupItemRows()
                     itemsPerHour,
                     goldPerHour
                 )
+
+                GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem)
             elseif GT.Display.Frames[itemID] then
                 GT:RemoveDiaplayRow(itemID)
             end
@@ -725,6 +716,7 @@ function GT:SetupTotalsRow()
             itemsPerHour,
             goldPerHour
         )
+        GT.AlertSystem:Alerts(2, playerTotals, priceTotal)
     elseif GT.Display.Frames[9999999998] then
         GT:RemoveDiaplayRow(9999999998)
     end
@@ -834,12 +826,6 @@ function GT:ProcessData(event)
                 GT.db.profile.General.includeReagent,
                 GT.db.profile.General.includeWarband
             )
-        end
-
-        if event and (event == "InventoryUpdate" or event == "BAG_UPDATE") and itemCount > 0 then
-            GT.Debug("Trigger Notification Handler for each", 5)
-            GT.NotificationPause = false
-            GT:NotificationHandler("each", data.id, itemCount)
         end
 
         GT.InventoryData[data.id] = GT.InventoryData[data.id] or GT:ItemDataConstructor(data.id)

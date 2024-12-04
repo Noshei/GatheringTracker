@@ -2,12 +2,6 @@
     <Binding name="Toggle Gathering Tracker" category="Gathering Tracker">
         GatheringTracker:ToggleGatheringTracker()
     </Binding>
-    <Binding name="Toggle Count Notifications" category="Gathering Tracker">
-        GatheringTracker:ToggleCountNotifications()
-    </Binding>
-    <Binding name="Toggle Gold Notifications" category="Gathering Tracker">
-        GatheringTracker:ToggleGoldNotifications()
-    </Binding>
     <Binding name="Clear Filters" category="Gathering Tracker">
         GatheringTracker:ClearFilters()
     </Binding>

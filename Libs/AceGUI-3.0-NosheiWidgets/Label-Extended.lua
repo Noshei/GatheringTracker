@@ -121,7 +121,7 @@ local methods = {
         if imageType == "texture" then
             image:SetTexture(path)
         else
-            image:SetAtlas(path, true)
+            image:SetAtlas(path, false)
         end
 
         if image:GetTexture() then

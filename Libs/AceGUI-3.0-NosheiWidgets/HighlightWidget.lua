@@ -173,7 +173,7 @@ do
                 end
 
                 local statusbar = self.list[k] ~= k and self.list[k]
-                f.bar:SetAtlas(statusbar)
+                f.bar:SetTexture(statusbar)
                 f.obj = self
                 f.dropdown = self.dropdown
                 self.dropdown:AddFrame(f)

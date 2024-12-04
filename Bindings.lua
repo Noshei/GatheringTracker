@@ -32,18 +32,6 @@ function GT:ToggleGatheringTracker()
     end
 end
 
-function GT:ToggleCountNotifications()
-    GT.Debug("Toggle Count Notifications", 1, GT.db.profile.Notifications.Count.enable)
-    local key = not GT.db.profile.Notifications.Count.enable
-    GT.db.profile.Notifications.Count.enable = key
-end
-
-function GT:ToggleGoldNotifications()
-    GT.Debug("Toggle Gold Notifications", 1, GT.db.profile.Notifications.Gold.enable)
-    local key = not GT.db.profile.Notifications.Gold.enable
-    GT.db.profile.Notifications.Gold.enable = key
-end
-
 function GT:ClearFilters()
     --disables all enabled filters
     GT.Debug("Clear Filters", 1)
@@ -61,13 +49,17 @@ end
 
 function GT:ResetSession()
     --resets the per hour displays to current time and values
-    GT.Debug("Reset Per Hour", 1)
+    GT.Debug("Reset Session", 1)
 
     GT.GlobalStartTime = time()
     for itemID, itemData in pairs(GT.InventoryData) do
         itemData.startTime = time()
         itemData.startAmount = itemData.count
         itemData.sessionCount = 0
+    end
+
+    if GT.db.profile.General.sessionOnly then
+        GT.AlertSystem:ResetAlerts()
     end
 
     GT:RefreshPerHourDisplay(false, true)

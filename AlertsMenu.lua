@@ -55,7 +55,7 @@ function GT:GenerateAlertsMenu(frame)
                                     GT.db.profile.Alerts[alertItemData.id].enable = true
                                     GT.db.profile.Alerts[alertItemData.id].alerts = {}
                                     GT.db.profile.Alerts[itemData.id].itemData = alertItemData
-                                    GT:InitializeAlertOptions("Menu_" .. alertItemData.name .. "_clicked", alertItemData)
+                                    GT:CreateAlertOptions(alertItemData)
                                 else
                                     GT.db.profile.Alerts[itemData.id] = nil
                                     GT:RemoveItemAlerts(itemData.id)
@@ -158,7 +158,7 @@ function GT:GenerateAlertsMenu(frame)
                     GT.db.profile.Alerts[itemData.id].enable = true
                     GT.db.profile.Alerts[itemData.id].alerts = {}
                     GT.db.profile.Alerts[itemData.id].itemData = itemData
-                    GT:InitializeAlertOptions("Menu_" .. itemData.name .. "_clicked", itemData)
+                    GT:CreateAlertOptions(itemData)
                 else
                     GT.db.profile.Alerts[itemData.id] = nil
                     GT:RemoveItemAlerts(itemData.id)
@@ -171,6 +171,7 @@ function GT:GenerateAlertsMenu(frame)
         GT.AlertSystem.Menu.rootDescription = rootDescription
     end
 
+    ---@class GT.AlertSystem.menu: MenuProxy
     GT.AlertSystem.Menu = MenuUtil.CreateContextMenu(frame, AlertsMenu)
 end
 
@@ -218,7 +219,7 @@ function GT:CreateCustomFiltersAlertsList(frame, rootDescription)
                 GT.db.profile.Alerts[itemData.id].enable = true
                 GT.db.profile.Alerts[itemData.id].alerts = {}
                 GT.db.profile.Alerts[itemData.id].itemData = itemData
-                GT:InitializeAlertOptions("Menu_" .. itemData.name .. "_clicked", itemData)
+                GT:CreateAlertOptions(itemData)
             else
                 GT.db.profile.Alerts[itemData.id] = nil
                 GT:RemoveItemAlerts(itemData.id)

@@ -13,6 +13,7 @@ local table = table
 local time = time
 local tonumber = tonumber
 local tostring = tostring
+local tostringall = tostringall
 local type = type
 local unpack = unpack
 

@@ -70,6 +70,8 @@ function GT:FiltersButton()
             GT:ResetSession()
         elseif button == "LeftButton" then
             GT:GenerateFiltersMenu(self)
+        elseif button == "RightButton" and IsShiftKeyDown() then
+            GT.AlertSystem:ResetAlerts()
         elseif button == "RightButton" then
             GT:ClearFilters()
         end
@@ -267,6 +269,7 @@ function GT:GenerateFiltersMenu(frame)
         GT.baseFrame.menu.rootDescription = rootDescription
     end
 
+    ---@class GT.baseFrame.menu: MenuProxy
     GT.baseFrame.menu = GT.baseFrame.menu or {}
     GT.baseFrame.menu = MenuUtil.CreateContextMenu(frame, FiltersMenu)
 end

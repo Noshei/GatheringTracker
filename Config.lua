@@ -67,22 +67,6 @@ GT.defaults = {
             itemTooltip = false,
             alertsEnable = false,
         },
-        Notifications = {
-            Count = {
-                enable = false,
-                threshold = "100",
-                itemAll = 1,
-                interval = 1,
-                sound = "Auction Window Close"
-            },
-            Gold = {
-                enable = false,
-                threshold = "1000",
-                itemAll = 1,
-                interval = 1,
-                sound = "Auction Window Open"
-            },
-        },
         Alerts = {
         },
         Filters = {
@@ -91,7 +75,7 @@ GT.defaults = {
         CustomFiltersTable = {
         },
         miniMap = {
-            hide = true,
+            enable = false,
         },
     },
 }
@@ -134,13 +118,14 @@ local generalOptions = {
                     dialogControl = "NW_CheckBox",
                     name = "Minimap Button",
                     desc = "Enable this to show the minimap button.\n" ..
-                        "Left Click shows filters menu.\n" ..
-                        "Right Click opens the addon options.\n" ..
-                        "Shift + Left Click resets Session Data.",
+                        "|cff8080ffLeft Click|r shows filters menu.\n" ..
+                        "|cff8080ffRight Click|r opens the addon options.\n" ..
+                        "|cff8080ffShift + Left Click|r resets Session Data.\n" ..
+                        "|cff8080ffShift + Right-Click|r to reset Alert Triggers",
                     width = 1.70,
-                    get = function() return GT.db.profile.miniMap.hide end,
+                    get = function() return GT.db.profile.miniMap.enable end,
                     set = function(_, key)
-                        GT.db.profile.miniMap.hide = key
+                        GT.db.profile.miniMap.enable = key
                         GT:MinimapHandler(key)
                     end,
                     order = 3
@@ -967,248 +952,6 @@ local generalOptions = {
                 },
             },
         },
-        Notifications = {
-            type = "group",
-            name = "Notifications",
-            order = 3,
-            args = {
-                header1 = {
-                    type = "header",
-                    name = "Count Notification",
-                    order = 1
-                },
-                countEnable = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Enable Count Notification",
-                    desc = "Check to enable Count notification.",
-                    width = "full",
-                    get = function() return GT.db.profile.Notifications.Count.enable end,
-                    set = function(_, key)
-                        GT:ToggleCountNotifications()
-                    end,
-                    order = 2
-                },
-                countSound = {
-                    type = "select",
-                    dialogControl = "NW_Sound",
-                    name = "Alert Sound",
-                    desc = "The sound that plays when the notification is triggered.\nDefault: Auction Window Close",
-                    width = 1.40,
-                    values = media:HashTable("sound"),
-                    get = function() return GT.db.profile.Notifications.Count.sound end,
-                    set = function(_, key) GT.db.profile.Notifications.Count.sound = key end,
-                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
-                    order = 3
-                },
-                spacer1 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 4
-                },
-                countThreshold = {
-                    type = "input",
-                    name = "Count Threshold",
-                    width = "Normal",
-                    usage = "Enter threshold for alert\n\nDefault: 100",
-                    validate = function(_, key)
-                        if not (string.match(key, "[%d]+") or key == '') then
-                            return false
-                        end
-                        return true
-                    end,
-                    get = function() return GT.db.profile.Notifications.Count.threshold end,
-                    set = function(_, key)
-                        if key == '' or key == nil then
-                            key = '0'
-                        end
-                        GT.db.profile.Notifications.Count.threshold = key
-                    end,
-                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
-                    order = 5
-                },
-                countItemAll = {
-                    type = "select",
-                    dialogControl = "NW_Dropdown",
-                    name = "Notify for each item, all items, or both",
-                    desc = "This controls if the notification triggers when each filtered item hits the threshold" ..
-                        ", when all items hits the threshold, or both.\n\n" ..
-                        "Default: All Items",
-                    width = 1.40,
-                    values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
-                    get = function() return GT.db.profile.Notifications.Count.itemAll end,
-                    set = function(_, key) GT.db.profile.Notifications.Count.itemAll = key end,
-                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
-                    order = 6
-                },
-                spacer2 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 7
-                },
-                countInterval = {
-                    type = "select",
-                    dialogControl = "NW_Dropdown",
-                    name = "Exact or Interval",
-                    desc = "This controls if the notification only triggers when exceeding the exact threshold" ..
-                        ", an interval of the threshold, or both.\n" ..
-                        "For an Example, if the threshold is 100:\n" ..
-                        "Exact: only triggers once after exceeding 100\n" ..
-                        "Interval: Triggers after exceeding 100, 200, 300, etc\n\n" ..
-                        "Default: Exact",
-                    width = 1.40,
-                    values = { [0] = "Exact", [1] = "Interval" },
-                    get = function() return GT.db.profile.Notifications.Count.interval end,
-                    set = function(_, key) GT.db.profile.Notifications.Count.interval = key end,
-                    disabled = function() return not GT.db.profile.Notifications.Count.enable end,
-                    order = 8
-                },
-
-                --Gold Notification Settings
-                header2 = {
-                    type = "header",
-                    name = "Gold Notification",
-                    order = 101
-                },
-                goldEnable = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Enable Gold Notification",
-                    desc = "Check to enable gold notification.\n\nRequires TSM.",
-                    width = "full",
-                    get = function() return GT.db.profile.Notifications.Gold.enable end,
-                    set = function(_, key)
-                        GT:ToggleGoldNotifications()
-                    end,
-                    disabled = function()
-                        if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                            return true
-                        else
-                            return false
-                        end
-                    end,
-                    order = 102
-                },
-                goldSound = {
-                    type = "select",
-                    dialogControl = "NW_Sound",
-                    name = "Alert Sound",
-                    desc = "The sound that plays when the notification is triggered.\nDefault: Auction Window Open",
-                    width = 1.40,
-                    values = media:HashTable("sound"),
-                    get = function() return GT.db.profile.Notifications.Gold.sound end,
-                    set = function(_, key) GT.db.profile.Notifications.Gold.sound = key end,
-                    disabled = function()
-                        if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                                return true
-                            else
-                                return false
-                            end
-                        else
-                            return true
-                        end
-                    end,
-                    order = 103
-                },
-                spacer3 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 104
-                },
-                goldThreshold = {
-                    type = "input",
-                    name = "Gold Threshold",
-                    width = "Normal",
-                    usage = "Enter threshold for alert in gold value\n\nDefault: 1000",
-                    validate = function(_, key)
-                        if not (string.match(key, "[%d]+") or key == '') then
-                            return false
-                        end
-                        return true
-                    end,
-                    get = function() return GT.db.profile.Notifications.Gold.threshold end,
-                    set = function(_, key)
-                        if key == '' or key == nil then
-                            key = '0'
-                        end
-                        GT.db.profile.Notifications.Gold.threshold = key
-                    end,
-                    disabled = function()
-                        if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                                return true
-                            else
-                                return false
-                            end
-                        else
-                            return true
-                        end
-                    end,
-                    order = 105
-                },
-                goldItemAll = {
-                    type = "select",
-                    dialogControl = "NW_Dropdown",
-                    name = "Notify for each item, all items, or both",
-                    desc = "This controls if the notification triggers when each filtered item hits the threshold" ..
-                        ", when all items hits the threshold, or both.\n\n" ..
-                        "Default: All Items",
-                    width = 1.40,
-                    values = { [0] = "Each Item", [1] = "All Items", [2] = "Both" },
-                    get = function() return GT.db.profile.Notifications.Gold.itemAll end,
-                    set = function(_, key) GT.db.profile.Notifications.Gold.itemAll = key end,
-                    disabled = function()
-                        if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                                return true
-                            else
-                                return false
-                            end
-                        else
-                            return true
-                        end
-                    end,
-                    order = 106
-                },
-                spacer4 = {
-                    type = "description",
-                    name = " ",
-                    width = 0.3,
-                    order = 107
-                },
-                goldInterval = {
-                    type = "select",
-                    dialogControl = "NW_Dropdown",
-                    name = "Exact or Interval",
-                    desc = "This controls if the notification only triggers when exceeding the exact threshold" ..
-                        ", an interval of the threshold, or both.\n" ..
-                        "For an Example, if the threshold is 100:\n" ..
-                        "Exact: only triggers once after exceeding 100\n" ..
-                        "Interval: Triggers after exceeding 100, 200, 300, etc\n\n" ..
-                        "Default: Exact",
-                    width = 1.40,
-                    values = { [0] = "Exact", [1] = "Interval" },
-                    get = function() return GT.db.profile.Notifications.Gold.interval end,
-                    set = function(_, key) GT.db.profile.Notifications.Gold.interval = key end,
-                    disabled = function()
-                        if GT.db.profile.Notifications.Gold.enable then
-                            if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
-                                return true
-                            else
-                                return false
-                            end
-                        else
-                            return true
-                        end
-                    end,
-                    order = 108
-                },
-            }
-        },
         Alerts = {
             type = "group",
             name = "Alerts",
@@ -1227,7 +970,7 @@ local generalOptions = {
                     end,
                     order = 101,
                 },
-                addAlert = {
+                addItem = {
                     type = "execute",
                     name = "Select Item for Alerts",
                     desc = "Click to select what item to enable for Alerts.",
@@ -1285,22 +1028,28 @@ local generalOptions = {
     }
 }
 
-local function AddAlertType(itemData, alertType, order, alertIndex)
-    GT.Debug("AddAlertType", 4, itemData.id, itemData.name, alertType, order, alertIndex)
-    local alertOptions = generalOptions.args.Alerts.args[tostring(itemData.id)].args
-    GT.db.profile.Alerts[itemData.id].alerts[alertType] = GT.db.profile.Alerts[itemData.id].alerts[alertType] or {}
+local function InitializeAlert(Item, alertType, typeCount, DB)
+    local Alert = Item:AddAlert(alertType, typeCount, DB.triggerValue)
+    Alert:SetEnabled(DB.enable)
+    Alert:SetTriggerType(DB.triggerType)
+    Alert:SetTriggerMultiple(DB.triggerMultiple)
+    Alert:SetTriggerMultiplier(DB.triggerValue)
+    if alertType == "Audio" then
+        Alert:SetAlertSettings({ tiggerSound = DB.tiggerSound or "Auction Window Open" })
+    elseif alertType == "Highlight" then
+        Alert:SetAlertSettings({ highlightBorder = DB.highlightBorder, highlightColor = DB.highlightColor })
+    elseif alertType == "Screen Flash" then
+        Alert:SetAlertSettings({ flashDuration = DB.flashDuration, flashColor = DB.flashColor })
+    end
 
-    local typeCount = alertIndex or (#GT.db.profile.Alerts[itemData.id].alerts[alertType] + 1)
-    GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] = GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] or {}
+    return Alert
+end
 
+local function GetAlertOptionsTable(itemData, alertType, typeCount, Item, Alert)
     local DB = GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount]
     local typeName = alertType .. "_" .. typeCount
-    DB.order = order or DB.order
 
-    local Item = GT.AlertSystem:GetItem(itemData.id) or GT.AlertSystem:AddItem(itemData.id)
-    local Alert = Item:AddAlert(alertType, typeCount, (DB.triggerValue or 0))
-
-    alertOptions[typeName] = {
+    local options = {
         type = "group",
         name = alertType .. " Alert " .. typeCount,
         order = DB.order + typeCount,
@@ -1332,6 +1081,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                 end,
                 set = function(_, key)
                     DB.enable = key
+                    Alert:SetEnabled(key)
                 end,
                 disabled = function()
                     if not GT.db.profile.General.alertsEnable then
@@ -1351,10 +1101,23 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                 width = "normal",
                 confirm = true,
                 func = function()
+                    local alertOptions = generalOptions.args.Alerts.args[tostring(itemData.id)].args
+                    local alertTypeCount = #GT.db.profile.Alerts[itemData.id].alerts[alertType]
                     alertOptions[typeName] = nil
-                    GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount] = nil
+                    table.remove(GT.db.profile.Alerts[itemData.id].alerts[alertType], typeCount)
                     if #GT.db.profile.Alerts[itemData.id].alerts[alertType] == 0 then
                         GT.db.profile.Alerts[itemData.id].alerts[alertType] = nil
+                    end
+
+                    Item:RemoveAlert(Alert)
+
+                    if typeCount < alertTypeCount then
+                        for index = typeCount + 1, alertTypeCount do
+                            local alertToUpdate = Item:GetAlert(alertType, index)
+                            alertToUpdate:SetTypeCount(index - 1)
+                            alertOptions[alertType .. "_" .. index] = nil
+                            alertOptions[alertType .. "_" .. (index - 1)] = GetAlertOptionsTable(itemData, alertType, (index - 1), Item, Alert)
+                        end
                     end
                     AceConfigRegistry:NotifyChange(GT.metaData.name)
                 end,
@@ -1382,13 +1145,13 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                     end
                     return true
                 end,
-                get = function() return tostring(DB.triggerValue or 0) end,
+                get = function() return tostring(DB.triggerValue) end,
                 set = function(_, key)
                     if key == '' or key == nil then
                         key = 0
                     end
                     DB.triggerValue = tonumber(key)
-                    Alert:SetAlertTypeTriggerValue(tonumber(key))
+                    Alert:SetTriggerValue(tonumber(key))
                 end,
                 order = 3
             },
@@ -1409,6 +1172,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                 get = function() return DB.triggerType end,
                 set = function(_, key)
                     DB.triggerType = key
+                    Alert:SetTriggerType(key)
                 end,
                 order = 4
             },
@@ -1422,16 +1186,15 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
                 get = function() return DB.triggerMultiple end,
                 set = function(_, key)
                     DB.triggerMultiple = key
-                    if not DB.triggerValueMultiple then
-                        DB.triggerValueMultiple = DB.triggerValue or 0
-                    end
+                    Alert:SetTriggerMultiple(key)
+                    Alert:SetTriggerMultiplier(DB.triggerValue)
                 end,
                 order = 5
             },
         },
     }
     if alertType == "Audio" then
-        alertOptions[typeName].args.tiggerSound = {
+        options.args.tiggerSound = {
             type = "select",
             dialogControl = "NW_Sound",
             name = "Alert Sound",
@@ -1448,63 +1211,65 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             set = function(_, key)
                 DB.tiggerSound = key
+                Alert:SetAlertSettings({ tiggerSound = DB.tiggerSound })
             end,
             order = 100
         }
     elseif alertType == "Highlight" then
-        alertOptions[typeName].args.highlightBorder = {
+        options.args.highlightBorder = {
             type = "select",
             dialogControl = "NW_Highlight",
             name = "Highlight Texture",
             desc = "The highlight texture that is displayed when an the alert is triggered.",
             width = "Normal",
             values = {
-                ["Border 1"] = "Looting_ItemCard_HighlightState",
-                ["Border 2"] = "ClickCastList-ButtonHighlight",
-                ["Top/Bottom 1"] = "Adventures_MissionList_Highlight",
-                ["Top/Bottom 2"] = "search-highlight-large",
+                ["Border 1"] = "Interface\\Addons\\GatheringTracker\\Media\\border1",
+                ["Border 2"] = "Interface\\Addons\\GatheringTracker\\Media\\border2",
+                ["Top/Bottom 1"] = "Interface\\Addons\\GatheringTracker\\Media\\border3",
+                ["Top/Bottom 2"] = "Interface\\Addons\\GatheringTracker\\Media\\border4",
             },
-            get = function() return DB.highlightBorder or "Border 1" end,
+            get = function() return DB.highlightBorder end,
             set = function(_, key)
                 DB.highlightBorder = key
-                --AceConfigRegistry:NotifyChange(GT.metaData.name)
+                Alert:SetAlertSettings({ highlightBorder = DB.highlightBorder, highlightColor = DB.highlightColor })
             end,
             order = 101
         }
-        alertOptions[typeName].args.highlightColor = {
+        options.args.highlightColor = {
             type = "color",
             name = "Highlight Color",
             width = "Normal",
             hasAlpha = true,
             get = function()
-                local c = DB.highlightColor or { 1, 1, 1, 1 }
+                local c = DB.highlightColor
                 return c[1], c[2], c[3], c[4]
             end,
             set = function(_, r, g, b, a)
                 DB.highlightColor = { r, g, b, a }
+                Alert:SetAlertSettings({ highlightBorder = DB.highlightBorder, highlightColor = DB.highlightColor })
                 AceConfigRegistry:NotifyChange(GT.metaData.name)
             end,
             order = 102
         }
-        alertOptions[typeName].args.highlightPreview = {
+        options.args.highlightPreview = {
             type = "description",
             dialogControl = "NW_Label",
             name = "",
             width = "Normal",
             image = function()
-                local atlas = GT.HighlightTextures[DB.highlightBorder or "Border 1"].atlas
+                local atlas = GT.HighlightTextures[DB.highlightBorder].atlas
                 return atlas, 108, 27
             end,
             imageCoords = function()
                 local data = {}
-                table.insert(data, "atlas")
-                table.insert(data, DB.highlightColor or { 1, 1, 1, 1 })
+                table.insert(data, "texture")
+                table.insert(data, DB.highlightColor)
                 return data
             end,
             order = 103
         }
     elseif alertType == "Screen Flash" then
-        alertOptions[typeName].args.flashDuration = {
+        options.args.flashDuration = {
             type = "range",
             dialogControl = "NW_Slider",
             name = "Screen Flash Duration",
@@ -1513,28 +1278,30 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             softMax = 10,
             step = 0.1,
             width = "Normal",
-            get = function() return DB.flashDuration or 1 end,
+            get = function() return DB.flashDuration end,
             set = function(_, key)
                 DB.flashDuration = key
+                Alert:SetAlertSettings({ flashDuration = DB.flashDuration, flashColor = DB.flashColor })
             end,
             order = 100
         }
-        alertOptions[typeName].args.flashColor = {
+        options.args.flashColor = {
             type = "color",
             name = "Screen Flash Color",
             width = "Normal",
             hasAlpha = true,
             get = function()
-                local c = DB.flashColor or { 1, 0, 0, 1 }
+                local c = DB.flashColor
                 return unpack(c)
             end,
             set = function(_, r, g, b, a)
                 DB.flashColor = { r, g, b, a }
+                Alert:SetAlertSettings({ flashDuration = DB.flashDuration, flashColor = DB.flashColor })
                 AceConfigRegistry:NotifyChange(GT.metaData.name)
             end,
             order = 101
         }
-        alertOptions[typeName].args.flashPreview = {
+        options.args.flashPreview = {
             type = "description",
             dialogControl = "NW_Label",
             name = "",
@@ -1546,14 +1313,14 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             imageCoords = function()
                 local data = {}
                 table.insert(data, "texture")
-                table.insert(data, DB.flashColor or { 1, 0, 0, 1 })
+                table.insert(data, DB.flashColor)
                 return data
             end,
             order = 102
         }
         --removing text option for now, may revisit after Alerts is released
         --[[elseif alertType == "Text" then
-        alertOptions[typeName].args.textDuration = {
+        options.args.textDuration = {
             type = "range",
             dialogControl = "NW_Slider",
             name = "Display Text Duration",
@@ -1568,7 +1335,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 100
         }
-        alertOptions[typeName].args.textColor = {
+        options.args.textColor = {
             type = "color",
             name = "Display Text Color",
             width = "Normal",
@@ -1582,7 +1349,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 101
         }
-        alertOptions[typeName].args.textString = {
+        options.args.textString = {
             type = "input",
             name = "Display Text",
             width = "full",
@@ -1597,7 +1364,7 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             end,
             order = 103
         }
-        alertOptions[typeName].args.textPreview = {
+        options.args.textPreview = {
             type = "description",
             dialogControl = "NW_Label",
             name = function()
@@ -1621,79 +1388,109 @@ local function AddAlertType(itemData, alertType, order, alertIndex)
             order = 104
         }]]
     end
+
+    return options
+end
+
+local function AddAlertConfig(itemData, Item, alertType, alertIndex)
+    GT.Debug("AddAlertConfig", 4, itemData.id, itemData.name, alertType, alertIndex)
+    local alertOptions = generalOptions.args.Alerts.args[tostring(itemData.id)].args
+    local typeCount = alertIndex or #GT.db.profile.Alerts[itemData.id].alerts[alertType]
+    local DB = GT.db.profile.Alerts[itemData.id].alerts[alertType][typeCount]
+    local typeName = alertType .. "_" .. typeCount
+
+    local Alert = InitializeAlert(Item, alertType, typeCount, DB)
+
+    alertOptions[typeName] = GetAlertOptionsTable(itemData, alertType, typeCount, Item, Alert)
     AceConfigRegistry:NotifyChange(GT.metaData.name)
 end
 
-local function AlertTypeMenu(frame, itemData)
+local function SetupAlertDefaults(itemData, data)
+    GT.db.profile.Alerts[itemData.id].alerts[data[1]] = GT.db.profile.Alerts[itemData.id].alerts[data[1]] or {}
+    local typeCount = #GT.db.profile.Alerts[itemData.id].alerts[data[1]] + 1
+    GT.db.profile.Alerts[itemData.id].alerts[data[1]][typeCount] = {
+        enable = true,
+        order = data[2],
+        triggerValue = 0,
+        triggerType = 1,
+        triggerMultiple = false,
+    }
+    local DB = GT.db.profile.Alerts[itemData.id].alerts[data[1]][typeCount]
+
+    if data[1] == "Audio" then
+        DB.tiggerSound = "Auction Window Open"
+    elseif data[1] == "Highlight" then
+        DB.highlightBorder = "Border 1"
+        DB.highlightColor = { 1, 1, 1, 1 }
+    elseif data[1] == "Screen Flash" then
+        DB.flashDuration = 3
+        DB.flashColor = { 1, 0, 0, 1 }
+    end
+end
+
+local function AlertMenu(frame, itemData, Item)
     MenuUtil.CreateContextMenu(frame, function(ownerRegion, rootDescription)
-        rootDescription:CreateButton("Audio", function()
-            AddAlertType(itemData, "Audio", 10)
-        end)
-        rootDescription:CreateButton("Highlight", function()
-            AddAlertType(itemData, "Highlight", 20)
-        end)
-        rootDescription:CreateButton("Screen Flash", function()
-            AddAlertType(itemData, "Screen Flash", 30)
-        end)
-        --[[rootDescription:CreateButton("Text", function()
-            AddAlertType(itemData, "Text", 40)
-        end)]]
+        local function OnClick(data)
+            SetupAlertDefaults(itemData, data)
+            AddAlertConfig(itemData, Item, data[1])
+        end
+        rootDescription:CreateButton("Audio", OnClick, { "Audio", 10 })
+        rootDescription:CreateButton("Highlight", OnClick, { "Highlight", 20 })
+        rootDescription:CreateButton("Screen Flash", OnClick, { "Screen Flash", 30 })
     end)
+end
+
+local function AddAlertsFromDB(itemData)
+    if not GT.db.profile.Alerts[itemData.id].alerts then
+        return
+    end
+
+    for type, alerts in pairs(GT.db.profile.Alerts[itemData.id].alerts) do
+        local Item = GT.AlertSystem:GetItem(itemData.id)
+        for index, alertData in ipairs(alerts) do
+            AddAlertConfig(itemData, Item, type, index)
+        end
+    end
 end
 
 function GT:InitializeAlertOptions(event, itemData)
     GT.Debug("Initialize Alert Options", 1, event, itemData)
     if event == "Refresh Config" then
         for name, data in pairs(generalOptions.args.Alerts.args) do
-            if name ~= "addAlert" and name ~= "alertsEnable" then
+            if name ~= "addItem" and name ~= "alertsEnable" then
                 generalOptions.args.Alerts.args[name] = nil
             end
         end
     end
-    if itemData then
-        GT:CreateAlertOptions(itemData)
-    else
-        for id, data in pairs(GT.db.profile.Alerts) do
-            local itemData = {}
-            local function AddAlertsForItem()
-                if GT.db.profile.Alerts[id].alerts then
-                    for type, alerts in pairs(GT.db.profile.Alerts[id].alerts) do
-                        for index, alertData in ipairs(alerts) do
-                            AddAlertType(itemData, type, nil, index)
-                        end
-                    end
-                end
-            end
-            if id > 2 then
-                GT.Debug("Create Alerts Table", 2, "Normal Item", id)
-                local item = Item:CreateFromItemID(id)
-                item:ContinueOnItemLoad(function()
-                    local itemInfo = { C_Item.GetItemInfo(id) }
-                    itemData = {
-                        id = id,
-                        name = itemInfo[1],
-                        icon = itemInfo[10],
-                        rarity = itemInfo[3],
-                    }
-                    if GT.gameVersion == "retail" then
-                        itemData.quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(id)
-                    end
-                    GT:CreateAlertOptions(itemData)
-                    AddAlertsForItem()
-                end)
-            else
-                GT.Debug("Create Alerts Table", 2, "Special Item", id)
+
+    for id, data in pairs(GT.db.profile.Alerts) do
+        local itemData = {}
+        if id > 2 then
+            GT.Debug("Create Alerts Table", 2, "Normal Item", id)
+            local item = Item:CreateFromItemID(id)
+            item:ContinueOnItemLoad(function()
+                local itemInfo = { C_Item.GetItemInfo(id) }
                 itemData = {
                     id = id,
+                    name = itemInfo[1],
+                    icon = itemInfo[10],
+                    rarity = itemInfo[3],
                 }
-                if id == 1 then
-                    itemData["name"] = "All Items"
-                elseif id == 2 then
-                    itemData["name"] = "Total Items"
+                if GT.gameVersion == "retail" then
+                    itemData.quality = C_TradeSkillUI.GetItemReagentQualityByItemInfo(id)
                 end
                 GT:CreateAlertOptions(itemData)
-                AddAlertsForItem()
-            end
+                AddAlertsFromDB(itemData)
+            end)
+        else
+            GT.Debug("Create Alerts Table", 2, "Special Item", id)
+            itemData = {
+                id = id,
+                name = data.itemData.name,
+                icon = data.itemData.icon,
+            }
+            GT:CreateAlertOptions(itemData)
+            AddAlertsFromDB(itemData)
         end
     end
     AceConfigRegistry:NotifyChange(GT.metaData.name)
@@ -1702,6 +1499,8 @@ end
 function GT:CreateAlertOptions(itemData)
     GT.Debug("Create Alert Options", 3, itemData.id, itemData.name)
     local alertOptions = generalOptions.args.Alerts.args
+    local Item = GT.AlertSystem:GetItem(itemData.id) or GT.AlertSystem:AddItem(itemData.id)
+    Item:SetEnabled(GT.db.profile.Alerts[itemData.id].enable)
 
     alertOptions[tostring(itemData.id)] = {
         type = "group",
@@ -1727,6 +1526,7 @@ function GT:CreateAlertOptions(itemData)
                 end,
                 set = function(_, key)
                     GT.db.profile.Alerts[itemData.id].enable = key
+                    Item:SetEnabled(key)
                 end,
                 disabled = function()
                     if GT.db.profile.General.alertsEnable then
@@ -1735,6 +1535,25 @@ function GT:CreateAlertOptions(itemData)
                     return true
                 end,
                 order = 1
+            },
+            addAlert = {
+                type = "execute",
+                name = "Add Alert",
+                desc = "Click to select what type of alert to add.",
+                width = "normal",
+                func = function()
+                    AlertMenu(GT.Options.Main, itemData, Item)
+                end,
+                disabled = function()
+                    if not GT.db.profile.General.alertsEnable then
+                        return true
+                    end
+                    if not GT.db.profile.Alerts[itemData.id].enable then
+                        return true
+                    end
+                    return false
+                end,
+                order = 2,
             },
             removeItem = {
                 type = "execute",
@@ -1754,29 +1573,11 @@ function GT:CreateAlertOptions(itemData)
                     end
                     return true
                 end,
-                order = 2,
-            },
-            addAlert = {
-                type = "execute",
-                name = "Add Alert",
-                desc = "Click to select what type of alert to add.",
-                width = "normal",
-                func = function()
-                    AlertTypeMenu(GT.Options.Main, itemData)
-                end,
-                disabled = function()
-                    if not GT.db.profile.General.alertsEnable then
-                        return true
-                    end
-                    if not GT.db.profile.Alerts[itemData.id].enable then
-                        return true
-                    end
-                    return false
-                end,
                 order = 3,
             },
         },
     }
+    AceConfigRegistry:NotifyChange(GT.metaData.name)
 end
 
 function GT:RemoveItemAlerts(id)
@@ -2033,8 +1834,8 @@ end
 
 local function UpdateChangedorRemovedSavedVariables()
     -- Increment when adding anything to function
-    local fixConstant = 1
-    if GT.db.profile.General.fixSettings < fixConstant then
+    local fixConstant = 2
+    if GT.db.profile.General.fixSettings < fixConstant and GT.db.profile.General.fixSettings == 1 then
         --Change debug to int instead of bool
         if type(GT.db.profile.General.debugOption) == "boolean" then
             GT.db.profile.General.debugOption = 0
@@ -2063,6 +1864,10 @@ local function UpdateChangedorRemovedSavedVariables()
         GT.db.profile.CustomFiltersTable = tempFilterTable
 
         GT.db.profile.General.fixSettings = fixConstant
+    elseif GT.db.profile.General.fixSettings < fixConstant and GT.db.profile.General.fixSettings == 2 then
+        if GT.db.profile.Notifications then
+            GT.db.profile.Notifications = nil
+        end
     end
 end
 
@@ -2088,14 +1893,18 @@ function GT:RefreshConfig(event, db, profile)
         GT.db.profile.General.xPos,
         GT.db.profile.General.yPos
     )
+    GT.AlertSystem.AllowAlertEffects = false
 
-    GT:MinimapHandler(GT.db.profile.miniMap.hide)
+    GT.AlertSystem:RemoveAllItems("Refresh Config")
     GT:RebuildIDTables()
     GT:ClearDisplay()
     GT:FiltersButton()
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateCustomFilterOptions()
     GT:InitializeAlertOptions("Refresh Config")
+    GT:MinimapHandler(GT.db.profile.miniMap.enable)
+
+    GT:wait(2, "AllowAlertEffects", "AllowAlertEffects")
 end
 
 local function InitializePriceSource()
@@ -2119,6 +1928,7 @@ end
 function GT:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.priceSources = InitializePriceSource()
+    GT.GeneralOptions = generalOptions
 
     GT.db = LibStub("AceDB-3.0"):New("GatheringTrackerDB", GT.defaults, true)
     GT.db.RegisterCallback(GT, "OnProfileChanged", "RefreshConfig")
@@ -2184,9 +1994,6 @@ function GT:OnInitialize()
     if not GT.Enabled then
         GT:OnDisable()
     end
-
-    --Pause Notifications to prevent spam after reloading the UI
-    GT.NotificationPause = true
 
     GT:InitializeBroker()
     GT:RebuildIDTables()
