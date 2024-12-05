@@ -1667,21 +1667,28 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     order = itemData.order
                 }
             else
+                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                local R, G, B = C_Item.GetItemQualityColor(rarity)
                 filterOptions.args[expansion].args[category].args[tostring(itemData.id)] = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
                     name = function()
+                        local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
+                        local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
+
                         if itemData.quality then
                             if itemData.quality == 1 then
-                                return "|cff784335" .. itemData.name .. "*"
+                                name = name .. " |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a|h|r"
                             elseif itemData.quality == 2 then
-                                return "|cff96979E" .. itemData.name .. "**"
+                                name = name .. " |A:Professions-ChatIcon-Quality-Tier2:17:23::|a|h|r"
                             elseif itemData.quality == 3 then
-                                return "|cffDCC15F" .. itemData.name .. "***"
+                                name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
                             end
                         else
-                            return itemData.name
+                            name = name .. "|h|r"
                         end
+
+                        return name
                     end,
                     image = function()
                         if itemData.id <= #GT.ItemData.Other.Other then
@@ -1702,14 +1709,12 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             borderColor = { 1, 1, 1, 0.8 }
                             overlay = nil
                         else
-                            local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
                             if rarity <= 1 then
                                 border = { "Interface\\Common\\WhiteIconFrame", "texture" }
                             else
                                 border = { "bags-glow-white", "atlas" }
                             end
 
-                            local R, G, B = C_Item.GetItemQualityColor(rarity)
                             borderColor = { R, G, B, 0.8 }
 
                             if itemData.quality then
@@ -1767,10 +1772,12 @@ function GT:CreateCustomFilterOptions()
             if not item:IsItemEmpty() then
                 item:ContinueOnItemLoad(function()
                     local itemName = item:GetItemName()
+                    local itemLink = item:GetItemLink()
+                    itemLink = itemLink:gsub("[%[%]]", "")
                     filterOptions.args.custom.args[itemName] = {
                         type = "toggle",
                         dialogControl = "NW_CheckBox",
-                        name = itemName,
+                        name = itemLink,
                         image = function() return C_Item.GetItemIconByID(id) end,
                         get = function() return GT.db.profile.CustomFiltersTable[id] end,
                         set = function(_, key)

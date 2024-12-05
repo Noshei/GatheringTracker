@@ -44,13 +44,23 @@ Scripts
 local function Control_OnEnter(frame)
     local self = frame.obj
     self.background:SetVertexColor(0.35, 0.35, 0.35, 1)
-    frame.obj:Fire("OnEnter")
+    if self.border:GetTexture() then
+        GameTooltip:SetOwner(frame, self:GetTooltipAnchor())
+        GameTooltip:SetHyperlink(self.text:GetText())
+        GameTooltip:Show()
+    else
+        frame.obj:Fire("OnEnter")
+    end
 end
 
 local function Control_OnLeave(frame)
     local self = frame.obj
     self.background:SetVertexColor(0, 0, 0, 0)
-    frame.obj:Fire("OnLeave")
+    if self.border:GetTexture() then
+        GameTooltip:Hide()
+    else
+        frame.obj:Fire("OnLeave")
+    end
 end
 
 local function CheckBox_OnMouseDown(frame)
@@ -293,6 +303,11 @@ local methods = {
             overlay:SetAtlas(path, true)
         end
     end,
+
+    ["GetTooltipAnchor"] = function(self)
+        local x = self.frame:GetRight() / GetScreenWidth() > 0.8
+        return x and 'ANCHOR_LEFT' or 'ANCHOR_RIGHT'
+    end
 }
 
 --[[-----------------------------------------------------------------------------

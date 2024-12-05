@@ -199,16 +199,21 @@ function GT:GenerateFiltersMenu(frame)
                             if itemData.id == -1 then
                                 local divider = frame[expansion][category]:CreateTitle(itemData.name)
                             else
-                                local name = itemData.name
+                                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                                local R, G, B = C_Item.GetItemQualityColor(rarity)
+                                local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
+                                local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
 
                                 if itemData.quality then
                                     if itemData.quality == 1 then
-                                        name = "|cff784335" .. name .. "*"
+                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a|h|r"
                                     elseif itemData.quality == 2 then
-                                        name = "|cff96979E" .. name .. "**"
+                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier2:17:23::|a|h|r"
                                     elseif itemData.quality == 3 then
-                                        name = "|cffDCC15F" .. name .. "***"
+                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
                                     end
+                                else
+                                    name = name .. "|h|r"
                                 end
 
                                 frame[expansion][category][itemData.name] = frame[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
@@ -231,13 +236,11 @@ function GT:GenerateFiltersMenu(frame)
 
                                     local leftTextureRarity = text:AttachTexture()
                                     leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
-                                    local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
                                     if rarity <= 1 then
                                         leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
                                     else
                                         leftTextureRarity:SetAtlas("bags-glow-white")
                                     end
-                                    local R, G, B = C_Item.GetItemQualityColor(rarity)
                                     leftTextureRarity:SetVertexColor(R, G, B, 0.8)
                                     leftTextureRarity:SetAllPoints(leftTexture)
 
@@ -253,6 +256,9 @@ function GT:GenerateFiltersMenu(frame)
                                         end
                                         leftTextureQuality:SetAllPoints(leftTexture)
                                     end
+                                end)
+                                frame[expansion][category][itemData.name]:SetTooltip(function(tooltip, elementDescription)
+                                    tooltip:SetHyperlink(name)
                                 end)
                             end
                         end
@@ -340,10 +346,12 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         --Waits for the data to be returned from the server
         if not item:IsItemEmpty() then
             item:ContinueOnItemLoad(function()
+                local itemLink = string.gsub(item:GetItemLink(), "[%[%]]", "")
                 local itemDetails = {
                     id = tonumber(id),
                     text = item:GetItemName(),
-                    icon = tostring(C_Item.GetItemIconByID(itemID) or "")
+                    icon = tostring(C_Item.GetItemIconByID(itemID) or ""),
+                    link = itemLink,
                 }
                 table.insert(customFiltersList, itemDetails)
             end)
@@ -394,7 +402,7 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
             GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
 
-        frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.text, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
+        frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.link, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
         frame["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
             local leftTexture = text:AttachTexture()
 
@@ -417,6 +425,9 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
             local R, G, B = C_Item.GetItemQualityColor(rarity)
             leftTextureRarity:SetVertexColor(R, G, B, 0.8)
             leftTextureRarity:SetAllPoints(leftTexture)
+        end)
+        frame["Custom Filters"][itemData.text]:SetTooltip(function(tooltip, elementDescription)
+            tooltip:SetHyperlink(itemData.link)
         end)
     end
 end
