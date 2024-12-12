@@ -142,7 +142,7 @@ function GT:wait(delay, func, ...)
 
     --create the callback function so that we can pass along arguements
     timer.callback = function()
-        if GT.waitTable[timer] then --check if the wait table exists, if it dopesn't then this timer was cancelled.
+        if GT.waitTable[timer] then --check if the wait table exists, if it doesn't then this timer was cancelled.
             GT.Debug("Wait Function Complete", 1, timer.delay, timer.func, GT.waitTable[timer])
             --remove wait table entry since the timer is complete
             GT.waitTable[timer] = nil

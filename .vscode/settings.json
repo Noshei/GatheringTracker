@@ -12,7 +12,7 @@
     "utf8": "disable"
 },
 "Lua.workspace.library": [
-    "~\\.vscode\\extensions\\ketho.wow-api-0.17.9\\Annotations"
+    "~\\.vscode\\extensions\\ketho.wow-api-0.18.0\\Annotations"
 ],
 "Lua.diagnostics.globals": [
     "RECrystallize_PriceCheckItemID",
@@ -91,7 +91,9 @@
     "CANCEL",
     "CLOSE",
     "ADD",
-    "LowHealthFrame"
+    "LowHealthFrame",
+    "GameTooltip_SetTitle",
+    "GameTooltip_AddNormalLine"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch",

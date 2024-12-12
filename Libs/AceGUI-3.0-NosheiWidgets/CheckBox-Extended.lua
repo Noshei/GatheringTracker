@@ -115,6 +115,11 @@ local methods = {
             self.overlay:SetTexture(nil)
             self.overlay:SetAtlas(nil)
         end
+        if self.delete then
+            self.delete:SetScript("OnClick", nil)
+            self.delete:Hide()
+            self.text:SetPoint("RIGHT")
+        end
     end,
 
     ["OnWidthSet"] = function(self, width)
@@ -255,7 +260,7 @@ local methods = {
         end
     end,
 
-    ["SetImage"] = function(self, path, imageSize, border, borderColor, overlay)
+    ["SetImage"] = function(self, path, imageSize, border, borderColor, overlay, deleteFunc)
         local image = self.image
         image:SetTexture(path)
         AlignImage(self)
@@ -271,6 +276,11 @@ local methods = {
         end
         if overlay then
             self:SetImageOverlay(unpack(overlay))
+        end
+        if deleteFunc then
+            self.delete:SetScript("OnClick", deleteFunc)
+            self.text:SetPoint("RIGHT", self.delete, "LEFT")
+            self.delete:Show()
         end
     end,
 
@@ -363,6 +373,23 @@ local function Constructor()
     local overlay = frame:CreateTexture(nil, "OVERLAY", nil, 2)
     overlay:SetAllPoints(image)
 
+    local delete = CreateFrame("Button", nil, frame)
+    delete:SetPoint("RIGHT", frame, "RIGHT")
+    delete:SetNormalAtlas("transmog-icon-remove")
+    delete:SetSize(15, 15)
+    --delete:SetFrameLevel(30)
+    delete:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(delete, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Delete Custom Filter")
+        GameTooltip:Show()
+        delete:SetAlpha(0.5)
+    end)
+    delete:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+        delete:SetAlpha(1)
+    end)
+    delete:Hide()
+
     local widget = {
         checkbg = checkbg,
         background = background,
@@ -372,6 +399,7 @@ local function Constructor()
         image = image,
         border = border,
         overlay = overlay,
+        delete = delete,
         frame = frame,
         type = Type
     }

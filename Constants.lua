@@ -73,7 +73,7 @@ for index, category in ipairs(GT.categoriesOrder) do
     GT.categories[category] = index
 end
 
-local ItemData = {
+GT.ItemDataFlat = {
     -- Classic
     { id = 2447, name = "Peacebloom", order = 1, retail = true, cata = true, wrath = true, bc = true, era = true, season = true, expansion = "Classic", category = "Herb" },
     { id = 765, name = "Silverleaf", order = 2, retail = true, cata = true, wrath = true, bc = true, era = true, season = true, expansion = "Classic", category = "Herb" },
@@ -1367,7 +1367,7 @@ local ItemData = {
 
 GT.ItemData = {}
 
-for item, itemData in ipairs(ItemData) do
+for _, itemData in ipairs(GT.ItemDataFlat) do
     if itemData[GT.gameVersion] then
         GT.ItemData[itemData.expansion] = GT.ItemData[itemData.expansion] or {}
         GT.ItemData[itemData.expansion][itemData.category] = GT.ItemData[itemData.expansion][itemData.category] or {}

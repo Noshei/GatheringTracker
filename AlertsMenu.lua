@@ -16,8 +16,6 @@ local tostring = tostring
 local type = type
 local unpack = unpack
 
-GT.AlertSystem.Menu = {}
-
 function GT:GenerateAlertsMenu(frame)
     local function AlertsMenu(frame, rootDescription)
         rootDescription:SetTag("GatheringTracker_Alerts_Menu")
@@ -171,7 +169,8 @@ function GT:GenerateAlertsMenu(frame)
         GT.AlertSystem.Menu.rootDescription = rootDescription
     end
 
-    ---@class GT.AlertSystem.menu: MenuProxy
+    ---@class GT.AlertSystem.Menu: MenuProxy
+    GT.AlertSystem.Menu = GT.AlertSystem.Menu or {}
     GT.AlertSystem.Menu = MenuUtil.CreateContextMenu(frame, AlertsMenu)
 end
 

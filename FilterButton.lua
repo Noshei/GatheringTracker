@@ -107,9 +107,97 @@ function GT:AnchorFilterButton()
     end
 end
 
+local function CreateItemCheckBox(frame, itemData)
+    local expansion = itemData.expansion
+    local category = itemData.category
+    local function IsSelected_Item()
+        if GT.db.profile.Filters[itemData.id] == true then
+            return true
+        else
+            return false
+        end
+    end
+    local function SetSelected_Item()
+        GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
+        local key = not IsSelected_Item()
+        GT.db.profile.Filters[itemData.id] = key or nil
+
+        GT:UpdateIDTable(itemData.id, key)
+        GT:RemoveItemData(key, itemData.id)
+        GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
+    end
+
+    if itemData.id == -1 then
+        local divider = frame:CreateTitle(itemData.name)
+    else
+        local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+        local R, G, B = C_Item.GetItemQualityColor(rarity)
+        local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
+        local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
+
+        if itemData.quality then
+            if itemData.quality == 1 then
+                name = name .. " |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a|h|r"
+            elseif itemData.quality == 2 then
+                name = name .. " |A:Professions-ChatIcon-Quality-Tier2:17:23::|a|h|r"
+            elseif itemData.quality == 3 then
+                name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
+            end
+        else
+            name = name .. "|h|r"
+        end
+
+        frame[itemData.name] = frame:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
+        frame[itemData.name]:AddInitializer(function(text, description, menu)
+            local leftTexture = text:AttachTexture()
+
+            leftTexture:SetDrawLayer("BACKGROUND", 0)
+            leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
+
+            text:SetHeight(26)
+            leftTexture:SetSize(24, 24)
+
+            if itemData.icon then
+                leftTexture:SetTexture(itemData.icon)
+            else
+                leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
+            end
+
+            text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
+
+            local leftTextureRarity = text:AttachTexture()
+            leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
+            if rarity <= 1 then
+                leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
+            else
+                leftTextureRarity:SetAtlas("bags-glow-white")
+            end
+            leftTextureRarity:SetVertexColor(R, G, B, 0.8)
+            leftTextureRarity:SetAllPoints(leftTexture)
+
+            if itemData.quality then
+                local leftTextureQuality = text:AttachTexture()
+                leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
+                if itemData.quality == 1 then
+                    leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
+                elseif itemData.quality == 2 then
+                    leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
+                elseif itemData.quality == 3 then
+                    leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
+                end
+                leftTextureQuality:SetAllPoints(leftTexture)
+            end
+        end)
+        frame[itemData.name]:SetTooltip(function(tooltip, elementDescription)
+            tooltip:SetHyperlink(name)
+        end)
+    end
+end
+
 function GT:GenerateFiltersMenu(frame)
     local function FiltersMenu(frame, rootDescription)
         rootDescription:SetTag("GatheringTracker_Filter_Menu")
+        --GT:CreateSearchMenu(frame, rootDescription)
         for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
             if GT.ItemData[expansion] then
                 local function IsSelected_Expansion()
@@ -179,88 +267,7 @@ function GT:GenerateFiltersMenu(frame)
                         frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
                         frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
                         for _, itemData in ipairs(GT.ItemData[expansion][category]) do
-                            local function IsSelected_Item()
-                                if GT.db.profile.Filters[itemData.id] == true then
-                                    return true
-                                else
-                                    return false
-                                end
-                            end
-                            local function SetSelected_Item()
-                                GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
-                                local key = not IsSelected_Item()
-                                GT.db.profile.Filters[itemData.id] = key or nil
-
-                                GT:UpdateIDTable(itemData.id, key)
-                                GT:RemoveItemData(key, itemData.id)
-                                GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
-                            end
-
-                            if itemData.id == -1 then
-                                local divider = frame[expansion][category]:CreateTitle(itemData.name)
-                            else
-                                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
-                                local R, G, B = C_Item.GetItemQualityColor(rarity)
-                                local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
-                                local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
-
-                                if itemData.quality then
-                                    if itemData.quality == 1 then
-                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a|h|r"
-                                    elseif itemData.quality == 2 then
-                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier2:17:23::|a|h|r"
-                                    elseif itemData.quality == 3 then
-                                        name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
-                                    end
-                                else
-                                    name = name .. "|h|r"
-                                end
-
-                                frame[expansion][category][itemData.name] = frame[expansion][category]:CreateCheckbox(name, IsSelected_Item, SetSelected_Item)
-                                frame[expansion][category][itemData.name]:AddInitializer(function(text, description, menu)
-                                    local leftTexture = text:AttachTexture()
-
-                                    leftTexture:SetDrawLayer("BACKGROUND", 0)
-                                    leftTexture:SetPoint("LEFT", text.leftTexture1, "RIGHT", 7, 1)
-
-                                    text:SetHeight(26)
-                                    leftTexture:SetSize(24, 24)
-
-                                    if itemData.icon then
-                                        leftTexture:SetTexture(itemData.icon)
-                                    else
-                                        leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
-                                    end
-
-                                    text.fontString:SetPoint("LEFT", leftTexture, "RIGHT", 7, 1)
-
-                                    local leftTextureRarity = text:AttachTexture()
-                                    leftTextureRarity:SetDrawLayer("BACKGROUND", 1)
-                                    if rarity <= 1 then
-                                        leftTextureRarity:SetTexture("Interface\\Common\\WhiteIconFrame")
-                                    else
-                                        leftTextureRarity:SetAtlas("bags-glow-white")
-                                    end
-                                    leftTextureRarity:SetVertexColor(R, G, B, 0.8)
-                                    leftTextureRarity:SetAllPoints(leftTexture)
-
-                                    if itemData.quality then
-                                        local leftTextureQuality = text:AttachTexture()
-                                        leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
-                                        if itemData.quality == 1 then
-                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
-                                        elseif itemData.quality == 2 then
-                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
-                                        elseif itemData.quality == 3 then
-                                            leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
-                                        end
-                                        leftTextureQuality:SetAllPoints(leftTexture)
-                                    end
-                                end)
-                                frame[expansion][category][itemData.name]:SetTooltip(function(tooltip, elementDescription)
-                                    tooltip:SetHyperlink(name)
-                                end)
-                            end
+                            CreateItemCheckBox(frame[expansion][category], itemData)
                         end
                     end
                 end
@@ -268,6 +275,10 @@ function GT:GenerateFiltersMenu(frame)
         end
         --add Custom Filters to filterMenu
         GT:CreateCustomFiltersList(frame, rootDescription)
+
+        --add Inventory Filters to the filterMenu
+        --these will use existing filters or add an item to custom filters is a normal filter doesn't exist
+        GT:CreateInventoryFilters(frame, rootDescription)
 
         --add Profiles to filterMenu
         GT:CreateProfilesList(frame, rootDescription)
@@ -386,7 +397,8 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         GT:InventoryUpdate("Custom Filters clicked", false)
     end
 
-    frame["Custom Filters"] = rootDescription:CreateCheckbox("Custom Filters", IsSelected_CustomFilter, SetSelected_CustomFilter)
+    frame["Custom Filters"] = rootDescription:CreateCheckbox("Custom Filters", IsSelected_CustomFilter,
+        SetSelected_CustomFilter)
 
     for itemIndex, itemData in ipairs(customFiltersList) do
         local function IsSelected_CustomFilterItem()
@@ -402,7 +414,8 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
             GT:InventoryUpdate("Custom Filter " .. itemData.text .. " menu clicked", false)
         end
 
-        frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.link, IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
+        frame["Custom Filters"][itemData.text] = frame["Custom Filters"]:CreateCheckbox(itemData.link,
+            IsSelected_CustomFilterItem, SetSelected_CustomFilterItem)
         frame["Custom Filters"][itemData.text]:AddInitializer(function(text, description, menu)
             local leftTexture = text:AttachTexture()
 
@@ -429,6 +442,146 @@ function GT:CreateCustomFiltersList(frame, rootDescription)
         frame["Custom Filters"][itemData.text]:SetTooltip(function(tooltip, elementDescription)
             tooltip:SetHyperlink(itemData.link)
         end)
+    end
+end
+
+function GT:CreateInventoryFilters(frame, rootDescription)
+    local BagStart = BACKPACK_CONTAINER
+    local BagEnd = BACKPACK_CONTAINER + NUM_BAG_SLOTS + 1
+    local inventoryItems = {}
+    local itemlist = {}
+    local normalFilter = {}
+    local customFilter = {}
+
+    for bag = BagStart, BagEnd do
+        for slot = 1, C_Container.GetContainerNumSlots(bag) do
+            local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
+            if itemInfo and not itemlist[itemInfo.itemID] then
+                itemlist[itemInfo.itemID] = true
+                table.insert(inventoryItems, itemInfo)
+            end
+        end
+    end
+
+    if #inventoryItems > 0 then
+        for _, itemInfo in ipairs(inventoryItems) do
+            local itemFound = false
+            for _, itemData in ipairs(GT.ItemDataFlat) do
+                if itemData[GT.gameVersion] then
+                    if itemInfo.itemID == itemData.id then
+                        itemFound = true
+                        table.insert(normalFilter, itemData)
+                    end
+                end
+            end
+            if not itemFound then
+                table.insert(customFilter, itemInfo)
+            end
+        end
+
+        frame.Inventory = rootDescription:CreateButton("Inventory", function() end)
+        frame.Inventory:SetScrollMode(GetScreenHeight() * 0.75)
+
+        if #normalFilter > 0 then
+            local header = frame.Inventory:CreateTitle("Normal Filters Available")
+            header:SetTooltip(function(tooltip)
+                GameTooltip_SetTitle(tooltip, "Normal Filters Available")
+                GameTooltip_AddNormalLine(tooltip, "Normal filters exist for the following items.", false)
+                GameTooltip_AddNormalLine(tooltip, "When toggled, the normal filter will also be toggled.", false)
+                GameTooltip_AddNormalLine(tooltip, "If the item is removed from your inventory the normal filter will remain available under the appropriate expansion and category.")
+            end)
+            table.sort(normalFilter, function(a, b)
+                return a.name < b.name
+            end)
+            for _, itemData in ipairs(normalFilter) do
+                CreateItemCheckBox(frame.Inventory, itemData)
+            end
+        end
+        if #customFilter > 0 then
+            local header = frame.Inventory:CreateTitle("Add Custom Filter")
+            header:SetTooltip(function(tooltip)
+                GameTooltip_SetTitle(tooltip, "Add Custom Filter")
+                GameTooltip_AddNormalLine(tooltip, "Normal filters do |cffff0000NOT|r exist for the following items.", false)
+                GameTooltip_AddNormalLine(tooltip, "A |cff0dd110Checkmark|r means that a custom filter exists and is |cff0dd110Enabled|r for the item.", false)
+                GameTooltip_AddNormalLine(tooltip, "A |cffcf2929Dot|r means that a custom filter exists and is |cffcf2929Disabled|r for the item.", false)
+                GameTooltip_AddNormalLine(tooltip, "Unchecking an item will remove the custom filter for that item", false)
+                GameTooltip_AddNormalLine(tooltip, "If the item is removed from inventory while checked, the Custom Filter will |cffff0000NOT|r be removed.", false)
+            end)
+            table.sort(customFilter, function(a, b)
+                return a.itemName < b.itemName
+            end)
+            for _, itemInfo in ipairs(customFilter) do
+                -- template isn't working out, maybe try creating from lua?
+                frame.Inventory[itemInfo.itemName] = frame.Inventory:CreateTemplate("GTTriStateButtonTemplate")
+                frame.Inventory[itemInfo.itemName]:AddInitializer(function(checkbox)
+                    checkbox:SetPoint("LEFT")
+
+                    local itemLink = string.gsub(itemInfo.hyperlink, "[%[%]]", "")
+                    checkbox:SetText(itemLink)
+
+                    checkbox.icon:SetTexture(itemInfo.iconFileID)
+                    if itemInfo.quality <= 1 then
+                        checkbox.iconBorder:SetTexture("Interface\\Common\\WhiteIconFrame")
+                    else
+                        checkbox.iconBorder:SetAtlas("bags-glow-white")
+                    end
+                    local R, G, B = C_Item.GetItemQualityColor(itemInfo.quality)
+                    checkbox.iconBorder:SetVertexColor(R, G, B, 0.8)
+
+                    checkbox.checkBoxFill = checkbox:AttachTexture()
+                    checkbox.checkBoxFill:SetPoint("CENTER", checkbox.checkBox)
+
+                    function checkbox:SetCheckedTexture()
+                        if checkbox.checked == 0 then
+                            checkbox.checkBoxFill:SetAtlas(nil)
+                        elseif checkbox.checked == 1 then
+                            checkbox.checkBoxFill:SetAtlas("common-dropdown-icon-checkmark-yellow", true)
+                            checkbox.checkBoxFill:SetPoint("CENTER", checkbox.checkBox, "CENTER", 2, 1)
+                        elseif checkbox.checked == 2 then
+                            checkbox.checkBoxFill:SetAtlas("common-dropdown-icon-radialtick-yellow", true)
+                            checkbox.checkBoxFill:SetPoint("CENTER", checkbox.checkBox, "CENTER")
+                        end
+                    end
+
+                    if GT.db.profile.CustomFiltersTable[itemInfo.itemID] ~= nil then
+                        if GT.db.profile.CustomFiltersTable[itemInfo.itemID] then
+                            checkbox.checked = 1
+                        else
+                            checkbox.checked = 2
+                        end
+                        checkbox:SetCheckedTexture()
+                    end
+                    checkbox:SetScript("OnClick", function()
+                        if checkbox.checked == 0 then
+                            GT:CreateCustomFilterItem(itemInfo.itemID, true)
+                            GT:UpdateIDTable(itemInfo.itemID, true)
+                            GT:InventoryUpdate("Inventory Custom Filter " .. itemInfo.itemName .. " option clicked", true)
+
+                            checkbox.checked = 1
+                        elseif checkbox.checked == 1 then
+                            GT.db.profile.CustomFiltersTable[itemInfo.itemID] = false
+                            GT:UpdateIDTable(itemInfo.itemID, false)
+                            GT:RemoveItemData(false, itemInfo.itemID)
+                            GT:InventoryUpdate("Inventory Custom Filter " .. itemInfo.itemName .. " option clicked", true)
+
+                            checkbox.checked = 2
+                        elseif checkbox.checked == 2 then
+                            GT:DeleteCustomFilter(itemInfo.itemID, itemInfo.itemName)
+
+                            checkbox.checked = 0
+                        end
+                        checkbox:SetCheckedTexture()
+                    end)
+
+                    local height = 26
+                    local width = checkbox.checkBox:GetWidth() + checkbox.icon:GetWidth() + checkbox.text:GetUnboundedStringWidth()
+                    return width, height
+                end)
+                frame.Inventory[itemInfo.itemName]:SetTooltip(function(tooltip, elementDescription)
+                    tooltip:SetHyperlink(itemInfo.hyperlink)
+                end)
+            end
+        end
     end
 end
 
@@ -472,3 +625,40 @@ function GT:DisplayAllCheck()
         GT.db.profile.General.allFiltered = false
     end
 end
+
+
+--[[
+function GT:CreateSearchMenu(frame, rootDescription)
+    GT.baseFrame.menu.SearchResults = GT.baseFrame.menu.SearchResults or {}
+    local frame = frame or {}
+    frame.Search = rootDescription:CreateButton("Search", function() end)
+    frame.Search:SetScrollMode(GetScreenHeight() * 0.75)
+    frame.Search.searchBar = frame.Search:CreateFrame()
+    frame.Search.searchBar:AddInitializer(function(searchBar)
+        local editbox = searchBar:AttachTemplate("SearchBoxTemplate")
+        editbox:SetPoint("TOPLEFT")
+        editbox:SetSize(200, 22)
+        editbox:HookScript("OnEnterPressed", function()
+            GT.baseFrame.menu.SearchResults = {}
+            for _, itemData in ipairs(GT.ItemDataFlat) do
+                if itemData[GT.gameVersion] then
+                    if string.find(string.lower(itemData.name), string.lower(editbox:GetText())) then
+                        GT.Debug("Filter Menu Search", 2, editbox:GetText(), itemData.name)
+                        table.insert(GT.baseFrame.menu.SearchResults, itemData)
+                    end
+                end
+            end
+            GT:GenerateFiltersMenu(GT.baseFrame.button)
+            --GT.baseFrame.menu:ReinitializeAll()
+        end)
+        editbox.clearButton:HookScript("OnClick", function()
+
+        end)
+    end)
+    if #GT.baseFrame.menu.SearchResults > 0 then
+        for index, itemData in ipairs(GT.baseFrame.menu.SearchResults) do
+            CreateItemCheckBox(frame.Search, itemData)
+        end
+    end
+end
+]]

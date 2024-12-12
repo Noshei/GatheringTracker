@@ -1,0 +1,42 @@
+<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.blizzard.com/wow/ui/" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/live/Interface/FrameXML/UI_shared.xsd">
+
+    <Button name="GTTriStateButtonTemplate" virtual="true">
+        <Size x="100" y="26"/>
+        <PushedTextOffset x="0" y="0"/>
+        <KeyValues>
+			<KeyValue key="checked" value="0" type="number"/>
+		</KeyValues>
+        <Layers>
+            <Layer level="BORDER" textureSubLevel="1">
+                <Texture parentKey="checkBox" atlas="common-dropdown-ticksquare" useAtlasSize="true">
+                    <Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+                </Texture>
+                <Texture parentKey="icon">
+                    <Size x="24" y="24"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.checkBox" relativePoint="RIGHT" x="7" y="1"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="BORDER" textureSubLevel="2">
+                <Texture parentKey="iconBorder">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.icon"/>
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.icon"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <ButtonText parentKey="text" justifyH="LEFT" wordwrap="false">
+            <FontHeight val="26"/>
+			<Anchors>
+				<Anchor point="LEFT" relativeKey="$parent.icon" relativePoint="RIGHT" x="7" y="1"/>
+			</Anchors>
+		</ButtonText>
+        <NormalFont style="GameFontHighlight"/>
+        <HighlightTexture parentKey="HighlightTexture" file="Interface/QuestFrame/UI-QuestTitleHighlight" setAllPoints="true" alphaMode="ADD"/>
+    </Button>
+</Ui>
