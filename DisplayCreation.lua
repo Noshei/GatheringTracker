@@ -5,17 +5,8 @@ local media = LibStub:GetLibrary("LibSharedMedia-3.0")
 -- Localize global functions
 local ipairs = ipairs
 local math = math
-local max = max
-local next = next
-local pairs = pairs
-local select = select
-local string = string
 local table = table
-local time = time
-local tonumber = tonumber
-local tostring = tostring
 local type = type
-local unpack = unpack
 
 local function FramePool_Resetter(framePool, frame)
     frame:Hide()

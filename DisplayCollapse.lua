@@ -2,19 +2,7 @@
 local GT = LibStub("AceAddon-3.0"):GetAddon("GatheringTracker")
 
 -- Localize global functions
-local ipairs = ipairs
-local math = math
-local max = max
-local next = next
 local pairs = pairs
-local select = select
-local string = string
-local table = table
-local time = time
-local tonumber = tonumber
-local tostring = tostring
-local type = type
-local unpack = unpack
 
 function GT:CollapseDisplay()
     GT.Debug("CollapseDisplay", 1)

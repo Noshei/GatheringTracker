@@ -12,19 +12,13 @@ GT.Options = {}
 GT.GlobalStartTime = 0
 
 -- Localize global functions
+local date = date
 local ipairs = ipairs
 local math = math
-local max = max
-local next = next
 local pairs = pairs
-local select = select
-local string = string
 local table = table
 local time = time
-local tonumber = tonumber
-local tostring = tostring
 local type = type
-local unpack = unpack
 
 GT.metaData = {
     name = C_AddOns.GetAddOnMetadata("GatheringTracker", "Title"),
