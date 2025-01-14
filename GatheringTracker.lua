@@ -676,6 +676,10 @@ end
 
 function GT:SetupTotalsRow()
     GT.Debug("SetupTotalsRow", 1)
+    if not GT.db.profile.General.totalsRow then
+        return
+    end
+
     local playerTotals = {}
     local priceTotal = 0
     local itemsPerHour = nil

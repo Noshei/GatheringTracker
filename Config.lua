@@ -63,6 +63,7 @@ GT.defaults = {
             sessionOnly = false,
             itemTooltip = false,
             alertsEnable = false,
+            totalsRow = true,
         },
         Alerts = {
         },
@@ -136,9 +137,11 @@ local generalOptions = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
                     name = "Filters Button",
-                    desc = "Left Click shows filters menu.\n" ..
-                        "Right Click clears all filters.\n" ..
-                        "Shift + Left Click resets Session Data.",
+                    desc = "If Enabled a button will be shown on screen that can be used to quickly change filters.\n" ..
+                        "|cff8080ffLeft Click|r shows filters menu.\n" ..
+                        "|cff8080ffRight Click|r clears all filters.\n" ..
+                        "|cff8080ffShift + Left Click|r resets Session Data.\n" ..
+                        "|cff8080ffShift + Right-Click|r to reset Alert Triggers",
                     width = 1.70,
                     get = function() return GT.db.profile.General.filtersButton end,
                     set = function(_, key)
@@ -348,6 +351,13 @@ local generalOptions = {
                         GT.db.profile.General.collapseDisplay = key
                         GT:CollapseManager(key)
                     end,
+                    disabled = function()
+                        if GT.db.profile.General.totalsRow then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 210
                 },
                 collapseTime = {
@@ -375,6 +385,27 @@ local generalOptions = {
                     name = "Other",
                     order = 300
                 },
+                totalsRow = {
+                    type = "toggle",
+                    dialogControl = "NW_CheckBox",
+                    name = "Display Totals Row",
+                    desc = "If selected the totals row will be displayed.\n\n" ..
+                        "|cffff0000When disabled the following options will also be disabled:|r\n" ..
+                        " - Collapse Delay\n" ..
+                        " - Totals Color/Size/Font\n" ..
+                        " - Total Items Alerts",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.totalsRow end,
+                    set = function(_, key)
+                        GT.db.profile.General.totalsRow = key
+                        if not key then
+                            GT.db.profile.General.collapseDisplay = key
+                            GT:CollapseManager(key)
+                        end
+                        GT:RebuildDisplay("Display Totals Row Changed")
+                    end,
+                    order = 320
+                },
                 allFiltered = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
@@ -396,7 +427,7 @@ local generalOptions = {
                             return false
                         end
                     end,
-                    order = 320
+                    order = 321
                 },
                 itemTooltip = {
                     type = "toggle",
@@ -411,7 +442,7 @@ local generalOptions = {
                         GT.db.profile.General.itemTooltip = key
                         GT:RebuildDisplay("Item Tooltip Option Changed")
                     end,
-                    order = 321
+                    order = 322
                 },
             },
         },
@@ -886,6 +917,13 @@ local generalOptions = {
                             end
                         end
                     end,
+                    disabled = function()
+                        if GT.db.profile.General.totalsRow then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 504
                 },
                 totalSize = {
@@ -919,6 +957,13 @@ local generalOptions = {
                         end
                         GT:AllignColumns()
                     end,
+                    disabled = function()
+                        if GT.db.profile.General.totalsRow then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
                     order = 505
                 },
                 totalFont = {
@@ -944,6 +989,13 @@ local generalOptions = {
                             end
                         end
                         GT:AllignColumns()
+                    end,
+                    disabled = function()
+                        if GT.db.profile.General.totalsRow then
+                            return false
+                        else
+                            return true
+                        end
                     end,
                     order = 506
                 },
