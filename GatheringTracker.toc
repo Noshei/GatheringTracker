@@ -2,13 +2,25 @@
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 3.2.5
-## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator
+## Version: 3.2.6
+## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator, WagoAnalytics
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
 ## IconTexture: Interface\Addons\GatheringTracker\Media\GT_Icon
 ## X-Curse-Project-ID: 406104
 ## X-Wago-ID: Xb6XQbKp
+## Category: Professions
+## Category-enUS: Professions
+## Category-deDE: Berufe
+## Category-esES: Profesiones
+## Category-esMX: Profesiones
+## Category-frFR: Métiers
+## Category-itIT: Professioni
+## Category-koKR: 전문 기술
+## Category-ptBR: Profissões
+## Category-ruRU: Профессии
+## Category-zhCN: 专业
+## Category-zhTW: 專業技能
 
 embeds.xml
 templates.xml
@@ -20,6 +32,8 @@ Modules\DisplayCollapse.lua
 Modules\FilterButton.lua
 Modules\Alerts.lua
 Modules\AlertsMenu.lua
+Modules\GroupMode.lua
+Modules\Analytics.lua
 
 Constants.lua
 Config.lua

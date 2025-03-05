@@ -39,7 +39,6 @@ GT.defaults = {
             totalColor = { 0.098, 1, 0.078 },
             totalSize = 20,
             totalFont = "Fira Mono Medium",
-            stacksOnIcon = false,
             includeBank = false,
             includeReagent = false,
             includeWarband = false,
@@ -69,10 +68,12 @@ GT.defaults = {
         },
         Filters = {
         },
-        CustomFilters = "",
         CustomFiltersTable = {
         },
         miniMap = {
+            enable = false,
+        },
+        GroupMode = {
             enable = false,
         },
     },
@@ -1895,6 +1896,20 @@ function GT:CreateCustomFilterOptions()
     end
 end
 
+local GroupModeOptions = {
+    type = "group",
+    name = "Group Mode",
+    childGroups = "tab",
+    args = {
+        heading = {
+            type = "description",
+            name = "Group mode allows for displayed data to be sent between players in your group.  When enabled data received from other players will be displayed.",
+            width = "full",
+            order = 1
+        },
+    }
+}
+
 function GatheringTracker_OnAddonCompartmentClick(addonName, button)
     if (button == "LeftButton") then
         GT:ToggleGatheringTracker()
@@ -2002,6 +2017,10 @@ function GT:OnInitialize()
     GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
     GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
 
+    --[[AceConfigRegistry:RegisterOptionsTable("GT/Group", GroupModeOptions)
+    GT.Options.Group = AceConfigDialog:AddToBlizOptions("GT/Group", "Group Mode", GT.metaData.name)
+    GT.Options.Group:SetScript("OnHide", GT.OptionsHide)]]
+
     AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
     GT.Options.Profiles = AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
     GT.Options.Profiles:SetScript("OnHide", GT.OptionsHide)
@@ -2048,5 +2067,5 @@ function GT:OnInitialize()
     GT.AlertSystem:CreateAlertFrames()
     GT:InitializeAlertOptions("OnInitialize")
 
-    GT.temp = generalOptions
+    GT:RunAnalytics()
 end

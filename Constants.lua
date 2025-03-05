@@ -1200,6 +1200,8 @@ GT.ItemDataFlat = {
     { id = 220146, name = "Regal Dottyback", order = 19, retail = true, expansion = "TWW", category = "Fish" },
     { id = 220149, name = "Sanguine Dogfish", order = 20, retail = true, expansion = "TWW", category = "Fish" },
     { id = 220150, name = "Spiked Sea Raven", order = 21, retail = true, expansion = "TWW", category = "Fish" },
+    { id = 235846, name = "Undermine Clam", order = 22, retail = true, expansion = "TWW", category = "Fish" },
+    { id = 235845, name = "Undermine Clam Meat", order = 23, retail = true, expansion = "TWW", category = "Fish" },
     { id = 213750, name = "Engraved Gemcutter", order = 1, quality = 1, retail = true, expansion = "TWW", category = "Gem" },
     { id = 213751, name = "Engraved Gemcutter", order = 2, quality = 2, retail = true, expansion = "TWW", category = "Gem" },
     { id = 213752, name = "Engraved Gemcutter", order = 3, quality = 3, retail = true, expansion = "TWW", category = "Gem" },

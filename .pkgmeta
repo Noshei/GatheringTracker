@@ -19,3 +19,4 @@ externals:
   Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
   Libs/LibSharedMedia-3.0: https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
   Libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
+  Libs/WagoAnalyticsShim: https://github.com/wagoio/WagoAnalyticsShim.git

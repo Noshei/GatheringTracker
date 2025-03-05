@@ -94,7 +94,8 @@
     "LowHealthFrame",
     "GameTooltip_SetTitle",
     "GameTooltip_AddNormalLine",
-    "AddonCompartmentFrame"
+    "AddonCompartmentFrame",
+    "WagoAnalytics"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch",
