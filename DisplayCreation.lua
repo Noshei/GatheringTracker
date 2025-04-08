@@ -69,11 +69,11 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
     if id < 9999999998 then
         string:SetFont(media:Fetch("font", GT.db.profile.General.textFont), GT.db.profile.General.textSize, "OUTLINE")
         string:SetVertexColor(GT.db.profile.General.textColor[1], GT.db.profile.General.textColor[2],
-            GT.db.profile.General.textColor[3])
+            GT.db.profile.General.textColor[3], GT.db.profile.General.textColor[4])
     else
         string:SetFont(media:Fetch("font", GT.db.profile.General.totalFont), GT.db.profile.General.totalSize, "OUTLINE")
         string:SetVertexColor(GT.db.profile.General.totalColor[1], GT.db.profile.General.totalColor[2],
-            GT.db.profile.General.totalColor[3])
+            GT.db.profile.General.totalColor[3], GT.db.profile.General.totalColor[4])
     end
     string:SetHeight(height)
     local offset = 3
@@ -173,6 +173,7 @@ function GT:DisplayFrameIcon(frame, iconId, id)
     frame.icon:SetPoint("LEFT", frame, "LEFT")
     frame.icon:SetWidth(GT.db.profile.General.iconWidth)
     frame.icon:SetHeight(GT.db.profile.General.iconHeight)
+    frame.icon:SetAlpha(GT.db.profile.General.iconOpacity / 100)
     frame.icon:Show()
 
     if id <= #GT.ItemData.Other.Other or id >= 9999999998 then
@@ -215,6 +216,7 @@ function GT:DisplayFrameQuality(frame, iconQuality)
         frame.iconQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
     end
     frame.iconQuality:SetAllPoints(frame.icon)
+    frame.iconQuality:SetAlpha(GT.db.profile.General.iconOpacity / 100)
     frame.iconQuality:Show()
 end
 
@@ -235,6 +237,7 @@ function GT:DisplayFrameRarity(frame, iconRarity)
     local R, G, B = C_Item.GetItemQualityColor(rarity)
     frame.iconRarity:SetVertexColor(R, G, B, 0.8)
     frame.iconRarity:SetAllPoints(frame.icon)
+    frame.iconRarity:SetAlpha(GT.db.profile.General.iconOpacity / 100)
     frame.iconRarity:Show()
 end
 

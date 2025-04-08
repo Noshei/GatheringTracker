@@ -33,10 +33,11 @@ GT.defaults = {
             relativePoint = "TOPLEFT",
             iconWidth = 27,
             iconHeight = 27,
-            textColor = { 1, 1, 1 },
+            iconOpacity = 100,
+            textColor = { 1, 1, 1, 1 },
             textSize = 20,
             textFont = "Fira Mono Medium",
-            totalColor = { 0.098, 1, 0.078 },
+            totalColor = { 0.098, 1, 0.078, 1 },
             totalSize = 20,
             totalFont = "Fira Mono Medium",
             includeBank = false,
@@ -787,6 +788,31 @@ local generalOptions = {
                     end,
                     order = 402
                 },
+                iconOpacity = {
+                    type = "range",
+                    dialogControl = "NW_Slider",
+                    name = "Icon Opacity",
+                    min = 0,
+                    max = 100,
+                    step = 1,
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.iconOpacity or 100 end,
+                    set = function(_, key)
+                        GT.db.profile.General.iconOpacity = key
+                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+                            itemFrame.icon:SetAlpha(GT.db.profile.General.iconOpacity / 100)
+
+                            if itemFrame.iconRarity then
+                                itemFrame.iconRarity:SetAlpha(GT.db.profile.General.iconOpacity / 100)
+                            end
+
+                            if itemFrame.iconQuality then
+                                itemFrame.iconQuality:SetAlpha(GT.db.profile.General.iconOpacity / 100)
+                            end
+                        end
+                    end,
+                    order = 403
+                },
                 rarityBorder = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
@@ -814,7 +840,7 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 403
+                    order = 404
                 },
                 header6 = {
                     type = "header",
@@ -824,13 +850,13 @@ local generalOptions = {
                 textColor = {
                     type = "color",
                     name = "Text Color",
-                    hasAlpha = false,
+                    hasAlpha = true,
                     get = function()
                         local c = GT.db.profile.General.textColor
-                        return c[1], c[2], c[3] or 1, 1, 1
+                        return c[1] or 1, c[2] or 1, c[3] or 1, c[4] or 1
                     end,
-                    set = function(_, r, g, b)
-                        GT.db.profile.General.textColor = { r, g, b }
+                    set = function(_, r, g, b, a)
+                        GT.db.profile.General.textColor = { r, g, b, a }
                         for itemID, itemFrame in pairs(GT.Display.Frames) do
                             if itemID < 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
@@ -903,13 +929,13 @@ local generalOptions = {
                 totalColor = {
                     type = "color",
                     name = "Total Color",
-                    hasAlpha = false,
+                    hasAlpha = true,
                     get = function()
                         local c = GT.db.profile.General.totalColor
-                        return c[1], c[2], c[3] or 1, 1, 1
+                        return c[1] or 1, c[2] or 1, c[3] or 1, c[4] or 1
                     end,
-                    set = function(_, r, g, b)
-                        GT.db.profile.General.totalColor = { r, g, b }
+                    set = function(_, r, g, b, a)
+                        GT.db.profile.General.totalColor = { r, g, b, a }
                         for itemID, itemFrame in pairs(GT.Display.Frames) do
                             if itemID >= 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
