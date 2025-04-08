@@ -939,7 +939,7 @@ local generalOptions = {
                         for itemID, itemFrame in pairs(GT.Display.Frames) do
                             if itemID >= 9999999998 then
                                 for textIndex, textFrame in ipairs(itemFrame.text) do
-                                    textFrame:SetVertexColor(unpack(GT.db.profile.General.totalColor[1]))
+                                    textFrame:SetVertexColor(unpack(GT.db.profile.General.totalColor))
                                 end
                             end
                         end
@@ -1846,8 +1846,8 @@ function GT:CreateCustomFilterItem(id, enable)
             if enable then
                 GT.db.profile.CustomFiltersTable[id] = true
             end
-            local itemName = item:GetItemName()
-            local itemLink = item:GetItemLink()
+            local itemName = item:GetItemName() or ""
+            local itemLink = item:GetItemLink() or ""
             itemLink = itemLink:gsub("[%[%]]", "")
             filterOptions.args.custom.args[itemName] = {
                 type = "toggle",
