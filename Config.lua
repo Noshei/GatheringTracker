@@ -43,7 +43,7 @@ GT.defaults = {
             includeBank = false,
             includeReagent = false,
             includeWarband = false,
-            tsmPrice = 1,
+            tsmPrice = 0,
             ignoreAmount = 0,
             perItemPrice = false,
             debugOption = 0,
@@ -2010,6 +2010,25 @@ local function InitializePriceSource()
     return priceSourcesLoaded
 end
 
+local function ValidatePriceSourceOption()
+    local priceSources = { "TradeSkillMaster", "RECrystallize", "Auctionator" }
+    local priceSourceOption = {
+        ["TradeSkillMaster"] = { 1, 6 },
+        ["RECrystallize"] = { 10, 10 },
+        ["Auctionator"] = { 20, 20 },
+    }
+
+    for _, source in ipairs(priceSources) do
+        local loaded = C_AddOns.IsAddOnLoaded(source)
+        if not GT.priceSources[source] then
+            if GT.db.profile.General.tsmPrice >= priceSourceOption[source][1] and
+                GT.db.profile.General.tsmPrice <= priceSourceOption[source][2] then
+                GT.db.profile.General.tsmPrice = 0
+            end
+        end
+    end
+end
+
 function GT:OnInitialize()
     --have to check if tsm is loaded before we create the options so that we can use that variable in the options.
     GT.priceSources = InitializePriceSource()
@@ -2023,6 +2042,8 @@ function GT:OnInitialize()
     if GT.db.profile.General.unlock then
         GT.db.profile.General.unlock = false
     end
+
+    ValidatePriceSourceOption()
 
     --if TSM is not loaded set tsmPrice Option to none.
     if not GT.priceSources then

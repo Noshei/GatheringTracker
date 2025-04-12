@@ -513,7 +513,7 @@ function GT:CreateInventoryFilters(frame, rootDescription)
                     checkbox:SetText(itemLink)
 
                     checkbox.icon:SetTexture(itemInfo.iconFileID)
-                    if itemInfo.quality <= 1 then
+                    if itemInfo.quality and itemInfo.quality <= 1 then
                         checkbox.iconBorder:SetTexture("Interface\\Common\\WhiteIconFrame")
                     else
                         checkbox.iconBorder:SetAtlas("bags-glow-white")
