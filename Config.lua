@@ -2019,8 +2019,9 @@ local function ValidatePriceSourceOption()
     }
 
     for _, source in ipairs(priceSources) do
-        local loaded = C_AddOns.IsAddOnLoaded(source)
-        if not GT.priceSources[source] then
+        if not GT.priceSources then
+            GT.db.profile.General.tsmPrice = 0
+        elseif not GT.priceSources[source] then
             if GT.db.profile.General.tsmPrice >= priceSourceOption[source][1] and
                 GT.db.profile.General.tsmPrice <= priceSourceOption[source][2] then
                 GT.db.profile.General.tsmPrice = 0
