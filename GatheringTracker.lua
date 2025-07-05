@@ -31,7 +31,8 @@ local gameVersions = {
     [WOW_PROJECT_CLASSIC or 2] = "era",
     [WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5] = "bc",
     [WOW_PROJECT_WRATH_CLASSIC or 11] = "wrath",
-    [WOW_PROJECT_CATACLYSM_CLASSIC or 14] = "cata"
+    [WOW_PROJECT_CATACLYSM_CLASSIC or 14] = "cata",
+    [WOW_PROJECT_MISTS_CLASSIC or 19] = "mop"
 }
 GT.gameVersion = gameVersions[WOW_PROJECT_ID] or "retail"
 if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) then
