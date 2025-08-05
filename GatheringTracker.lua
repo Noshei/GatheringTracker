@@ -822,7 +822,7 @@ function GT:ProcessData(event)
                 data.id,
                 GT.db.profile.General.includeBank,
                 false,
-                GT.db.profile.General.includeReagent,
+                false,
                 GT.db.profile.General.includeWarband
             )
         end

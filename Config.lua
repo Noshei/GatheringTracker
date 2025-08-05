@@ -41,7 +41,6 @@ GT.defaults = {
             totalSize = 20,
             totalFont = "Fira Mono Medium",
             includeBank = false,
-            includeReagent = false,
             includeWarband = false,
             tsmPrice = 0,
             ignoreAmount = 0,
@@ -559,26 +558,6 @@ local generalOptions = {
                     end,
                     order = 204
                 },
-                includeReagent = {
-                    type = "toggle",
-                    dialogControl = "NW_CheckBox",
-                    name = "Include Reagent Bank",
-                    desc = "If selected displayed values will include items in your reagent bank.",
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.includeReagent end,
-                    set = function(_, key)
-                        GT.db.profile.General.includeReagent = key
-                        GT:InventoryUpdate("Include Reagent", true)
-                    end,
-                    hidden = function()
-                        if GT.gameVersion == "retail" then
-                            return false
-                        else
-                            return true
-                        end
-                    end,
-                    order = 205
-                },
                 includeWarband = {
                     type = "toggle",
                     dialogControl = "NW_CheckBox",
@@ -597,7 +576,7 @@ local generalOptions = {
                             return true
                         end
                     end,
-                    order = 206
+                    order = 205
                 },
                 header2 = {
                     type = "header",
@@ -1953,6 +1932,9 @@ local function UpdateChangedorRemovedSavedVariables()
     end
     if GT.db.profile.CustomFilters then
         GT.db.profile.CustomFilters = nil
+    end
+    if GT.db.profile.General.includeReagent then
+        GT.db.profile.General.includeReagent = nil
     end
 end
 
