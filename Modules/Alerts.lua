@@ -214,12 +214,12 @@ end
 ---@param triggeredValue number
 ---@param itemID number
 function GT.AlertSystem:TriggerAlert(alert, triggeredValue, itemID)
-    GT.Debug("Trigger Alert", 2, alert.itemID, itemID, alert:GetAlertType(), alert:GetTriggerValue())
+    GT.Debug("Trigger Alert", 2, alert.itemID, itemID, alert:GetAlertType(), alert:GetTriggerValue(), triggeredValue)
     alert:SetTriggered(true)
 
     local alertSettings = alert:GetAlertSettings()
 
-    GT.AlertSystem:TriggerEffects(alert, alertSettings, itemID)
+    GT.AlertSystem:TriggerEffects(alert, alertSettings, itemID, triggeredValue)
 
     if alert:GetTriggerMultiple() then
         GT.Debug("Trigger Alert: Trigger Multiple", 3, alert.itemID, alert:GetTriggerValue(), alert:GetTriggerMultiplier(), triggeredValue)
@@ -232,7 +232,7 @@ end
 ---@param alert Alert
 ---@param alertSettings table
 ---@param itemID number
-function GT.AlertSystem:TriggerEffects(alert, alertSettings, itemID)
+function GT.AlertSystem:TriggerEffects(alert, alertSettings, itemID, triggeredValue)
     if not GT.AlertSystem.AllowAlertEffects then
         return
     end
@@ -250,6 +250,25 @@ function GT.AlertSystem:TriggerEffects(alert, alertSettings, itemID)
         GT.Display.Alerts.ScreenFlash.texture:SetVertexColor(unpack(alertSettings.flashColor))
         GT.Display.Alerts.ScreenFlash:SetDuration(alertSettings.flashDuration or 3)
         GT.Display.Alerts.ScreenFlash:PlayAnimation()
+    elseif alert:GetAlertType() == "Raid Warning" then
+        local message = ""
+        local value = ""
+        if alert:GetTriggerType() == 2 then
+            value = "|cffffffff" .. math.ceil(triggeredValue - 0.5) .. "|r|cffffd70a" .. GOLD_AMOUNT_SYMBOL .. "|r"
+        else
+            value = "|cffffffffx" .. triggeredValue .. "|r"
+        end
+        if itemID == 9999999998 then
+            message = "|cffffffffTotal: |r" .. value
+        else
+            local itemInfo = { C_Item.GetItemInfo(itemID) }
+            message = "|T" .. C_Item.GetItemIconByID(itemID) .. ":15:15:0:0:64:64:4:60:4:60|t |cffffffff" ..
+                itemInfo[2] .. ": |r" .. value
+        end
+        RaidNotice_AddMessage(RaidWarningFrame, message, ChatTypeInfo["RAID_WARNING"])
+        if alertSettings.raidWarningSound then
+            PlaySound(SOUNDKIT.RAID_WARNING)
+        end
     end
 end
 

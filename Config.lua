@@ -1095,6 +1095,8 @@ local function InitializeAlert(Item, alertType, typeCount, DB)
         Alert:SetAlertSettings({ highlightBorder = DB.highlightBorder, highlightColor = DB.highlightColor })
     elseif alertType == "Screen Flash" then
         Alert:SetAlertSettings({ flashDuration = DB.flashDuration, flashColor = DB.flashColor })
+    elseif alertType == "Raid Warning" then
+        Alert:SetAlertSettings({ raidWarningSound = DB.raidWarningSound })
     end
 
     return Alert
@@ -1373,6 +1375,7 @@ local function GetAlertOptionsTable(itemData, alertType, typeCount, Item, Alert)
             end,
             order = 102
         }
+
         --removing text option for now, may revisit after Alerts is released
         --[[elseif alertType == "Text" then
         options.args.textDuration = {
@@ -1442,6 +1445,19 @@ local function GetAlertOptionsTable(itemData, alertType, typeCount, Item, Alert)
             fontSize = "medium",
             order = 104
         }]]
+    elseif alertType == "Raid Warning" then
+        options.args.raidWarningSound = {
+            type = "toggle",
+            dialogControl = "NW_CheckBox",
+            name = "Enable Sound",
+            width = "Normal",
+            get = function() return DB.raidWarningSound end,
+            set = function(_, key)
+                DB.raidWarningSound = key
+                Alert:SetAlertSettings({ raidWarningSound = DB.raidWarningSound })
+            end,
+            order = 100
+        }
     end
 
     return options
@@ -1480,6 +1496,8 @@ local function SetupAlertDefaults(itemData, data)
     elseif data[1] == "Screen Flash" then
         DB.flashDuration = 3
         DB.flashColor = { 1, 0, 0, 1 }
+    elseif data[1] == "Raid Warning" then
+        DB.raidWarningSound = true
     end
 end
 
@@ -1492,6 +1510,7 @@ local function AlertMenu(frame, itemData, Item)
         rootDescription:CreateButton("Audio", OnClick, { "Audio", 10 })
         rootDescription:CreateButton("Highlight", OnClick, { "Highlight", 20 })
         rootDescription:CreateButton("Screen Flash", OnClick, { "Screen Flash", 30 })
+        rootDescription:CreateButton("Raid Warning", OnClick, { "Raid Warning", 40 })
     end)
 end
 
