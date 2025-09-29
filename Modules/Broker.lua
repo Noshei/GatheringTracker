@@ -32,7 +32,7 @@ function GT:InitializeBroker()
 
     -- Register with LibDBIcon
     LibDBIcon:Register(GT.metaData.name, dataObj, GT.db.profile.miniMap)
-    LibDBIcon:Hide(GT.metaData.name)
+    --LibDBIcon:Hide(GT.metaData.name)
 end
 
 function GT:MinimapHandler(key)

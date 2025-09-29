@@ -8,7 +8,7 @@ function GT:RunAnalytics()
     local WagoAnalytics = LibStub("WagoAnalytics"):Register("Xb6XQbKp")
 
     WagoAnalytics:Switch("FiltersButton", GT.db.profile.General.filtersButton)
-    WagoAnalytics:Switch("MinimapButton", GT.db.profile.miniMap.enable)
+    WagoAnalytics:Switch("MinimapButton", GT.db.profile.miniMap.hide)
     WagoAnalytics:Switch("ButtonFade", GT.db.profile.General.buttonFade)
     WagoAnalytics:Switch("IncludeBank", GT.db.profile.General.includeBank)
     WagoAnalytics:Switch("IncludeWarband", GT.db.profile.General.includeWarband)

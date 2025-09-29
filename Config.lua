@@ -71,7 +71,7 @@ GT.defaults = {
         CustomFiltersTable = {
         },
         miniMap = {
-            enable = false,
+            hide = true,
         },
         GroupMode = {
             enable = false,
@@ -122,9 +122,9 @@ local generalOptions = {
                         "|cff8080ffShift + Left Click|r resets Session Data.\n" ..
                         "|cff8080ffShift + Right-Click|r to reset Alert Triggers",
                     width = 1.70,
-                    get = function() return GT.db.profile.miniMap.enable end,
+                    get = function() return not GT.db.profile.miniMap.hide end,
                     set = function(_, key)
-                        GT.db.profile.miniMap.enable = key
+                        GT.db.profile.miniMap.hide = not key
                         GT:MinimapHandler(key)
                     end,
                     order = 3
@@ -1955,6 +1955,10 @@ local function UpdateChangedorRemovedSavedVariables()
     if GT.db.profile.General.includeReagent then
         GT.db.profile.General.includeReagent = nil
     end
+    if GT.db.profile.miniMap.enable then
+        GT.db.profile.miniMap.enable = nil
+        GT.db.profile.miniMap.hide = false
+    end
 end
 
 function GT:RefreshConfig(event, db, profile)
@@ -1988,7 +1992,7 @@ function GT:RefreshConfig(event, db, profile)
     GT:InventoryUpdate("Refresh Config", true)
     GT:CreateCustomFilterOptions()
     GT:InitializeAlertOptions("Refresh Config")
-    GT:MinimapHandler(GT.db.profile.miniMap.enable)
+    GT:MinimapHandler(not GT.db.profile.miniMap.hide)
 
     GT:wait(2, "AllowAlertEffects", "AllowAlertEffects")
 end

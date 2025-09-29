@@ -56,7 +56,7 @@ function GT:OnEnable()
             GT:RegisterEvent("PLAYER_REGEN_ENABLED")
         end
 
-        GT:MinimapHandler(GT.db.profile.miniMap.enable)
+        GT:MinimapHandler(not GT.db.profile.miniMap.hide)
     else
         GT:OnDisable()
     end
@@ -75,6 +75,8 @@ function GT:OnDisable()
         GT:UnregisterEvent("PLAYER_ENTERING_WORLD")
         GT:UnregisterEvent("PLAYER_REGEN_DISABLED")
         GT:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+        GT:MinimapHandler(false)
     else
         GT:OnEnable()
     end

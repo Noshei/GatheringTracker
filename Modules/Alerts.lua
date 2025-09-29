@@ -113,6 +113,9 @@ function GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem)
     if not item and not allItems then
         return
     end
+    if not item and itemID == 2 then
+        return
+    end
 
     local triggers = { itemValue, priceTotalItem }
     local triggeredAlerts = GT.AlertSystem:GetTriggeredAlerts(itemID, item, allItems, triggers)
