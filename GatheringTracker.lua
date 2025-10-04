@@ -574,7 +574,7 @@ function GT:SetupItemRows()
                 count = GT.InventoryData[itemID].count
             end
 
-            if count > 0 or GT.db.profile.General.allFiltered then
+            if (count > 0 and count > GT.db.profile.General.ignoreAmount) or GT.db.profile.General.allFiltered then
                 local pricePerItem = nil
                 local itemsPerHour = nil
                 local goldPerHour = nil
