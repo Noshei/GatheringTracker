@@ -1,8 +1,8 @@
-## Interface: 11507, 20504, 40402, 50500, 110200
+## Interface: 11507, 20504, 40402, 50500, 110205
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 3.2.18
+## Version: 3.2.19
 ## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator, WagoAnalytics
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick

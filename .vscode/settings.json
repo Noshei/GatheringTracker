@@ -103,7 +103,14 @@
     "RaidNotice_AddMessage",
     "SOUNDKIT",
     "RaidWarningFrame",
-    "GOLD_AMOUNT_SYMBOL"
+    "GOLD_AMOUNT_SYMBOL",
+    "GetUnitName",
+    "COMBATLOG_OBJECT_TYPE_NPC",
+    "COMBATLOG_OBJECT_TYPE_PET",
+    "COMBATLOG_OBJECT_TYPE_PLAYER",
+    "COMBATLOG_OBJECT_REACTION_FRIENDLY",
+    "COMBATLOG_OBJECT_CONTROL_PLAYER",
+    "COMBATLOG_OBJECT_AFFILIATION_OUTSIDER"
 ],
   "Lua.diagnostics.disable": ["assign-type-mismatch", "cast-local-type"]
 }
