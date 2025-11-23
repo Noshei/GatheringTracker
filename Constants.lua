@@ -36,6 +36,7 @@ local expansionsOrder = {
     "SL",
     "DF",
     "TWW",
+    "Midnight",
     "SoD",
     "Other",
 }
@@ -58,6 +59,8 @@ local categoriesOrder = {
     "Gem",
     "Enchanting",
     "Pigment",
+    "Dye Pigment",
+    "Lumber",
     "Legendary",
     "Synthesis",
     "Knowledge",
@@ -328,6 +331,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 43105, name = "Indigo Pigment", order = 10, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "Classic", category = "Pigment" },
     { id = 43106, name = "Ruby Pigment", order = 11, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "Classic", category = "Pigment" },
     { id = 43107, name = "Sapphire Pigment", order = 12, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "Classic", category = "Pigment" },
+    { id = 245586, name = "Ironwood Lumber", order = 1, retail = true, expansion = "Classic", category = "Lumber" },
     { id = 203914, name = "Zandalar Bargaining Token", order = 2, retail = true, expansion = "Classic", category = "Zul'Gurub" },
     { id = 19706, name = "Bloodscalp Coin", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
     { id = 19701, name = "Gurubashi Coin", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
@@ -449,6 +453,8 @@ GT.ItemDataFlat = { -- Classic
     { id = 32249, name = "Seaspray Emerald", order = 18, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Gem" },
     { id = 32228, name = "Empyrean Sapphire", order = 19, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Gem" },
     { id = 32230, name = "Shadowsong Amethyst", order = 20, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Gem" },
+    { id = -1, name = "Other", order = 21, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Gem" },
+    { id = 24243, name = "Adamantite Powder", order = 22, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Gem" },
     { id = 22445, name = "Arcane Dust", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Enchanting" },
     { id = 22447, name = "Lesser Planar Essence", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Enchanting" },
     { id = 22446, name = "Greater Planar Essence", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Enchanting" },
@@ -457,6 +463,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 22450, name = "Void Crystal", order = 6, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Enchanting" },
     { id = 39342, name = "Nether Pigment", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Pigment" },
     { id = 43108, name = "Ebon Pigment", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Pigment" },
+    { id = 242691, name = "Olemba Lumber", order = 1, retail = true, expansion = "BC", category = "Lumber" },
     -- Wrath
     { id = 36901, name = "Goldclover", order = 1, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Herb" },
     { id = 39970, name = "Fire Leaf", order = 2, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Herb" },
@@ -548,6 +555,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 34057, name = "Abyss Crystal", order = 6, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Enchanting" },
     { id = 39343, name = "Azure Pigment", order = 1, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Pigment" },
     { id = 43109, name = "Icy Pigment", order = 2, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Pigment" },
+    { id = 251762, name = "Coldwind Lumber", order = 1, retail = true, expansion = "Wrath", category = "Lumber" },
     -- Cata
     { id = 52983, name = "Cinderbloom", order = 1, retail = true, mop = true, cata = true, expansion = "Cata", category = "Herb" },
     { id = 52985, name = "Azsharas Veil", order = 2, retail = true, mop = true, cata = true, expansion = "Cata", category = "Herb" },
@@ -621,6 +629,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 52722, name = "Maelstrom Crystal", order = 6, retail = true, mop = true, cata = true, expansion = "Cata", category = "Enchanting" },
     { id = 61979, name = "Ashen Pigment", order = 1, retail = true, mop = true, cata = true, expansion = "Cata", category = "Pigment" },
     { id = 61980, name = "Burning Embers", order = 2, retail = true, mop = true, cata = true, expansion = "Cata", category = "Pigment" },
+    { id = 251764, name = "Ashwood Lumber", order = 1, retail = true, expansion = "Cata", category = "Lumber" },
     -- MoP
     { id = 72234, name = "Green Tea Leaf", order = 1, retail = true, mop = true, expansion = "MoP", category = "Herb" },
     { id = 72237, name = "Rain Poppy", order = 2, retail = true, mop = true, expansion = "MoP", category = "Herb" },
@@ -643,6 +652,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 74833, name = "Raw Tiger Steak", order = 4, retail = true, mop = true, expansion = "MoP", category = "Meat" },
     { id = 74837, name = "Raw Turtle Meat", order = 5, retail = true, mop = true, expansion = "MoP", category = "Meat" },
     { id = 85506, name = "Viseclaw Meat", order = 6, retail = true, mop = true, expansion = "MoP", category = "Meat" },
+    { id = 74839, name = "Wildfowl Breast", order = 7, retail = true, mop = true, expansion = "MoP", category = "Meat" },
     { id = 74859, name = "Emperor Salmon", order = 1, retail = true, mop = true, expansion = "MoP", category = "Fish" },
     { id = 74857, name = "Giant Mantis Shrimp", order = 2, retail = true, mop = true, expansion = "MoP", category = "Fish" },
     { id = 74866, name = "Golden Carp", order = 3, retail = true, mop = true, expansion = "MoP", category = "Fish" },
@@ -682,6 +692,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 74248, name = "Sha Crystal", order = 6, retail = true, mop = true, expansion = "MoP", category = "Enchanting" },
     { id = 79251, name = "Shadow Pigment", order = 1, retail = true, mop = true, expansion = "MoP", category = "Pigment" },
     { id = 79253, name = "Misty Pigment", order = 2, retail = true, mop = true, expansion = "MoP", category = "Pigment" },
+    { id = 251763, name = "Bamboo Lumber", order = 1, retail = true, expansion = "MoP", category = "Lumber" },
     -- WoD
     { id = 109124, name = "Frostweed", order = 1, retail = true, expansion = "WoD", category = "Herb" },
     { id = 109127, name = "Starflower", order = 2, retail = true, expansion = "WoD", category = "Herb" },
@@ -721,6 +732,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 115504, name = "Fractured Temporal Crystal", order = 4, retail = true, expansion = "WoD", category = "Enchanting" },
     { id = 113588, name = "Temporal Crystal", order = 5, retail = true, expansion = "WoD", category = "Enchanting" },
     { id = 114931, name = "Cerulean Pigment", order = 1, retail = true, expansion = "WoD", category = "Pigment" },
+    { id = 251766, name = "Shadowmoon Lumber", order = 1, retail = true, expansion = "WoD", category = "Lumber" },
     -- Legion
     { id = 124101, name = "Aethril", order = 1, retail = true, expansion = "Legion", category = "Herb" },
     { id = 151565, name = "Astral Glory", order = 2, retail = true, expansion = "Legion", category = "Herb" },
@@ -781,6 +793,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 128304, name = "Yseralline Seed", order = 1, retail = true, expansion = "Legion", category = "Pigment" },
     { id = 129032, name = "Roseate Pigment", order = 2, retail = true, expansion = "Legion", category = "Pigment" },
     { id = 129034, name = "Sallow Pigment", order = 3, retail = true, expansion = "Legion", category = "Pigment" },
+    { id = 251767, name = "Fel Touched Lumber", order = 1, retail = true, expansion = "Legion", category = "Lumber" },
     -- BFA
     { id = 152507, name = "Akundas Bite", order = 1, retail = true, expansion = "BFA", category = "Herb" },
     { id = 152505, name = "Riverbud", order = 2, retail = true, expansion = "BFA", category = "Herb" },
@@ -863,6 +876,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 153635, name = "Ultramarine Pigment", order = 2, retail = true, expansion = "BFA", category = "Pigment" },
     { id = 168662, name = "Maroon Pigment", order = 3, retail = true, expansion = "BFA", category = "Pigment" },
     { id = 153669, name = "Viridescent Pigment", order = 4, retail = true, expansion = "BFA", category = "Pigment" },
+    { id = 251768, name = "Darkpine Lumber", order = 1, retail = true, expansion = "BFA", category = "Lumber" },
     -- SL
     { id = 169701, name = "Death Blossom", order = 1, retail = true, expansion = "SL", category = "Herb" },
     { id = 168589, name = "Marrowroot", order = 2, retail = true, expansion = "SL", category = "Herb" },
@@ -925,6 +939,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 173057, name = "Luminous Pigment", order = 1, retail = true, expansion = "SL", category = "Pigment" },
     { id = 173056, name = "Umbral Pigment", order = 2, retail = true, expansion = "SL", category = "Pigment" },
     { id = 175788, name = "Tranquil Pigment", order = 3, retail = true, expansion = "SL", category = "Pigment" },
+    { id = 251772, name = "Arden Lumber", order = 1, retail = true, expansion = "SL", category = "Lumber" },
     { id = 186017, name = "Korthite Crystal", order = 1, retail = true, expansion = "SL", category = "Legendary" },
     { id = 187707, name = "Progenitor Essentia", order = 2, retail = true, expansion = "SL", category = "Legendary" },
     { id = 188957, name = "Genesis Mote", order = 1, retail = true, expansion = "SL", category = "Synthesis" },
@@ -1099,6 +1114,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 198421, name = "Shimmering Pigment", order = 10, quality = 1, retail = true, expansion = "DF", category = "Pigment" },
     { id = 198422, name = "Shimmering Pigment", order = 11, quality = 2, retail = true, expansion = "DF", category = "Pigment" },
     { id = 198423, name = "Shimmering Pigment", order = 12, quality = 3, retail = true, expansion = "DF", category = "Pigment" },
+    { id = 251773, name = "Dragonpine Lumber", order = 1, retail = true, expansion = "DF", category = "Lumber" },
     { id = 190456, name = "Artisans Mettle", order = 1, retail = true, expansion = "DF", category = "Other" },
     { id = 190454, name = "Primal Chaos", order = 2, retail = true, expansion = "DF", category = "Other" },
     { id = 193053, name = "Duck Feather", order = 3, retail = true, expansion = "DF", category = "Other" },
@@ -1256,6 +1272,7 @@ GT.ItemDataFlat = { -- Classic
     { id = 222609, name = "Shadow Ink", order = 17, quality = 1, retail = true, expansion = "TWW", category = "Pigment" },
     { id = 222610, name = "Shadow Ink", order = 18, quality = 2, retail = true, expansion = "TWW", category = "Pigment" },
     { id = 222611, name = "Shadow Ink", order = 19, quality = 3, retail = true, expansion = "TWW", category = "Pigment" },
+    { id = 248012, name = "Dornic Fir Lumber", order = 1, retail = true, expansion = "TWW", category = "Lumber" },
     { id = -1, name = "Alchemy", order = 1, retail = true, expansion = "TWW", category = "Knowledge" },
     { id = 226265, name = "Earthen Iron Powder", order = 2, retail = true, expansion = "TWW", category = "Knowledge" },
     { id = 226266, name = "Metal Dornogal Frame", order = 3, retail = true, expansion = "TWW", category = "Knowledge" },
@@ -1368,6 +1385,18 @@ GT.ItemDataFlat = { -- Classic
     { id = 210814, name = "Artisans Acuity", order = 1, retail = true, expansion = "TWW", category = "Other" },
     { id = 221754, name = "Ringing Deeps Ingot", order = 2, retail = true, expansion = "TWW", category = "Other" },
     { id = 221756, name = "Vial of Kaheti Oils", order = 3, retail = true, expansion = "TWW", category = "Other" },
+    -- Midnight
+    { id = 262655, name = "Red Dye Pigment", order = 1, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262656, name = "Orange Dye Pigment", order = 2, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262648, name = "Yellow Dye Pigment", order = 3, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262647, name = "Green Dye Pigment", order = 4, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262628, name = "Teal Dye Pigment", order = 5, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262643, name = "Blue Dye Pigment", order = 6, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262625, name = "Purple Dye Pigment", order = 7, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262639, name = "Black Dye Pigment", order = 8, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 262642, name = "Brown Dye Pigment", order = 9, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 260947, name = "White Dye Pigment", order = 10, retail = true, expansion = "Midnight", category = "Dye Pigment" },
+    { id = 256963, name = "Thalassian Lumber", order = 1, retail = true, expansion = "Midnight", category = "Lumber" },
     -- SoD
     { id = 215430, name = "Gnomeregan Fallout", order = 1, season = true, expansion = "SoD", category = "Phase 2" },
     { id = 213427, name = "Grime Encrusted Salvage", order = 2, season = true, expansion = "SoD", category = "Phase 2" },
@@ -1395,11 +1424,15 @@ GT.ItemDataFlat = { -- Classic
 }
 
 GT.ItemData = {}
+GT.ItemDataCategory = {}
 
 for _, itemData in ipairs(GT.ItemDataFlat) do
     if itemData[GT.gameVersion] then
         GT.ItemData[itemData.expansion] = GT.ItemData[itemData.expansion] or {}
         GT.ItemData[itemData.expansion][itemData.category] = GT.ItemData[itemData.expansion][itemData.category] or {}
         table.insert(GT.ItemData[itemData.expansion][itemData.category], itemData)
+
+        GT.ItemDataCategory[itemData.category] = GT.ItemDataCategory[itemData.category] or {}
+        table.insert(GT.ItemDataCategory[itemData.category], itemData)
     end
 end

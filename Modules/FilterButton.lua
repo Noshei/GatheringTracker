@@ -100,29 +100,34 @@ function GT:AnchorFilterButton()
     end
 end
 
+---Creates an item in the menu
+---Requires the Menu Frame and itemData
 local function CreateItemCheckBox(frame, itemData)
-    local expansion = itemData.expansion
-    local category = itemData.category
-    local function IsSelected_Item()
-        if GT.db.profile.Filters[itemData.id] == true then
-            return true
-        else
-            return false
-        end
-    end
-    local function SetSelected_Item()
-        GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
-        local key = not IsSelected_Item()
-        GT.db.profile.Filters[itemData.id] = key or nil
-
-        GT:UpdateIDTable(itemData.id, key)
-        GT:RemoveItemData(key, itemData.id)
-        GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
-    end
-
     if itemData.id == -1 then
         local divider = frame:CreateTitle(itemData.name)
+    elseif itemData.id == -2 then
+        local divider = frame:CreateDivider()
+        local title = frame:CreateTitle(itemData.name, CreateColor(1, 1, 1))
     else
+        local expansion = itemData.expansion
+        local category = itemData.category
+        local function IsSelected_Item()
+            if GT.db.profile.Filters[itemData.id] == true then
+                return true
+            else
+                return false
+            end
+        end
+        local function SetSelected_Item()
+            GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
+            local key = not IsSelected_Item()
+            GT.db.profile.Filters[itemData.id] = key or nil
+
+            GT:UpdateIDTable(itemData.id, key)
+            GT:RemoveItemData(key, itemData.id)
+            GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
+        end
+
         local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
         local R, G, B = C_Item.GetItemQualityColor(rarity)
         local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
@@ -226,6 +231,7 @@ function GT:GenerateFiltersMenu(frame)
                     GT:InventoryUpdate(expansion .. " clicked", false)
                 end
 
+                -- Creates the checkbox for the Expansion using the above local functions
                 frame[expansion] = rootDescription:CreateCheckbox(expansion, IsSelected_Expansion, SetSelected_Expansion)
                 for categoryIndex, category in ipairs(GT.categoriesOrder) do
                     if GT.ItemData[expansion][category] then
@@ -257,8 +263,11 @@ function GT:GenerateFiltersMenu(frame)
                             GT:InventoryUpdate(expansion .. " " .. category .. " clicked", false)
                         end
 
+                        -- Creates the checkbox for the Category using the above local functions
                         frame[expansion][category] = frame[expansion]:CreateCheckbox(category, IsSelected_Category, SetSelected_Category)
                         frame[expansion][category]:SetScrollMode(GetScreenHeight() * 0.75)
+
+                        -- Creates each item in the Category
                         for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                             CreateItemCheckBox(frame[expansion][category], itemData)
                         end
@@ -266,6 +275,10 @@ function GT:GenerateFiltersMenu(frame)
                 end
             end
         end
+
+        --add All Expansion section to filterMenu
+        GT:CreateAllExpansionFiltersList(frame, rootDescription)
+
         --add Custom Filters to filterMenu
         GT:CreateCustomFiltersList(frame, rootDescription)
 
@@ -338,6 +351,98 @@ function GT:FiltersButtonFade(alpha)
             GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
             GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)
             GT.baseFrame.button.mouseOver:SetMouseMotionEnabled(false)
+        end
+    end
+end
+
+function GT:CreateAllExpansionFiltersList(frame, rootDescription)
+    local allExpansion = {}
+
+    local function IsSelected_AllExp()
+        local checked = true
+        for category, categoryData in pairs(GT.ItemDataCategory) do
+            for _, itemData in ipairs(categoryData) do
+                if not (itemData.id == -1 or itemData.expansion == "Other") and checked == true then
+                    if GT.db.profile.Filters[itemData.id] == true then
+                        checked = GT.db.profile.Filters[itemData.id]
+                    else
+                        checked = false
+                        break
+                    end
+                end
+            end
+        end
+        return checked
+    end
+    local function SetSelected_AllExp()
+        GT.Debug("All Expansions Button Clicked", 2)
+        local key = not IsSelected_AllExp()
+        for category, categoryData in pairs(GT.ItemDataCategory) do
+            for _, itemData in ipairs(categoryData) do
+                if not (itemData.id == -1 or itemData.expansion == "Other") then
+                    GT.db.profile.Filters[itemData.id] = key or nil
+                    GT:UpdateIDTable(itemData.id, key)
+                    GT:RemoveItemData(key, itemData.id)
+                end
+            end
+        end
+
+        GT:InventoryUpdate("All Expansions clicked", false)
+    end
+
+    frame["All Expansions"] = rootDescription:CreateCheckbox("All Expansions", IsSelected_AllExp,
+        SetSelected_AllExp)
+
+    for categoryIndex, category in ipairs(GT.categoriesOrder) do
+        if GT.ItemDataCategory[category] then
+            local function IsSelected_AllExp_Category()
+                local checked = true
+                for _, itemData in ipairs(GT.ItemDataCategory[category]) do
+                    if not (itemData.id == -1 or itemData.expansion == "Other") and checked == true then
+                        if GT.db.profile.Filters[itemData.id] == true then
+                            checked = GT.db.profile.Filters[itemData.id]
+                        else
+                            checked = false
+                            break
+                        end
+                    end
+                end
+                return checked
+            end
+
+            local function SetSelected_AllExp_Category()
+                GT.Debug("AllExp Category Button Clicked", 2, category)
+                local key = not IsSelected_AllExp_Category()
+                for _, itemData in ipairs(GT.ItemDataCategory[category]) do
+                    if not (itemData.id == -1 or itemData.expansion == "Other") then
+                        GT.db.profile.Filters[itemData.id] = key or nil
+                        GT:UpdateIDTable(itemData.id, key)
+                        GT:RemoveItemData(key, itemData.id)
+                    end
+                end
+
+                GT:InventoryUpdate("All Expansion " .. category .. " clicked", false)
+            end
+
+            -- Creates the checkbox for the Category using the above local functions
+            frame["All Expansions"][category] = frame["All Expansions"]:CreateCheckbox(category, IsSelected_AllExp_Category, SetSelected_AllExp_Category)
+            frame["All Expansions"][category]:SetScrollMode(GetScreenHeight() * 0.75)
+
+            -- Creates each item in the Category
+            local currentExpac = ""
+            for _, itemData in ipairs(GT.ItemDataCategory[category]) do
+                if itemData.expansion ~= "Other" then
+                    if itemData.expansion ~= currentExpac then
+                        local header = {
+                            id = -2,
+                            name = itemData.expansion,
+                        }
+                        currentExpac = itemData.expansion
+                        CreateItemCheckBox(frame["All Expansions"][category], header)
+                    end
+                    CreateItemCheckBox(frame["All Expansions"][category], itemData)
+                end
+            end
         end
     end
 end
