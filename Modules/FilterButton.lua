@@ -107,7 +107,29 @@ local function CreateItemCheckBox(frame, itemData)
         local divider = frame:CreateTitle(itemData.name)
     elseif itemData.id == -2 then
         local divider = frame:CreateDivider()
-        local title = frame:CreateTitle(itemData.name, CreateColor(1, 1, 1))
+        divider:AddInitializer(function(dividerFrame, description, menu)
+            dividerFrame.dividerRight = dividerFrame:AttachTexture()
+
+            dividerFrame.text = dividerFrame:AttachFontString()
+            dividerFrame.text:SetTextToFit(itemData.name)
+            dividerFrame.text:SetHeight(25)
+            dividerFrame.text:SetTextScale(1.5)
+            dividerFrame.text:SetPoint("CENTER")
+            dividerFrame.text:SetTextColor(CreateColor(1, 0.8235, 0):GetRGBA())
+
+            dividerFrame.divider:ClearAllPoints()
+            dividerFrame.divider:SetPoint("LEFT")
+            dividerFrame.divider:SetPoint("RIGHT", dividerFrame.text, "LEFT", -10, 0)
+            dividerFrame.divider:SetHeight(25)
+
+            dividerFrame.dividerRight:SetPoint("RIGHT")
+            dividerFrame.dividerRight:SetPoint("LEFT", dividerFrame.text, "RIGHT", 10, 0)
+            dividerFrame.dividerRight:SetTexture("Interface\\Common\\UI-TooltipDivider-Transparent")
+            dividerFrame.dividerRight:SetHeight(25)
+        end)
+        divider:AddResetter(function(dividerFrame)
+            dividerFrame.text:SetTextScale(1)
+        end)
     else
         local expansion = itemData.expansion
         local category = itemData.category
@@ -609,7 +631,6 @@ function GT:CreateInventoryFilters(frame, rootDescription)
                 return a.itemName < b.itemName
             end)
             for _, itemInfo in ipairs(customFilter) do
-                -- template isn't working out, maybe try creating from lua?
                 frame.Inventory[itemInfo.itemName] = frame.Inventory:CreateTemplate("GTTriStateButtonTemplate")
                 frame.Inventory[itemInfo.itemName]:AddInitializer(function(checkbox)
                     checkbox:SetPoint("LEFT")
