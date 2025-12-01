@@ -705,14 +705,7 @@ function GT:CreateInventoryFilters(frame, rootDescription)
 end
 
 function GT:CreateProfilesList(frame, rootDescription)
-    local function IsSelected_ProfilesCategory()
-        return false
-    end
-
-    local function SetSelected_ProfilesCategory()
-    end
-
-    frame["Profiles"] = rootDescription:CreateCheckbox("Profiles", IsSelected_ProfilesCategory, SetSelected_ProfilesCategory)
+    frame["Profiles"] = rootDescription:CreateButton("Profiles", function() end)
     frame["Profiles"]:SetSelectionIgnored()
 
     for _, name in ipairs(GT.db:GetProfiles()) do
