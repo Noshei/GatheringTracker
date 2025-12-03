@@ -481,6 +481,7 @@ local generalOptions = {
                             options[4] = "TSM - DBRegionMinBuyoutAvg"
                             options[5] = "TSM - DBRegionMarketAvg"
                             options[6] = "TSM - DBRegionHistorical"
+                            options[7] = "TSM - DBRecent"
                         end
                         if GT.priceSources["RECrystallize"] then
                             options[10] = "RECrystallize"

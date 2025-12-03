@@ -165,6 +165,8 @@ function GT:SetTSMPriceSource()
         GT.TSM = "DBRegionMarketAvg"
     elseif GT.db.profile.General.tsmPrice == 6 then
         GT.TSM = "DBRegionHistorical"
+    elseif GT.db.profile.General.tsmPrice == 7 then
+        GT.TSM = "DBRecent"
     end
 end
 

@@ -206,7 +206,11 @@ function GT:ToggleBaseLock(key)
         frame:SetMovable(true)
         frame:EnableMouse(true)
         frame:SetMouseClickEnabled(true)
-        frame:SetSize(GT.baseFrame.frame:GetSize())
+        local backdropWidth, backdropHeight = frame:GetSize()
+        local baseWidth, baseHeight = GT.baseFrame.frame:GetSize()
+        if backdropWidth < baseWidth or backdropHeight < baseHeight then
+            frame:SetSize(baseWidth, baseHeight)
+        end
         frame:SetScript("OnMouseDown", function(self, button)
             if button == "LeftButton" and not self.isMoving then
                 self:StartMoving()
