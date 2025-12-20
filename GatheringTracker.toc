@@ -1,8 +1,8 @@
-## Interface: 11507, 20504, 40402, 50500, 110207
+## Interface: 11507, 20504, 40402, 50500, 110207, 120000
 ## Title: Gathering Tracker
 ## Notes: Addon for tracking gathered items, supports solo players and groups
 ## Author: Noshei
-## Version: 3.2.21
+## Version: 3.2.22
 ## OptionalDeps: TradeSkillMaster, RECrystallize, Auctionator, WagoAnalytics
 ## SavedVariables: GatheringTrackerDB
 ## AddonCompartmentFunc: GatheringTracker_OnAddonCompartmentClick
@@ -32,7 +32,6 @@ Modules\DisplayCollapse.lua
 Modules\FilterButton.lua
 Modules\Alerts.lua
 Modules\AlertsMenu.lua
-Modules\GroupMode.lua
 Modules\Analytics.lua
 
 Constants.lua

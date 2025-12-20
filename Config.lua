@@ -63,6 +63,7 @@ GT.defaults = {
             itemTooltip = false,
             alertsEnable = false,
             totalsRow = true,
+            shortTimer = false,
         },
         Alerts = {
         },
@@ -72,9 +73,6 @@ GT.defaults = {
         },
         miniMap = {
             hide = true,
-        },
-        GroupMode = {
-            enable = false,
         },
     },
 }
@@ -657,6 +655,19 @@ local generalOptions = {
                     end,
                     order = 256
                 },
+                shortTimer = {
+                    type = "toggle",
+                    dialogControl = "NW_CheckBox",
+                    name = "Short Session Timer",
+                    desc =
+                    "When the Session Timer is displayed it will only display hours and minutes greater than 0.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.shortTimer end,
+                    set = function(_, key)
+                        GT.db.profile.General.shortTimer = key
+                    end,
+                    order = 257
+                },
                 perHourReset = {
                     type = "execute",
                     name = "Reset Session Data",
@@ -673,7 +684,7 @@ local generalOptions = {
                             return true
                         end
                     end,
-                    order = 257
+                    order = 258
                 },
                 header4 = {
                     type = "header",
@@ -1921,20 +1932,6 @@ function GT:CreateCustomFilterOptions()
     end
 end
 
-local GroupModeOptions = {
-    type = "group",
-    name = "Group Mode",
-    childGroups = "tab",
-    args = {
-        heading = {
-            type = "description",
-            name = "Group mode allows for displayed data to be sent between players in your group.  When enabled data received from other players will be displayed.",
-            width = "full",
-            order = 1
-        },
-    }
-}
-
 function GatheringTracker_OnAddonCompartmentClick(addonName, button)
     if (button == "LeftButton") then
         GT:ToggleGatheringTracker()
@@ -2064,16 +2061,12 @@ function GT:OnInitialize()
 
 
     AceConfigRegistry:RegisterOptionsTable(GT.metaData.name, generalOptions)
-    GT.Options.Main = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
+    GT.Options.Main, GT.metaData.categoryID = AceConfigDialog:AddToBlizOptions(GT.metaData.name, GT.metaData.name)
     GT.Options.Main:SetScript("OnHide", GT.OptionsHide)
 
     AceConfigRegistry:RegisterOptionsTable("GT/Filter", filterOptions)
     GT.Options.Filter = AceConfigDialog:AddToBlizOptions("GT/Filter", "Filter", GT.metaData.name)
     GT.Options.Filter:SetScript("OnHide", GT.OptionsHide)
-
-    --[[AceConfigRegistry:RegisterOptionsTable("GT/Group", GroupModeOptions)
-    GT.Options.Group = AceConfigDialog:AddToBlizOptions("GT/Group", "Group Mode", GT.metaData.name)
-    GT.Options.Group:SetScript("OnHide", GT.OptionsHide)]]
 
     AceConfigRegistry:RegisterOptionsTable("GT/Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(GT.db))
     GT.Options.Profiles = AceConfigDialog:AddToBlizOptions("GT/Profiles", "Profiles", GT.metaData.name)
@@ -2082,7 +2075,7 @@ function GT:OnInitialize()
     GT:CreateCustomFilterOptions()
 
     local function openOptions()
-        Settings.OpenToCategory(GT.metaData.name, true)
+        Settings.OpenToCategory(GT.metaData.categoryID)
     end
 
     SLASH_GatheringTracker1 = "/gatheringtracker"

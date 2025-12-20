@@ -396,18 +396,22 @@ function GT:UpdateTimer(frame)
                 return
             end
             local sesstionTime = time() - GT.GlobalStartTime
-            local format = ""
-            if sesstionTime <= 86400 then
-                format = "%H:%M:%S"
-            end
-            if sesstionTime <= 3600 then
-                format = "00:%M:%S"
-            end
-            if sesstionTime <= 60 then
-                format = "00:00:%S"
-            end
 
-            local timer = date(format, sesstionTime)
+            local hours, minutes, seconds = 0, 0, 0
+            hours = floor(sesstionTime / 3600)
+            minutes = floor((sesstionTime / 60) % 60)
+            seconds = floor(sesstionTime % 60)
+
+            local timer = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+            if GT.db.profile.General.shortTimer then
+                if hours > 0 then
+                    timer = timer
+                elseif minutes > 0 then
+                    timer = string.format("%02d:%02d", minutes, seconds)
+                else
+                    timer = string.format("%02d", seconds)
+                end
+            end
             frame.text[1]:SetText(timer)
 
             local width = frame.text[1]:GetUnboundedStringWidth()
