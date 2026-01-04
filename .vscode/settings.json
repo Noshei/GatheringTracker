@@ -110,7 +110,33 @@
     "COMBATLOG_OBJECT_TYPE_PLAYER",
     "COMBATLOG_OBJECT_REACTION_FRIENDLY",
     "COMBATLOG_OBJECT_CONTROL_PLAYER",
-    "COMBATLOG_OBJECT_AFFILIATION_OUTSIDER"
+    "COMBATLOG_OBJECT_AFFILIATION_OUTSIDER",
+    "EventUtil"
 ],
-  "Lua.diagnostics.disable": ["assign-type-mismatch", "cast-local-type"]
+"Lua.diagnostics.disable": [
+    "assign-type-mismatch",
+    "cast-local-type"
+],
+"auto-close-tag.activationOnLanguage": [
+    
+    "xml",
+    "php",
+    "blade",
+    "ejs",
+    "jinja",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "plaintext",
+    "markdown",
+    "vue",
+    "liquid",
+    "erb",
+    "lang-cfml",
+    "cfml",
+    "HTML (EEx)",
+    "HTML (Eex)",
+    "plist"
+]
 }

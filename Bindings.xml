@@ -5,7 +5,13 @@
     <Binding name="Clear Filters" category="Gathering Tracker">
         GatheringTracker:ClearFilters()
     </Binding>
+    <Binding name="Start Session" category="Gathering Tracker">
+        GatheringTracker:StartSession()
+    </Binding>
     <Binding name="Reset Session" category="Gathering Tracker">
         GatheringTracker:ResetSession()
+    </Binding>
+    <Binding name="Pause Session" category="Gathering Tracker">
+        GatheringTracker:PauseSession()
     </Binding>
 </Bindings>

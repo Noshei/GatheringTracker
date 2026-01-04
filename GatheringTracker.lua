@@ -9,7 +9,7 @@ GT.Pools = {}
 GT.PlayerEnteringWorld = true
 GT.DebugCount = 0
 GT.Options = {}
-GT.GlobalStartTime = 0
+
 
 -- Localize global functions
 local date = date
@@ -94,7 +94,7 @@ function GT:PLAYER_ENTERING_WORLD()
     end
 
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
-    GT:wait(7, "AnchorFilterButton", "PLAYER_ENTERING_WORLD")
+    GT:wait(7, "AnchorButtons", "PLAYER_ENTERING_WORLD")
     GT:wait(8, "AllowAlertEffects", "AllowAlertEffects")
 end
 
@@ -107,7 +107,7 @@ end
 function GT:BAG_UPDATE()
     if GT.PlayerEnteringWorld == false then
         GT:InventoryUpdate("BAG_UPDATE", true)
-        GT:RefreshPerHourDisplay(false, true)
+        GT:RefreshPerHourDisplay(true)
     end
 end
 
@@ -178,6 +178,9 @@ function GT:UpdateBaseFrameSize()
     local left, bottom, width, height = GT.baseFrame.frame:GetBoundsRect()
     GT.baseFrame.frame:SetHeight(height)
     GT.baseFrame.frame:SetWidth(width)
+
+    --Update Filter Button Anchon in case it gets hidden if it is below the itsm displayed
+    GT:AnchorButtons()
 end
 
 function GT:ToggleBaseLock(key)
@@ -197,7 +200,7 @@ function GT:ToggleBaseLock(key)
         if not GT.db.profile.General.filtersButton then
             return
         end
-        GT:AnchorFilterButton()
+        GT:AnchorButtons()
     end
 
     if key then
@@ -389,41 +392,6 @@ function GT:SetDisplayFrameWidth()
     end
 end
 
-function GT:UpdateTimer(frame)
-    if frame and frame.timer then
-        C_Timer.After(1, function()
-            if not frame.timer then
-                return
-            end
-            local sesstionTime = time() - GT.GlobalStartTime
-
-            local hours, minutes, seconds = 0, 0, 0
-            hours = floor(sesstionTime / 3600)
-            minutes = floor((sesstionTime / 60) % 60)
-            seconds = floor(sesstionTime % 60)
-
-            local timer = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-            if GT.db.profile.General.shortTimer then
-                if hours > 0 then
-                    timer = timer
-                elseif minutes > 0 then
-                    timer = string.format("%02d:%02d", minutes, seconds)
-                else
-                    timer = string.format("%02d", seconds)
-                end
-            end
-            frame.text[1]:SetText(timer)
-
-            local width = frame.text[1]:GetUnboundedStringWidth()
-            if GT.Display.ColumnSize[1] and width < GT.Display.ColumnSize[1] then
-                width = GT.Display.ColumnSize[1]
-            end
-            frame.text[1]:SetWidth(width)
-            GT:UpdateTimer(frame)
-        end)
-    end
-end
-
 function GT:InitiateFrameProcess(id, iconId, iconQuality, iconRarity, displayText,
                                  pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
     GT.Debug("InitiateFrameProcess", 4, id, iconId, iconQuality, iconRarity, displayText,
@@ -493,13 +461,6 @@ function GT:UpdateDisplayFrame(id, displayText, pricePerItem, priceTotalItem,
         if frame.pricePerItem then
             frame.text[frame.pricePerItem]:SetText(text)
             GT:CheckColumnSize(frame.pricePerItem, frame.text[frame.pricePerItem], id)
-        end
-    end
-
-    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
-        if frame.priceTotalItem then
-            frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(priceTotalItem - 0.5) .. "g)")
-            GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem], id)
         end
     end
 
@@ -647,11 +608,11 @@ function GT:CalculateItemsPerHour(itemID)
     if itemID then
         local itemData = GT.InventoryData[itemID]
         local itemDiff = itemData.sessionCount
-        local timeDiff = time() - itemData.startTime
+        local timeDiff = time() - GT.Timer.StartTime
 
         --divind time diff in Seconds by 3600 to get time diff in hours
         local itemsPerHour = itemDiff / (timeDiff / 3600)
-        GT.Debug("CalculateItemsPerHour", 3, itemsPerHour, itemData.total, itemDiff, timeDiff)
+        GT.Debug("CalculateItemsPerHour", 3, itemID, itemsPerHour, itemData.total, itemDiff, timeDiff)
         if itemsPerHour < 1 then
             itemsPerHour = 0
         end
@@ -673,7 +634,7 @@ function GT:CalculateItemsPerHourTotal(playerTotal)
             end
         end
     end
-    local timeDiff = time() - GT.GlobalStartTime
+    local timeDiff = time() - GT.Timer.StartTime
 
     --divind time diff in Seconds by 3600 to get time diff in hours
     local itemsPerHour = sessionAmount / (timeDiff / 3600)
@@ -731,12 +692,12 @@ function GT:SetupTotalsRow()
     end
 end
 
-function GT:RefreshPerHourDisplay(stop, wait)
-    GT.Debug("Refresh Per Hour Display", 1, stop, wait)
+function GT:RefreshPerHourDisplay(wait)
+    GT.Debug("Refresh Per Hour Display", 1, wait)
     if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHourthen then
         return
     end
-    if stop then
+    if not GT.Timer.Running then
         return
     end
 
@@ -779,7 +740,7 @@ function GT:RefreshPerHourDisplay(stop, wait)
     end
 
     if wait then
-        GT:wait(5, "RefreshPerHourDisplay", false, true)
+        GT:wait(5, "RefreshPerHourDisplay", true)
         return
     end
 end
@@ -854,8 +815,8 @@ function GT:ProcessData(event)
         end
     end
 
-    if GT.GlobalStartTime == 0 then
-        GT.GlobalStartTime = time()
+    if GT.Timer.StartTime == 0 then
+        GT.Timer.StartTime = time()
     end
 
     GT:PrepareDataForDisplay("Process Data")
@@ -871,7 +832,7 @@ function GT:ItemDataConstructor(itemID)
     itemData.count = 0
     itemData.startAmount = 0
     itemData.sessionCount = 0
-    itemData.startTime = time()
+    --itemData.startTime = time()
 
     return itemData
 end

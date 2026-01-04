@@ -51,9 +51,8 @@ function GT:ResetSession()
     --resets the per hour displays to current time and values
     GT.Debug("Reset Session", 1)
 
-    GT.GlobalStartTime = time()
+    GT.Timer:Stop()
     for itemID, itemData in pairs(GT.InventoryData) do
-        itemData.startTime = time()
         itemData.startAmount = itemData.count
         itemData.sessionCount = 0
     end
@@ -62,6 +61,18 @@ function GT:ResetSession()
         GT.AlertSystem:ResetAlerts()
     end
 
-    GT:RefreshPerHourDisplay(false, true)
+    GT:RefreshPerHourDisplay(false)
     GT:RebuildDisplay("Reset Session")
+end
+
+function GT:StartSession()
+    GT.Debug("Start Session", 1)
+
+    GT.Timer:Start()
+end
+
+function GT:PauseSession()
+    GT.Debug("Pause Session", 1)
+
+    GT.Timer:Pause()
 end

@@ -78,7 +78,7 @@ function GT:CollapseManager(wait)
 
         GT:ClearMouse()
 
-        if #GT.Display.Order == 1 then
+        if GT.Display.Order and #GT.Display.Order == 1 then
             GT:PrepareDataForDisplay("CollapseManager", false)
         end
     end

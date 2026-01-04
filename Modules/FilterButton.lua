@@ -32,7 +32,20 @@ function GT:ToggleFilterButton(show)
     end
 end
 
-function GT:FiltersButton()
+local function ButtonOnEnter(self, motion)
+    if motion then
+        GT.baseFrame.button:SetAlpha(1)
+        GT:wait(nil, "FiltersButtonFade")
+    end
+end
+
+local function ButtonOnLeave(self, motion)
+    if motion then
+        GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", GT.db.profile.General.buttonAlpha)
+    end
+end
+
+function GT:FiltersButton(reMakeButton)
     if not GT.db.profile.General.filtersButton then
         GT:ToggleFilterButton(false)
         return
@@ -41,13 +54,13 @@ function GT:FiltersButton()
         GT:ToggleFilterButton(false)
         return
     end
-    if GT.baseFrame.button then
+    if GT.baseFrame.button and not reMakeButton then
         GT:ToggleFilterButton(true)
         return
     end
 
     GT.Debug("Create Filters Button", 1)
-    local filterButton = CreateFrame("Button", "GT_baseFrame_filtersButton", UIParent, "UIPanelButtonTemplate")
+    local filterButton = GT.Skins:CreateButtonSkinned("GT_baseFrame_filtersButton", UIParent)
     filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
     filterButton:SetWidth(25)
     filterButton:SetHeight(25)
@@ -55,7 +68,7 @@ function GT:FiltersButton()
     filterButton:EnableMouse(true)
     filterButton:RegisterForClicks("AnyDown")
     filterButton:SetFrameStrata("BACKGROUND")
-    filterButton:SetFrameLevel(1)
+    filterButton:SetFrameLevel(2)
     filterButton:Show()
 
     filterButton:SetScript("OnClick", function(self, button, down)
@@ -147,6 +160,9 @@ local function CreateItemCheckBox(frame, itemData)
 
             GT:UpdateIDTable(itemData.id, key)
             GT:RemoveItemData(key, itemData.id)
+            if itemData.id == 3 then
+                GT.Timer:ToggleControls()
+            end
             GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
         end
 
@@ -247,6 +263,9 @@ function GT:GenerateFiltersMenu(frame)
                                 GT:UpdateIDTable(itemData.id, key)
                                 GT:RemoveItemData(key, itemData.id)
                             end
+                            if itemData.expansion == "Other" then
+                                GT.Timer:ToggleControls()
+                            end
                         end
                     end
 
@@ -279,6 +298,9 @@ function GT:GenerateFiltersMenu(frame)
                                     GT.db.profile.Filters[itemData.id] = key or nil
                                     GT:UpdateIDTable(itemData.id, key)
                                     GT:RemoveItemData(key, itemData.id)
+                                end
+                                if itemData.expansion == "Other" then
+                                    GT.Timer:ToggleControls()
                                 end
                             end
 
@@ -347,28 +369,19 @@ function GT:FiltersButtonFade(alpha)
             mouseOver:SetPoint("CENTER", GT.baseFrame.button, "CENTER")
             mouseOver:SetMouseClickEnabled(false)
             mouseOver:SetFrameStrata("BACKGROUND")
-            mouseOver:SetFrameLevel(2)
+            mouseOver:SetFrameLevel(1)
             GT.baseFrame.button.mouseOver = mouseOver
         end
         GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
-        GT.baseFrame.button:LockHighlight()
-        GT.baseFrame.button.mouseOver:SetScript("OnEnter", function(self, motion)
-            if motion then
-                GT.baseFrame.button:SetAlpha(1)
-                GT:wait(nil, "FiltersButtonFade")
-            end
-        end)
-        GT.baseFrame.button.mouseOver:SetScript("OnLeave", function(self, motion)
-            if motion then
-                GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", GT.db.profile.General.buttonAlpha)
-            end
-        end)
+        GT.baseFrame.button:HookScript("OnEnter", ButtonOnEnter)
+        GT.baseFrame.button:HookScript("OnLeave", ButtonOnLeave)
+        GT.baseFrame.button.mouseOver:HookScript("OnEnter", ButtonOnEnter)
+        GT.baseFrame.button.mouseOver:HookScript("OnLeave", ButtonOnLeave)
         GT.baseFrame.button.mouseOver:SetMouseClickEnabled(false)
         GT:wait(GT.db.profile.General.buttonDelay, "FiltersButtonFade", GT.db.profile.General.buttonAlpha)
     else
         GT.baseFrame.button:SetIgnoreParentAlpha(GT.db.profile.General.buttonFade)
         GT.baseFrame.button:SetAlpha(1)
-        GT.baseFrame.button:UnlockHighlight()
         if GT.baseFrame.button.mouseOver then
             GT.baseFrame.button.mouseOver:SetScript("OnEnter", nil)
             GT.baseFrame.button.mouseOver:SetScript("OnLeave", nil)

@@ -64,6 +64,8 @@ GT.defaults = {
             alertsEnable = false,
             totalsRow = true,
             shortTimer = false,
+            sessionButtons = true,
+            buttonTheme = 1,
         },
         Alerts = {
         },
@@ -162,7 +164,7 @@ local generalOptions = {
                         if not key then
                             alpha = 100
                         end
-                        GT:FiltersButtonFade(alpha)
+                        GT:FiltersButtonFade()
                     end,
                     disabled = function()
                         if GT.db.profile.General.filtersButton then
@@ -445,9 +447,9 @@ local generalOptions = {
                 },
             },
         },
-        LookandFeel = {
+        Display = {
             type = "group",
-            name = "Look and Feel",
+            name = "Display",
             order = 2,
             args = {
                 header3 = {
@@ -631,6 +633,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.itemsPerHour = key
                         GT:RebuildDisplay("Items Per Hour Changed")
+                        GT.Timer:ToggleControls()
                     end,
                     order = 255
                 },
@@ -645,6 +648,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.goldPerHour = key
                         GT:RebuildDisplay("Gold Per Hour Changed")
+                        GT.Timer:ToggleControls()
                     end,
                     disabled = function()
                         if not GT.priceSources or GT.db.profile.General.tsmPrice == 0 then
@@ -668,6 +672,38 @@ local generalOptions = {
                     end,
                     order = 257
                 },
+                spacer2 = {
+                    type = "description",
+                    name = " ",
+                    width = 1,
+                    order = 258
+                },
+                sessionButtons = {
+                    type = "toggle",
+                    dialogControl = "NW_CheckBox",
+                    name = "Session Controls",
+                    desc = "If selected start/reset/pause buttons will be displayed above the normal display\n" ..
+                        "These buttons control the session timer, even if the timer isn't displayed.\n" ..
+                        "The session timer is used for calculating Per Hour displays.\n\n" ..
+                        "|cffff0000Only displayed when one of the following is enabled:|r\n" ..
+                        "Session Timer\n" ..
+                        "Display Items Per Hour" ..
+                        "Display Gold Per Hour",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.sessionButtons end,
+                    set = function(_, key)
+                        GT.db.profile.General.sessionButtons = key
+                        GT.Timer:ToggleControls()
+                    end,
+                    disabled = function()
+                        if (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or GT.db.profile.Filters[3]) then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    order = 259
+                },
                 perHourReset = {
                     type = "execute",
                     name = "Reset Session Data",
@@ -684,7 +720,7 @@ local generalOptions = {
                             return true
                         end
                     end,
-                    order = 258
+                    order = 260
                 },
                 header4 = {
                     type = "header",
@@ -727,6 +763,46 @@ local generalOptions = {
                             return true
                         else
                             return false
+                        end
+                    end,
+                    order = 302
+                },
+            }
+        },
+        Style = {
+            type = "group",
+            name = "Style",
+            order = 3,
+            args = {
+                header1 = {
+                    type = "header",
+                    name = "Buttons",
+                    order = 300
+                },
+                buttonTheme = {
+                    type = "select",
+                    dialogControl = "NW_Dropdown",
+                    name = "Button Style",
+                    desc = "The theme used for the Filter and Session Buttons.",
+                    width = 1.70,
+                    values = {
+                        [1] = "Blizzard",
+                        [2] = "Modern",
+                        [3] = "ElvUI",
+                        [4] = "GW2 UI"
+                    },
+                    get = function() return GT.db.profile.General.buttonTheme end,
+                    set = function(_, key)
+                        GT.db.profile.General.buttonTheme = key
+                        if GT.baseFrame.button then
+                            GT.baseFrame.button:Hide()
+                            GT.baseFrame.button = nil
+                            GT:FiltersButton(true)
+                        end
+                        if GT.baseFrame.controls then
+                            GT.Timer:HideControls()
+                            GT.baseFrame.controls = nil
+                            GT.Timer:ToggleControls()
                         end
                     end,
                     order = 302
@@ -1817,6 +1893,9 @@ for expansion, expansionData in pairs(GT.ItemData) do
 
                         GT:UpdateIDTable(itemData.id, key)
                         GT:RemoveItemData(key, itemData.id)
+                        if itemData.id == 3 then
+                            GT.Timer:ToggleControls()
+                        end
                         GT:InventoryUpdate("Filters " .. expansion .. " " .. category .. " " .. itemData.name .. " option clicked", true)
                     end,
                     width = 1.2,
@@ -2109,6 +2188,7 @@ function GT:OnInitialize()
     GT:RebuildIDTables()
     GT:CreateBaseFrame()
     GT:FiltersButton()
+    GT.Timer:ToggleControls()
     GT:InitializePools()
 
     GT.AlertSystem:CreateAlertFrames()

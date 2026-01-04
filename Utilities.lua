@@ -344,3 +344,61 @@ function GT:GetItemPrice(itemID)
     end
     return price
 end
+
+function GT:AnchorButtons()
+    -- 25 is the size of the filter button, so if any part of the button is off screen it will be moved
+    local UITop = UIParent:GetTop() - 25
+    local UILeft = UIParent:GetLeft() + 25
+    local backdropTop = GT.baseFrame.backdrop:GetTop()
+    local backdropLeft = GT.baseFrame.backdrop:GetLeft()
+
+    if backdropTop >= UITop and backdropLeft <= UILeft then
+        GT.Debug("Display Location", 1, "Top Left", UITop, UILeft, backdropTop, backdropLeft)
+        local left, bottom, width, height = GT.baseFrame.frame:GetBoundsRect()
+        if GT.baseFrame.button and GT.baseFrame.controls then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (height + 25))
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (height + 25))
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        elseif GT.baseFrame.button then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (height + 25))
+        elseif GT.baseFrame.controls then
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (height + 25))
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        end
+    elseif backdropTop >= UITop then
+        GT.Debug("Display Location", 1, "Top", UITop, UILeft, backdropTop, backdropLeft)
+        if GT.baseFrame.button and GT.baseFrame.controls then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 0, -25)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -25, -52)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT", -25, -25)
+        elseif GT.baseFrame.button then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 0, -25)
+        elseif GT.baseFrame.controls then
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -25, -52)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT", -25, -25)
+        end
+    elseif backdropLeft <= UILeft then
+        GT.Debug("Display Location", 1, "Left", UITop, UILeft, backdropTop, backdropLeft)
+        if GT.baseFrame.button and GT.baseFrame.controls then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, 0)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, 0)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        elseif GT.baseFrame.button then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, 0)
+        elseif GT.baseFrame.controls then
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, 0)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        end
+    else
+        if GT.baseFrame.button and GT.baseFrame.controls then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 2, 0)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        elseif GT.baseFrame.button then
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+        elseif GT.baseFrame.controls then
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 2, 0)
+            GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
+        end
+    end
+end
