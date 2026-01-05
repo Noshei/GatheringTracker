@@ -109,7 +109,7 @@ function GT.Timer:ToggleControls()
     end
 
     if GT.db.profile.General.sessionButtons and
-        (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or GT.db.profile.Filters[3]) then
+        (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or GT.db.profile.Filters[3] or GT.db.profile.General.sessionItems) then
         GT.Debug("Toggle Controls Show", 1, GT.db.profile.General.sessionButtons, GT.db.profile.General.itemsPerHour, GT.db.profile.General.goldPerHour, GT.db.profile.Filters[3])
         GT.Timer:ShowControls()
     else

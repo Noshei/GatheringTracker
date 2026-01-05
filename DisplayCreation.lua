@@ -254,6 +254,9 @@ end
 
 function GT:DisplayFrameCounts(frame, id, text, index)
     index = index or 1
+    if index > 1 and GT.db.profile.General.hideSession then
+        return
+    end
     local anchor = frame.icon
     if index > 1 then
         anchor = frame.text[index - 1]
@@ -304,6 +307,9 @@ function GT:DisplayFramePriceTotal(frame, id, priceTotalItem)
 end
 
 function GT:DisplayFrameItemsPerHour(frame, id, itemsPerHour)
+    if GT.db.profile.General.hideSession then
+        return
+    end
     local text = math.ceil(itemsPerHour - 0.5) .. "/h"
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "itemsPerHour", frame:GetHeight(), frame.text[#frame.text])
     GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
@@ -311,6 +317,9 @@ function GT:DisplayFrameItemsPerHour(frame, id, itemsPerHour)
 end
 
 function GT:DisplayFrameGoldPerHour(frame, id, goldPerHour)
+    if GT.db.profile.General.hideSession then
+        return
+    end
     local text = math.ceil(goldPerHour - 0.5) .. "g/h"
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "goldPerHour", frame:GetHeight(), frame.text[#frame.text])
     GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)

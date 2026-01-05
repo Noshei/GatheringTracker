@@ -66,6 +66,7 @@ GT.defaults = {
             shortTimer = false,
             sessionButtons = true,
             buttonTheme = 1,
+            hideSession = false,
         },
         Alerts = {
         },
@@ -595,6 +596,7 @@ local generalOptions = {
                     set = function(_, key)
                         GT.db.profile.General.sessionItems = key
                         GT:RebuildDisplay("Display Session Item Counts Changed")
+                        GT.Timer:ToggleControls()
                     end,
                     order = 251
                 },
@@ -668,10 +670,22 @@ local generalOptions = {
                     end,
                     order = 257
                 },
-                spacer2 = {
-                    type = "description",
-                    name = " ",
-                    width = 1,
+                hideSession = {
+                    type = "toggle",
+                    dialogControl = "NW_CheckBox",
+                    name = "Hide Session Displays",
+                    desc = "When Selected the following displays will not be shown:\n" ..
+                        "Session Item Counts\n" ..
+                        "Items Per Hour\n" ..
+                        "Gold Per Hour\n\n" ..
+                        "If Only Display Session Data is selected, that will continue to be displayed.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.hideSession end,
+                    set = function(_, key)
+                        GT.db.profile.General.hideSession = key
+                        GT:RebuildDisplay("Toggle Hide Session Displays")
+                        GT.Timer:ToggleControls()
+                    end,
                     order = 258
                 },
                 sessionButtons = {
@@ -692,7 +706,8 @@ local generalOptions = {
                         GT.Timer:ToggleControls()
                     end,
                     disabled = function()
-                        if (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or GT.db.profile.Filters[3]) then
+                        if GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or
+                            GT.db.profile.Filters[3] or GT.db.profile.General.sessionItems then
                             return false
                         else
                             return true

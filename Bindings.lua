@@ -78,8 +78,9 @@ function GT:PauseSession()
 end
 
 function GT:ToggleSessionDisplay()
-    GT.Debug("Toggle Session Display", 1)
+    GT.Debug("Toggle Hide Session Display", 1)
 
-    GT.db.profile.General.sessionItems = not GT.db.profile.General.sessionItems
-    GT:RebuildDisplay("Toggle Session Display")
+    GT.db.profile.General.hideSession = not GT.db.profile.General.hideSession
+    GT:RebuildDisplay("Toggle Hide Session Displays")
+    GT.Timer:ToggleControls()
 end

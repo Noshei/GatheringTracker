@@ -112,7 +112,8 @@
     "COMBATLOG_OBJECT_CONTROL_PLAYER",
     "COMBATLOG_OBJECT_AFFILIATION_OUTSIDER",
     "EventUtil",
-    "EditModeManagerFrame"
+    "EditModeManagerFrame",
+    "NineSliceUtil"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch",

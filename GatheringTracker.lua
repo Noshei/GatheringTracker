@@ -127,14 +127,10 @@ end
 
 function GT:EditModeShow()
     GT:ToggleBaseLock(true)
-    GT.baseFrame.backdrop:SetBackdropColor(160 / 255, 230 / 255, 1, 0.5)
-    GT.baseFrame.backdrop:SetBackdropBorderColor(160 / 255, 230 / 255, 1)
 end
 
 function GT:EditModeHide()
     GT:ToggleBaseLock(false)
-    GT.baseFrame.backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
-    GT.baseFrame.backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
 end
 
 function GT:SetDisplayState()
@@ -153,20 +149,24 @@ function GT:CreateBaseFrame()
     frame:SetFrameLevel(0)
     frame:SetMouseClickEnabled(false)
 
-    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, BackdropTemplateMixin and "BackdropTemplate")
+    local EditModeLayout =
+    {
+        ["TopRightCorner"] = { atlas = "%s-NineSlice-Corner", mirrorLayout = true, x = 8, y = 8 },
+        ["TopLeftCorner"] = { atlas = "%s-NineSlice-Corner", mirrorLayout = true, x = -8, y = 8 },
+        ["BottomLeftCorner"] = { atlas = "%s-NineSlice-Corner", mirrorLayout = true, x = -8, y = -8 },
+        ["BottomRightCorner"] = { atlas = "%s-NineSlice-Corner", mirrorLayout = true, x = 8, y = -8 },
+        ["TopEdge"] = { atlas = "_%s-NineSlice-EdgeTop" },
+        ["BottomEdge"] = { atlas = "_%s-NineSlice-EdgeBottom" },
+        ["LeftEdge"] = { atlas = "!%s-NineSlice-EdgeLeft" },
+        ["RightEdge"] = { atlas = "!%s-NineSlice-EdgeRight" },
+        ["Center"] = { atlas = "%s-NineSlice-Center", x = -8, y = 8, x1 = 8, y1 = -8, },
+    };
+
+    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, "NineSliceCodeTemplate")
+    NineSliceUtil.ApplyLayout(backdrop, EditModeLayout, "editmode-actionbar-highlight")
     backdrop:SetWidth(300)
     backdrop:SetHeight(300)
     backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
-    backdrop:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true,
-        tileSize = 16,
-        edgeSize = 16,
-        insets = { left = 3, right = 3, top = 5, bottom = 3 },
-    })
-    backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
-    backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
     backdrop:SetFrameStrata("FULLSCREEN_DIALOG")
     backdrop:SetClampedToScreen(true)
     backdrop:SetMouseClickEnabled(false)
@@ -712,6 +712,9 @@ function GT:RefreshPerHourDisplay(wait)
         return
     end
     if not GT.Timer.Running then
+        return
+    end
+    if GT.db.profile.General.hideSession then
         return
     end
 
