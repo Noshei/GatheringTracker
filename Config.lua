@@ -812,10 +812,10 @@ local generalOptions = {
                     name = "Icon",
                     order = 400
                 },
-                iconWidth = {
+                iconSize = {
                     type = "range",
                     dialogControl = "NW_Slider",
-                    name = "Icon Width",
+                    name = "Icon Size",
                     min = 10,
                     max = 100,
                     step = 1,
@@ -823,25 +823,11 @@ local generalOptions = {
                     get = function() return GT.db.profile.General.iconWidth or 1 end,
                     set = function(_, key)
                         GT.db.profile.General.iconWidth = key
+                        GT.db.profile.General.iconHeight = key
                         for itemID, itemFrame in pairs(GT.Display.Frames) do
                             itemFrame.icon:SetWidth(GT.db.profile.General.iconWidth)
                             GT:SetDisplayFrameWidth()
-                        end
-                    end,
-                    order = 401
-                },
-                iconHeight = {
-                    type = "range",
-                    dialogControl = "NW_Slider",
-                    name = "Icon Height",
-                    min = 10,
-                    max = 100,
-                    step = 1,
-                    width = 1.70,
-                    get = function() return GT.db.profile.General.iconHeight or 1 end,
-                    set = function(_, key)
-                        GT.db.profile.General.iconHeight = key
-                        for itemID, itemFrame in pairs(GT.Display.Frames) do
+
                             itemFrame.icon:SetHeight(GT.db.profile.General.iconHeight)
 
                             local frameHeight = GT.db.profile.General.iconHeight + 3
@@ -853,7 +839,7 @@ local generalOptions = {
                             end
                         end
                     end,
-                    order = 402
+                    order = 401
                 },
                 iconOpacity = {
                     type = "range",

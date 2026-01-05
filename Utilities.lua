@@ -368,13 +368,13 @@ function GT:AnchorButtons()
     elseif backdropTop >= UITop then
         GT.Debug("Display Location", 1, "Top", UITop, UILeft, backdropTop, backdropLeft)
         if GT.baseFrame.button and GT.baseFrame.controls then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 0, -25)
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -25, -52)
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", -2, -26)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -27, -53)
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT", -25, -25)
         elseif GT.baseFrame.button then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 0, -25)
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", -2, -26)
         elseif GT.baseFrame.controls then
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -25, -52)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", -27, -26)
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT", -25, -25)
         end
     elseif backdropLeft <= UILeft then
@@ -391,13 +391,13 @@ function GT:AnchorButtons()
         end
     else
         if GT.baseFrame.button and GT.baseFrame.controls then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 2, 0)
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", -2, 0)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT")
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
         elseif GT.baseFrame.button then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", -2, 0)
         elseif GT.baseFrame.controls then
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 2, 0)
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT")
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
         end
     end

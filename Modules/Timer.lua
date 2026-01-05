@@ -153,7 +153,7 @@ function GT.Timer:CreateControls()
 
     GT.Debug("Create Session Controls", 1)
     local playButton = GT.Skins:CreateButtonSkinned("GT_timer_rlayButton", UIParent)
-    playButton:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 2, 0)
+    playButton:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT")
     playButton:SetWidth(25)
     playButton:SetHeight(25)
     playButton:EnableMouse(true)

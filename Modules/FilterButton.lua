@@ -61,7 +61,7 @@ function GT:FiltersButton(reMakeButton)
 
     GT.Debug("Create Filters Button", 1)
     local filterButton = GT.Skins:CreateButtonSkinned("GT_baseFrame_filtersButton", UIParent)
-    filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT")
+    filterButton:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", -2, 0)
     filterButton:SetWidth(25)
     filterButton:SetHeight(25)
     filterButton:SetText("F")

@@ -55,6 +55,8 @@ function GT:OnEnable()
             GT:RegisterEvent("PLAYER_REGEN_DISABLED")
             GT:RegisterEvent("PLAYER_REGEN_ENABLED")
         end
+        EditModeManagerFrame:HookScript('OnShow', GT.EditModeShow)
+        EditModeManagerFrame:HookScript('OnHide', GT.EditModeHide)
 
         GT:MinimapHandler(not GT.db.profile.miniMap.hide)
     else
@@ -123,6 +125,18 @@ function GT:PLAYER_REGEN_ENABLED()
     GT:SetDisplayState()
 end
 
+function GT:EditModeShow()
+    GT:ToggleBaseLock(true)
+    GT.baseFrame.backdrop:SetBackdropColor(160 / 255, 230 / 255, 1, 0.5)
+    GT.baseFrame.backdrop:SetBackdropBorderColor(160 / 255, 230 / 255, 1)
+end
+
+function GT:EditModeHide()
+    GT:ToggleBaseLock(false)
+    GT.baseFrame.backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+    GT.baseFrame.backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
+end
+
 function GT:SetDisplayState()
     if GT:DisplayVisibility() then
         GT.baseFrame.frame:Show()
@@ -184,6 +198,8 @@ function GT:UpdateBaseFrameSize()
 end
 
 function GT:ToggleBaseLock(key)
+    GT.Debug("Toggle Base Lock", 1, key)
+
     --used to toggle if the base frame should be shown and interactable.
     --the base frame should only be shown when unlocked so that the user can position it on screen where they want.
     local frame = GT.baseFrame.backdrop
@@ -196,11 +212,9 @@ function GT:ToggleBaseLock(key)
         GT.db.profile.General.yPos = yPos
         GT.db.profile.General.relativePoint = rel
 
-        --Return if Filter Button is disabled, we only need to do the rest if it is enabled
-        if not GT.db.profile.General.filtersButton then
-            return
+        if GT.db.profile.General.filtersButton or GT.db.profile.General.sessionButtons then
+            GT:AnchorButtons()
         end
-        GT:AnchorButtons()
     end
 
     if key then

@@ -111,7 +111,8 @@
     "COMBATLOG_OBJECT_REACTION_FRIENDLY",
     "COMBATLOG_OBJECT_CONTROL_PLAYER",
     "COMBATLOG_OBJECT_AFFILIATION_OUTSIDER",
-    "EventUtil"
+    "EventUtil",
+    "EditModeManagerFrame"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch",
