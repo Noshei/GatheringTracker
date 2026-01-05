@@ -551,7 +551,7 @@ function GT:SetupItemRows()
             )
         else
             local count = 0
-            if GT.db.profile.General.sessionOnly then
+            if GT.db.profile.General.sessionOnly and GT.db.profile.General.sessionItems then
                 count = GT.InventoryData[itemID].sessionCount
             else
                 count = GT.InventoryData[itemID].count
@@ -603,7 +603,7 @@ end
 function GT:GetItemRowData(itemID)
     GT.Debug("GetItemRowData", 2, itemID)
 
-    if GT.db.profile.General.sessionOnly then
+    if GT.db.profile.General.sessionOnly and GT.db.profile.General.sessionItems then
         GT.Debug("GetItemRowData", 3, "Session Counts", itemID)
         return GT.InventoryData[itemID].sessionCount
     elseif GT.db.profile.General.sessionItems and not GT:IsInGroup() then

@@ -589,15 +589,11 @@ local generalOptions = {
                     dialogControl = "NW_CheckBox",
                     name = "Display Session Item Counts",
                     desc = "If selected session item counts will be displayed in the column to the right of the item count.\n" ..
-                        "Price data (if enabled) is not displayed for session data.\n\n" ..
-                        "|cffff0000Session data not displayed in group mode.|r",
+                        "Price data (if enabled) is not displayed for session data.\n\n",
                     width = 1.70,
                     get = function() return GT.db.profile.General.sessionItems end,
                     set = function(_, key)
                         GT.db.profile.General.sessionItems = key
-                        if not key then
-                            GT.db.profile.General.sessionOnly = false
-                        end
                         GT:RebuildDisplay("Display Session Item Counts Changed")
                     end,
                     order = 251

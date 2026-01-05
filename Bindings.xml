@@ -14,4 +14,7 @@
     <Binding name="Pause Session" category="Gathering Tracker">
         GatheringTracker:PauseSession()
     </Binding>
+    <Binding name="Toggle Session Item Display" category="Gathering Tracker">
+        GatheringTracker:ToggleSessionDisplay()
+    </Binding>
 </Bindings>

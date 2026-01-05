@@ -76,3 +76,10 @@ function GT:PauseSession()
 
     GT.Timer:Pause()
 end
+
+function GT:ToggleSessionDisplay()
+    GT.Debug("Toggle Session Display", 1)
+
+    GT.db.profile.General.sessionItems = not GT.db.profile.General.sessionItems
+    GT:RebuildDisplay("Toggle Session Display")
+end

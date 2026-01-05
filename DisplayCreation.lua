@@ -92,7 +92,8 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
     if id == 3 then
         GT.Timer.Frame = frame
         frame.timer = true
-        string:SetText("00:00:00")
+        local sesstionTime = time() - GT.Timer.StartTime
+        string:SetText(GT.Timer.CreateTimerText(sesstionTime))
         GT:UpdateTimer(frame)
     end
     return string

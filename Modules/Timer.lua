@@ -6,7 +6,7 @@ GT.Timer.StartTime = 0
 GT.Timer.Running = true
 GT.Timer.Paused = false
 
-local function CreateTimerText(sesstionTime)
+function GT.Timer.CreateTimerText(sesstionTime)
     local hours, minutes, seconds = 0, 0, 0
     hours = floor(sesstionTime / 3600)
     minutes = floor((sesstionTime / 60) % 60)
@@ -53,7 +53,7 @@ function GT.Timer:Stop()
     GT.Timer.Running = false
     GT.Timer.Paused = false
     GT.Timer.StartTime = 0
-    GT.Timer.Frame.text[1]:SetText(CreateTimerText(0))
+    GT.Timer.Frame.text[1]:SetText(GT.Timer.CreateTimerText(0))
     GT:wait(nil, "RefreshPerHourDisplay")
 end
 
@@ -86,7 +86,7 @@ function GT:UpdateTimer(frame)
             end
             local sesstionTime = time() - GT.Timer.StartTime
 
-            local timer = CreateTimerText(sesstionTime)
+            local timer = GT.Timer.CreateTimerText(sesstionTime)
 
             frame.text[1]:SetText(timer)
 
