@@ -354,15 +354,25 @@ function GT:AnchorButtons()
 
     if backdropTop >= UITop and backdropLeft <= UILeft then
         GT.Debug("Display Location", 1, "Top Left", UITop, UILeft, backdropTop, backdropLeft)
-        local left, bottom, width, height = GT.baseFrame.frame:GetBoundsRect()
+        local offsetMulti = 0
+        if GT.db.profile.General.multiColumn and GT.db.profile.General.numRows <= #GT.Display.Order then
+            offsetMulti = GT.db.profile.General.numRows
+        else
+            offsetMulti = #GT.Display.Order
+        end
+        local offsetHeight = 0
+        if #GT.Display.Order > 0 then
+            offsetHeight = GT.Display.Frames[GT.Display.Order[1]]:GetHeight()
+        end
+        local offsetTotal = offsetMulti * offsetHeight
         if GT.baseFrame.button and GT.baseFrame.controls then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (height + 25))
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (height + 25))
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (offsetTotal + 25))
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (offsetTotal + 25))
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
         elseif GT.baseFrame.button then
-            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (height + 25))
+            GT.baseFrame.button:SetPoint("BOTTOMRIGHT", GT.baseFrame.backdrop, "TOPLEFT", 25, -1 * (offsetTotal + 25))
         elseif GT.baseFrame.controls then
-            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (height + 25))
+            GT.baseFrame.controls.play:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT", 27, -1 * (offsetTotal + 25))
             GT.baseFrame.controls.reset:SetPoint("TOPLEFT", GT.baseFrame.controls.play, "TOPRIGHT")
         end
     elseif backdropTop >= UITop then

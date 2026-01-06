@@ -193,7 +193,7 @@ function GT:UpdateBaseFrameSize()
     GT.baseFrame.frame:SetHeight(height)
     GT.baseFrame.frame:SetWidth(width)
 
-    --Update Filter Button Anchon in case it gets hidden if it is below the itsm displayed
+    --Update Filter Button Anchon in case it gets hidden if it is below the items displayed
     GT:AnchorButtons()
 end
 
