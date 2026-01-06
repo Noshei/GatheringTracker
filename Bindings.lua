@@ -24,11 +24,14 @@ function GT:ToggleGatheringTracker()
     if key then
         GT:OnEnable()
         GT:FiltersButton()
-        GT:InventoryUpdate("Toggle Gathering Tracker", true)
+        GT.Timer:ToggleControls()
+        GT:InventoryUpdate("Toggle Gathering Tracker", false)
+        GT:ResetSession()
     elseif not key then
         GT:OnDisable()
         GT:ClearDisplay()
         GT:FiltersButton()
+        GT.Timer:ToggleControls()
     end
 end
 
@@ -83,4 +86,16 @@ function GT:ToggleSessionDisplay()
     GT.db.profile.General.hideSession = not GT.db.profile.General.hideSession
     GT:RebuildDisplay("Toggle Hide Session Displays")
     GT.Timer:ToggleControls()
+end
+
+function GT:ToggleDisplay()
+    local show = not GT.baseFrame.frame:IsShown()
+    GT.baseFrame.frame:SetShown(show)
+    --[[if GT.baseFrame.button then
+        GT.baseFrame.button:SetShown(show)
+    end
+    if GT.baseFrame.controls then
+        GT.baseFrame.controls.play:SetShown(show)
+        GT.baseFrame.controls.reset:SetShown(show)
+    end]]
 end

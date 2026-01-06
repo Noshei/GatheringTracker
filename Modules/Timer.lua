@@ -102,6 +102,7 @@ end
 
 function GT.Timer:ToggleControls()
     if not GT.Enabled then
+        GT.Timer:HideControls()
         return
     end
     if not GT.baseFrame.controls then
@@ -119,6 +120,9 @@ function GT.Timer:ToggleControls()
 end
 
 function GT.Timer:ShowControls()
+    if not GT.baseFrame.controls then
+        return
+    end
     if not GT.Timer.ControlsVisible then
         GT.baseFrame.controls.play:Show()
         GT.baseFrame.controls.reset:Show()
@@ -127,6 +131,9 @@ function GT.Timer:ShowControls()
 end
 
 function GT.Timer:HideControls()
+    if not GT.baseFrame.controls then
+        return
+    end
     if GT.Timer.ControlsVisible then
         GT.baseFrame.controls.play:Hide()
         GT.baseFrame.controls.reset:Hide()
@@ -152,7 +159,7 @@ function GT.Timer:CreateControls()
     end
 
     GT.Debug("Create Session Controls", 1)
-    local playButton = GT.Skins:CreateButtonSkinned("GT_timer_rlayButton", UIParent)
+    local playButton = GT.Skins:CreateButtonSkinned("GT_timer_rlayButton", GT.baseFrame.frame)
     playButton:SetPoint("BOTTOMLEFT", GT.baseFrame.backdrop, "TOPLEFT")
     playButton:SetWidth(25)
     playButton:SetHeight(25)
@@ -195,7 +202,7 @@ function GT.Timer:CreateControls()
 
     GT.baseFrame.controls.play = playButton
 
-    local resetButton = GT.Skins:CreateButtonSkinned("GT_timer_resetButton", UIParent)
+    local resetButton = GT.Skins:CreateButtonSkinned("GT_timer_resetButton", GT.baseFrame.frame)
     resetButton:SetPoint("TOPLEFT", playButton, "TOPRIGHT")
     resetButton:SetWidth(25)
     resetButton:SetHeight(25)
