@@ -108,13 +108,15 @@ function GT.Timer:ToggleControls()
     if not GT.baseFrame.controls then
         GT.Timer:CreateControls()
     end
+    GT.Debug("Toggle Controls", 1, GT.db.profile.General.sessionButtons, GT.db.profile.General.itemsPerHour,
+        GT.db.profile.General.goldPerHour, GT.db.profile.Filters[3], GT.db.profile.General.sessionItems)
 
     if GT.db.profile.General.sessionButtons and
-        (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour or GT.db.profile.Filters[3] or GT.db.profile.General.sessionItems) then
-        GT.Debug("Toggle Controls Show", 1, GT.db.profile.General.sessionButtons, GT.db.profile.General.itemsPerHour, GT.db.profile.General.goldPerHour, GT.db.profile.Filters[3])
+        (GT.db.profile.General.itemsPerHour or GT.db.profile.General.goldPerHour
+            or GT.db.profile.Filters[3] or GT.db.profile.General.sessionItems)
+        and (GT.Display.Order and #GT.Display.Order > 0) then
         GT.Timer:ShowControls()
     else
-        GT.Debug("Toggle Controls Hide", 1, GT.db.profile.General.sessionButtons, GT.db.profile.General.itemsPerHour, GT.db.profile.General.goldPerHour, GT.db.profile.Filters[3])
         GT.Timer:HideControls()
     end
 end

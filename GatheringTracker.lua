@@ -279,6 +279,8 @@ function GT:ClearDisplay()
     GT.InventoryData = {}
     GT.Display.ColumnSize = {}
     GT.Display.Order = {}
+
+    GT.Timer:ToggleControls()
 end
 
 function GT:RebuildDisplay(event)
@@ -535,6 +537,8 @@ function GT:PrepareDataForDisplay(event, wait)
     if GT.db.profile.General.collapseDisplay then
         GT:CollapseManager(false)
     end
+
+    GT.Timer:ToggleControls()
 end
 
 function GT:SetupItemRows()
