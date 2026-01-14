@@ -162,8 +162,24 @@ function GT:CreateBaseFrame()
         ["Center"] = { atlas = "%s-NineSlice-Center", x = -8, y = 8, x1 = 8, y1 = -8, },
     };
 
-    local backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, "NineSliceCodeTemplate")
-    NineSliceUtil.ApplyLayout(backdrop, EditModeLayout, "editmode-actionbar-highlight")
+    local backdrop
+    if GT.gameVersion == "era" or GT.gameVersion == "season" then
+        backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, BackdropTemplateMixin and "BackdropTemplate")
+        backdrop:SetBackdrop({
+            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = { left = 3, right = 3, top = 5, bottom = 3 },
+        })
+        backdrop:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+        backdrop:SetBackdropBorderColor(0.4, 0.4, 0.4)
+    else
+        backdrop = CreateFrame("Frame", "GT_baseFrame_backdrop", UIParent, "NineSliceCodeTemplate")
+        NineSliceUtil.ApplyLayout(backdrop, EditModeLayout, "editmode-actionbar-highlight")
+    end
+
     backdrop:SetWidth(300)
     backdrop:SetHeight(300)
     backdrop:SetPoint(GT.db.profile.General.relativePoint, UIParent, GT.db.profile.General.relativePoint, GT.db.profile.General.xPos, GT.db.profile.General.yPos)
