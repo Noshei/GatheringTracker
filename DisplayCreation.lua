@@ -120,7 +120,7 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
     GT:DisplayFrameIcon(frame, iconId, id)
 
     if iconQuality then
-        GT:DisplayFrameQuality(frame, iconQuality)
+        GT:DisplayFrameQuality(frame, id, iconQuality)
     end
 
     GT:DisplayFrameRarity(frame, iconRarity)
@@ -210,18 +210,26 @@ function GT:DisplayFrameIcon(frame, iconId, id)
     frame.icon:SetMouseClickEnabled(false)
 end
 
-function GT:DisplayFrameQuality(frame, iconQuality)
+function GT:DisplayFrameQuality(frame, id, iconQuality)
     frame.iconQuality = GT.Pools.texturePool:Acquire()
     frame.iconQuality:SetParent(frame)
     frame.iconQuality:SetDrawLayer("BACKGROUND", 2)
-    if iconQuality == 1 then
+    local itemData = GT.ItemDataFlat[GT:TableFind(GT.ItemDataFlat, id, "id")]
+    if itemData.expansion == "Midnight" then
+        if iconQuality == 1 then
+            frame.iconQuality:SetAtlas("Professions-Icon-Quality-12-Tier1-Inv", true)
+        elseif iconQuality == 2 then
+            frame.iconQuality:SetAtlas("Professions-Icon-Quality-12-Tier2-Inv", true)
+        end
+    elseif iconQuality == 1 then
         frame.iconQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
     elseif iconQuality == 2 then
         frame.iconQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
     elseif iconQuality == 3 then
         frame.iconQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
     end
-    frame.iconQuality:SetAllPoints(frame.icon)
+    frame.iconQuality:SetPoint("TOPLEFT", frame.icon, "TOPLEFT", -(GT.db.profile.General.iconWidth * 0.1785), GT.db.profile.General.iconHeight * 0.1785)
+    frame.iconQuality:SetPoint("BOTTOMRIGHT", frame.icon, "BOTTOMRIGHT", 0, GT.db.profile.General.iconHeight * 0.1785)
     frame.iconQuality:SetAlpha(GT.db.profile.General.iconOpacity / 100)
     frame.iconQuality:Show()
 end

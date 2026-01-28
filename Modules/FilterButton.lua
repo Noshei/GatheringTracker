@@ -170,9 +170,20 @@ local function CreateItemCheckBox(frame, itemData)
         local R, G, B = C_Item.GetItemQualityColor(rarity)
         local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
         local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
+        if itemData.id == 242610 then
+            GT.test = name
+        elseif itemData.id == 242726 then
+            GT.test2 = name
+        end
 
         if itemData.quality then
-            if itemData.quality == 1 then
+            if itemData.expansion == "Midnight" then
+                if itemData.quality == 1 then
+                    name = name .. " |A:Professions-ChatIcon-Quality-12-Tier1:17:18::1|a|h|r"
+                elseif itemData.quality == 2 then
+                    name = name .. " |A:Professions-ChatIcon-Quality-12-Tier2:17:18::1|a|h|r"
+                end
+            elseif itemData.quality == 1 then
                 name = name .. " |A:Professions-ChatIcon-Quality-Tier1:17:15::1|a|h|r"
             elseif itemData.quality == 2 then
                 name = name .. " |A:Professions-ChatIcon-Quality-Tier2:17:23::|a|h|r"
@@ -214,14 +225,21 @@ local function CreateItemCheckBox(frame, itemData)
             if itemData.quality then
                 local leftTextureQuality = text:AttachTexture()
                 leftTextureQuality:SetDrawLayer("BACKGROUND", 2)
-                if itemData.quality == 1 then
+                if itemData.expansion == "Midnight" then
+                    if itemData.quality == 1 then
+                        leftTextureQuality:SetAtlas("Professions-Icon-Quality-12-Tier1-Inv", true)
+                    elseif itemData.quality == 2 then
+                        leftTextureQuality:SetAtlas("Professions-Icon-Quality-12-Tier2-Inv", true)
+                    end
+                elseif itemData.quality == 1 then
                     leftTextureQuality:SetAtlas("professions-icon-quality-tier1-inv", true)
                 elseif itemData.quality == 2 then
                     leftTextureQuality:SetAtlas("professions-icon-quality-tier2-inv", true)
                 elseif itemData.quality == 3 then
                     leftTextureQuality:SetAtlas("professions-icon-quality-tier3-inv", true)
                 end
-                leftTextureQuality:SetAllPoints(leftTexture)
+                leftTextureQuality:SetPoint("TOPLEFT", leftTexture, "TOPLEFT")
+                leftTextureQuality:SetPoint("BOTTOMRIGHT", leftTexture, "BOTTOMRIGHT", 4, 0)
             end
         end)
         frame[itemData.name]:SetTooltip(function(tooltip, elementDescription)
