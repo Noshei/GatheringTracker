@@ -17,7 +17,7 @@ function GT:InitializeBroker()
             elseif button == "RightButton" and IsShiftKeyDown() then
                 GT.AlertSystem:ResetAlerts()
             elseif button == "RightButton" then
-                Settings.OpenToCategory(GT.metaData.name, true)
+                Settings.OpenToCategory(GT.metaData.categoryID)
             end
         end,
         OnTooltipShow = function(tooltip)
