@@ -102,14 +102,15 @@ local function CreateTextDisplay(frame, id, text, type, height, anchor)
     return string
 end
 
-function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
-                               pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
-    GT.Debug("CreateDisplayFrame", 4, id, iconId, iconQuality, iconRarity, displayText,
-        pricePerItem, priceTotalItem, itemsPerHour, goldPerHour)
+function GT:CreateDisplayFrame(id, itemData)
+    GT.Debug("CreateDisplayFrame", 4, id, unpack(itemData))
 
-    if displayText == nil then
+    if itemData.displayText == nil then
         return
     end
+
+    ---@type table|number
+    local displayText = itemData.displayText
 
     local frame = GT:DisplayFrameBase(id)
 
@@ -117,13 +118,13 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
 
     GT:DisplayFrameHighlight(frame)
 
-    GT:DisplayFrameIcon(frame, iconId, id)
+    GT:DisplayFrameIcon(frame, itemData.iconId, id, itemData)
 
-    if iconQuality then
-        GT:DisplayFrameQuality(frame, id, iconQuality)
+    if itemData.iconQuality then
+        GT:DisplayFrameQuality(frame, id, itemData.iconQuality)
     end
 
-    GT:DisplayFrameRarity(frame, iconRarity)
+    GT:DisplayFrameRarity(frame, itemData.iconRarity)
 
     local frameHeight = frame:GetHeight()
     frame.text = {}
@@ -136,22 +137,23 @@ function GT:CreateDisplayFrame(id, iconId, iconQuality, iconRarity, displayText,
         GT:DisplayFrameCounts(frame, id, displayText)
     end
 
-    if pricePerItem and GT.db.profile.General.perItemPrice then
-        GT:DisplayFramePricePer(frame, id, pricePerItem)
-    end
+    if id > #GT.ItemData.Other.Other then
+        if GT.db.profile.General.perItemPrice then
+            GT:DisplayFramePricePer(frame, id, itemData.pricePerItem or "blank")
+        end
 
-    if priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
-        GT:DisplayFramePriceTotal(frame, id, priceTotalItem)
-    end
+        if GT.db.profile.General.tsmPrice > 0 then
+            GT:DisplayFramePriceTotal(frame, id, itemData.priceTotalItem or "blank")
+        end
 
-    if itemsPerHour and GT.db.profile.General.itemsPerHour then
-        GT:DisplayFrameItemsPerHour(frame, id, itemsPerHour)
-    end
+        if GT.db.profile.General.itemsPerHour then
+            GT:DisplayFrameItemsPerHour(frame, id, itemData.itemsPerHour or "blank")
+        end
 
-    if goldPerHour and GT.db.profile.General.goldPerHour then
-        GT:DisplayFrameGoldPerHour(frame, id, goldPerHour)
+        if GT.db.profile.General.goldPerHour then
+            GT:DisplayFrameGoldPerHour(frame, id, itemData.goldPerHour or "blank")
+        end
     end
-
 
     GT.Display.Order = GT.Display.Order or {}
     table.insert(GT.Display.Order, id)
@@ -171,7 +173,7 @@ function GT:DisplayFrameBase(id)
     return frame
 end
 
-function GT:DisplayFrameIcon(frame, iconId, id)
+function GT:DisplayFrameIcon(frame, iconId, id, itemData)
     frame.icon = GT.Pools.texturePool:Acquire()
     frame.icon:SetParent(frame)
     frame.icon:SetDrawLayer("BACKGROUND", 0)
@@ -192,7 +194,11 @@ function GT:DisplayFrameIcon(frame, iconId, id)
     frame.icon:SetScript("OnEnter", function(self, motion)
         if motion then
             GameTooltip:SetOwner(self, self:GetTooltipAnchor())
-            GameTooltip:SetItemByID(id)
+            if itemData.itemType and itemData.itemType == "Currency" then
+                GameTooltip:SetCurrencyByID(id)
+            else
+                GameTooltip:SetItemByID(id)
+            end
             GameTooltip:Show()
         end
     end)
@@ -311,7 +317,12 @@ function GT:DisplayFramePricePer(frame, id, pricePerItem)
 end
 
 function GT:DisplayFramePriceTotal(frame, id, priceTotalItem)
-    local text = "(" .. math.ceil(priceTotalItem - 0.5) .. "g)"
+    local text = ""
+    if type(priceTotalItem) == "number" then
+        text = "(" .. math.ceil(priceTotalItem - 0.5) .. "g)"
+    else
+        text = ""
+    end
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "priceTotalItem", frame:GetHeight(), frame.text[#frame.text])
     GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.priceTotalItem = #frame.text
@@ -321,7 +332,12 @@ function GT:DisplayFrameItemsPerHour(frame, id, itemsPerHour)
     if GT.db.profile.General.hideSession then
         return
     end
-    local text = math.ceil(itemsPerHour - 0.5) .. "/h"
+    local text = ""
+    if type(itemsPerHour) == "number" then
+        text = math.ceil(itemsPerHour - 0.5) .. "/h"
+    else
+        text = ""
+    end
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "itemsPerHour", frame:GetHeight(), frame.text[#frame.text])
     GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.itemsPerHour = #frame.text
@@ -331,7 +347,12 @@ function GT:DisplayFrameGoldPerHour(frame, id, goldPerHour)
     if GT.db.profile.General.hideSession then
         return
     end
-    local text = math.ceil(goldPerHour - 0.5) .. "g/h"
+    local text = ""
+    if type(goldPerHour) == "number" then
+        text = math.ceil(goldPerHour - 0.5) .. "g/h"
+    else
+        text = ""
+    end
     frame.text[#frame.text + 1] = CreateTextDisplay(frame, id, text, "goldPerHour", frame:GetHeight(), frame.text[#frame.text])
     GT:CheckColumnSize(#frame.text, frame.text[#frame.text], id)
     frame.goldPerHour = #frame.text

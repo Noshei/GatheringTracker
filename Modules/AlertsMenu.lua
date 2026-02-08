@@ -11,7 +11,7 @@ function GT:GenerateAlertsMenu(frame)
     local function AlertsMenu(frame, rootDescription)
         rootDescription:SetTag("GatheringTracker_Alerts_Menu")
         for expansionIndex, expansion in ipairs(GT.expansionsOrder) do
-            if GT.ItemData[expansion] and expansion ~= "Other" then
+            if GT.ItemData[expansion] and expansion ~= "Other" and expansion ~= "Currency" then
                 frame[expansion] = rootDescription:CreateButton(expansion, function() end)
                 for categoryIndex, category in ipairs(GT.categoriesOrder) do
                     if GT.ItemData[expansion][category] then

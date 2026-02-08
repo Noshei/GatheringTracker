@@ -27,11 +27,13 @@ function GT:ToggleGatheringTracker()
         GT.Timer:ToggleControls()
         GT:InventoryUpdate("Toggle Gathering Tracker", false)
         GT:ResetSession()
+        GT:StartSession()
     elseif not key then
         GT:OnDisable()
         GT:ClearDisplay()
         GT:FiltersButton()
         GT.Timer:ToggleControls()
+        GT.Timer:Stop()
     end
 end
 
@@ -91,11 +93,4 @@ end
 function GT:ToggleDisplay()
     local show = not GT.baseFrame.frame:IsShown()
     GT.baseFrame.frame:SetShown(show)
-    --[[if GT.baseFrame.button then
-        GT.baseFrame.button:SetShown(show)
-    end
-    if GT.baseFrame.controls then
-        GT.baseFrame.controls.play:SetShown(show)
-        GT.baseFrame.controls.reset:SetShown(show)
-    end]]
 end

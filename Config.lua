@@ -74,6 +74,8 @@ GT.defaults = {
         },
         CustomFiltersTable = {
         },
+        currencyFilters = {
+        },
         miniMap = {
             hide = true,
         },
@@ -1813,7 +1815,12 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     order = itemData.order
                 }
             else
-                local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                local rarity
+                if expansion == "Currency" then
+                    rarity = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).quality or 1
+                else
+                    rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+                end
                 local R, G, B = C_Item.GetItemQualityColor(rarity)
                 filterOptions.args[expansion].args[category].args[tostring(itemData.id)] = {
                     type = "toggle",
@@ -1830,6 +1837,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                             elseif itemData.quality == 3 then
                                 name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
                             end
+                        elseif expansion == "Currency" then
+                            name = C_CurrencyInfo.GetCurrencyLink(itemData.id)
                         else
                             name = name .. "|h|r"
                         end
@@ -1839,6 +1848,8 @@ for expansion, expansionData in pairs(GT.ItemData) do
                     image = function()
                         if itemData.id <= #GT.ItemData.Other.Other then
                             return itemData.icon
+                        elseif expansion == "Currency" then
+                            return C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).icon
                         else
                             return C_Item.GetItemIconByID(itemData.id)
                         end
@@ -1880,15 +1891,21 @@ for expansion, expansionData in pairs(GT.ItemData) do
 
                         return data
                     end,
-                    get = function() return GT.db.profile.Filters[itemData.id] end,
-                    set = function(_, key)
-                        if key then
-                            GT.db.profile.Filters[itemData.id] = key
+                    get = function()
+                        if expansion == "Currency" then
+                            return GT.db.profile.currencyFilters[itemData.id]
                         else
-                            GT.db.profile.Filters[itemData.id] = nil
+                            return GT.db.profile.Filters[itemData.id]
+                        end
+                    end,
+                    set = function(_, key)
+                        if expansion == "Currency" then
+                            GT.db.profile.currencyFilters[itemData.id] = key or nil
+                        else
+                            GT.db.profile.Filters[itemData.id] = key or nil
                         end
 
-                        GT:UpdateIDTable(itemData.id, key)
+                        GT:UpdateIDTable(itemData.id, key, expansion)
                         GT:RemoveItemData(key, itemData.id)
                         if itemData.id == 3 then
                             GT.Timer:ToggleControls()

@@ -147,7 +147,7 @@ local function CreateItemCheckBox(frame, itemData)
         local expansion = itemData.expansion
         local category = itemData.category
         local function IsSelected_Item()
-            if GT.db.profile.Filters[itemData.id] == true then
+            if GT.db.profile.Filters[itemData.id] == true or GT.db.profile.currencyFilters[itemData.id] == true then
                 return true
             else
                 return false
@@ -156,9 +156,12 @@ local function CreateItemCheckBox(frame, itemData)
         local function SetSelected_Item()
             GT.Debug("Item Button Clicked", 2, expansion, category, itemData.name)
             local key = not IsSelected_Item()
-            GT.db.profile.Filters[itemData.id] = key or nil
-
-            GT:UpdateIDTable(itemData.id, key)
+            if expansion == "Currency" then
+                GT.db.profile.currencyFilters[itemData.id] = key or nil
+            else
+                GT.db.profile.Filters[itemData.id] = key or nil
+            end
+            GT:UpdateIDTable(itemData.id, key, expansion)
             GT:RemoveItemData(key, itemData.id)
             if itemData.id == 3 then
                 GT.Timer:ToggleControls()
@@ -166,7 +169,12 @@ local function CreateItemCheckBox(frame, itemData)
             GT:InventoryUpdate(expansion .. " " .. category .. " " .. itemData.name .. " menu clicked", false)
         end
 
-        local rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+        local rarity
+        if expansion == "Currency" then
+            rarity = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).quality or 1
+        else
+            rarity = C_Item.GetItemQualityByID(itemData.id) or 1
+        end
         local R, G, B = C_Item.GetItemQualityColor(rarity)
         local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
         local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
@@ -190,6 +198,8 @@ local function CreateItemCheckBox(frame, itemData)
             elseif itemData.quality == 3 then
                 name = name .. " |A:Professions-ChatIcon-Quality-Tier3:17:18::1|a|h|r"
             end
+        elseif expansion == "Currency" then
+            name = C_CurrencyInfo.GetCurrencyLink(itemData.id)
         else
             name = name .. "|h|r"
         end
@@ -206,6 +216,8 @@ local function CreateItemCheckBox(frame, itemData)
 
             if itemData.icon then
                 leftTexture:SetTexture(itemData.icon)
+            elseif expansion == "Currency" then
+                leftTexture:SetTexture(C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).icon)
             else
                 leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
             end
@@ -259,11 +271,20 @@ function GT:GenerateFiltersMenu(frame)
                     for category, categoryData in pairs(GT.ItemData[expansion]) do
                         for _, itemData in ipairs(categoryData) do
                             if itemData.id ~= -1 and checked == true then
-                                if GT.db.profile.Filters[itemData.id] == true then
-                                    checked = GT.db.profile.Filters[itemData.id]
+                                if expansion == "Currency" then
+                                    if GT.db.profile.currencyFilters[itemData.id] == true then
+                                        checked = GT.db.profile.currencyFilters[itemData.id]
+                                    else
+                                        checked = false
+                                        break
+                                    end
                                 else
-                                    checked = false
-                                    break
+                                    if GT.db.profile.Filters[itemData.id] == true then
+                                        checked = GT.db.profile.Filters[itemData.id]
+                                    else
+                                        checked = false
+                                        break
+                                    end
                                 end
                             end
                         end
@@ -277,8 +298,12 @@ function GT:GenerateFiltersMenu(frame)
                     for category, categoryData in pairs(GT.ItemData[expansion]) do
                         for _, itemData in ipairs(categoryData) do
                             if not (itemData.id == -1) then
-                                GT.db.profile.Filters[itemData.id] = key or nil
-                                GT:UpdateIDTable(itemData.id, key)
+                                if expansion == "Currency" then
+                                    GT.db.profile.currencyFilters[itemData.id] = key or nil
+                                else
+                                    GT.db.profile.Filters[itemData.id] = key or nil
+                                end
+                                GT:UpdateIDTable(itemData.id, key, expansion)
                                 GT:RemoveItemData(key, itemData.id)
                             end
                             if itemData.expansion == "Other" then
@@ -298,11 +323,20 @@ function GT:GenerateFiltersMenu(frame)
                             local checked = true
                             for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                                 if itemData.id ~= -1 and checked == true then
-                                    if GT.db.profile.Filters[itemData.id] == true then
-                                        checked = GT.db.profile.Filters[itemData.id]
+                                    if expansion == "Currency" then
+                                        if GT.db.profile.currencyFilters[itemData.id] == true then
+                                            checked = GT.db.profile.currencyFilters[itemData.id]
+                                        else
+                                            checked = false
+                                            break
+                                        end
                                     else
-                                        checked = false
-                                        break
+                                        if GT.db.profile.Filters[itemData.id] == true then
+                                            checked = GT.db.profile.Filters[itemData.id]
+                                        else
+                                            checked = false
+                                            break
+                                        end
                                     end
                                 end
                             end
@@ -313,8 +347,12 @@ function GT:GenerateFiltersMenu(frame)
                             local key = not IsSelected_Category()
                             for _, itemData in ipairs(GT.ItemData[expansion][category]) do
                                 if not (itemData.id == -1) then
-                                    GT.db.profile.Filters[itemData.id] = key or nil
-                                    GT:UpdateIDTable(itemData.id, key)
+                                    if expansion == "Currency" then
+                                        GT.db.profile.currencyFilters[itemData.id] = key or nil
+                                    else
+                                        GT.db.profile.Filters[itemData.id] = key or nil
+                                    end
+                                    GT:UpdateIDTable(itemData.id, key, expansion)
                                     GT:RemoveItemData(key, itemData.id)
                                 end
                                 if itemData.expansion == "Other" then

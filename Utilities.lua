@@ -272,7 +272,8 @@ end
 ---This function adds or removes a single item from the GT.IDs table
 ---@param itemID integer Id of the item to take action on
 ---@param action boolean true to add an item to the IDs table, false to remove and item from the table
-function GT:UpdateIDTable(itemID, action)
+---@param itemType? string type of ID to
+function GT:UpdateIDTable(itemID, action, itemType)
     GT.Debug("Update ID Table", 1, itemID, action)
     local position = GT:TableFind(GT.IDs, itemID, "id")
     if action and not position then
@@ -280,6 +281,9 @@ function GT:UpdateIDTable(itemID, action)
             id = itemID,
             processed = false
         }
+        if itemType and itemType == "Currency" then
+            item.itemType = itemType
+        end
         table.insert(GT.IDs, item)
     elseif not action and position then
         table.remove(GT.IDs, position)
@@ -308,6 +312,16 @@ function GT:RebuildIDTables()
                     table.insert(GT.IDs, item)
                 end
             end
+        end
+    end
+    if GT.db.profile.currencyFilters then
+        for key in pairs(GT.db.profile.currencyFilters) do
+            local item = {
+                id = key,
+                processed = false,
+                itemType = "Currency"
+            }
+            table.insert(GT.IDs, item)
         end
     end
 end
