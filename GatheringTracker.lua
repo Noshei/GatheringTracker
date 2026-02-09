@@ -99,6 +99,8 @@ function GT:PLAYER_ENTERING_WORLD()
         return
     end
 
+    C_CurrencyInfo.RequestCurrencyDataForAccountCharacters()
+
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
     GT:wait(7, "AnchorButtons", "PLAYER_ENTERING_WORLD")
     GT:wait(8, "AllowAlertEffects", "AllowAlertEffects")
@@ -852,6 +854,14 @@ function GT:ProcessData(event)
             itemCount = 123456
         elseif data.itemType and data.itemType == "Currency" then
             itemCount = C_CurrencyInfo.GetCurrencyInfo(data.id).quantity
+            if GT.db.profile.General.accountCurrency then
+                local accountCurrency = C_CurrencyInfo.FetchCurrencyDataFromAccountCharacters(data.id)
+                if accountCurrency ~= nil then
+                    for _, data in ipairs(accountCurrency) do
+                        itemCount = itemCount + data.quantity
+                    end
+                end
+            end
         else
             itemCount = C_Item.GetItemCount(
                 data.id,
@@ -924,7 +934,7 @@ function GT:CalculatePlayerTotal(calcSenderValue, useSessionData)
         end
         if itemID > #GT.ItemData.Other.Other and count - GT.db.profile.General.ignoreAmount > 0 then
             total = total + count
-            if calcSenderValue and GT.priceSources then
+            if calcSenderValue and GT.priceSources and (not itemData.itemType or itemData.itemType ~= "Currency") then
                 value = value + (count * GT:GetItemPrice(itemID))
             end
         end

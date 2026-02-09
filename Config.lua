@@ -67,6 +67,7 @@ GT.defaults = {
             sessionButtons = true,
             buttonTheme = 1,
             hideSession = false,
+            accountCurrency = false,
         },
         Alerts = {
         },
@@ -581,6 +582,27 @@ local generalOptions = {
                         end
                     end,
                     order = 205
+                },
+                accountCurrency = {
+                    type = "toggle",
+                    dialogControl = "NW_CheckBox",
+                    name = "Include Account Currency",
+                    desc = "If selected displayed values for currency will include currency from all characters on your account.\n" ..
+                        "This only works for currencies that are transferable.",
+                    width = 1.70,
+                    get = function() return GT.db.profile.General.accountCurrency end,
+                    set = function(_, key)
+                        GT.db.profile.General.accountCurrency = key
+                        GT:InventoryUpdate("account Currency", true)
+                    end,
+                    hidden = function()
+                        if GT.gameVersion == "retail" then
+                            return false
+                        else
+                            return true
+                        end
+                    end,
+                    order = 206
                 },
                 header2 = {
                     type = "header",

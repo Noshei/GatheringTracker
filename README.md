@@ -21,19 +21,18 @@
 
 ## Features
 
- - Supported on all versions of WoW
- - Display AH Price Data
-   - Currently supports: TradeSkillMaster, Auctionator, and RECrystallize
- - Can track any item in the game
- - Customizable appearance
- - Filter options accessible through the on-screen button, minimap icon, or broker icon
-
+- Supported on all versions of WoW
+- Display AH Price Data
+  - Currently supports: TradeSkillMaster, Auctionator, and RECrystallize
+- Can track any item in the game
+- Can track any supported Currency
+- Customizable appearance
+- Filter options accessible through the on-screen button, minimap icon, or broker icon
 
 ## Commands:
 
 /gt or /gatheringtracker will open the addon configurations
 
- 
-
 ## Issues/Support:
+
 For any issues, support, or feature requests please submit an issue on [Github](https://github.com/Noshei/GatheringTracker).
