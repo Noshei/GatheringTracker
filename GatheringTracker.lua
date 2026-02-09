@@ -99,7 +99,9 @@ function GT:PLAYER_ENTERING_WORLD()
         return
     end
 
-    C_CurrencyInfo.RequestCurrencyDataForAccountCharacters()
+    if GT.gameVersion == "retail" then
+        C_CurrencyInfo.RequestCurrencyDataForAccountCharacters()
+    end
 
     GT:wait(6, "InventoryUpdate", "PLAYER_ENTERING_WORLD", false)
     GT:wait(7, "AnchorButtons", "PLAYER_ENTERING_WORLD")
