@@ -171,7 +171,12 @@ local function CreateItemCheckBox(frame, itemData)
 
         local rarity
         if expansion == "Currency" then
-            rarity = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).quality or 1
+            local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+            if currency and currency.quality then
+                rarity = currency.quality
+            else
+                rarity = 0
+            end
         else
             rarity = C_Item.GetItemQualityByID(itemData.id) or 1
         end
@@ -217,7 +222,11 @@ local function CreateItemCheckBox(frame, itemData)
             if itemData.icon then
                 leftTexture:SetTexture(itemData.icon)
             elseif expansion == "Currency" then
-                leftTexture:SetTexture(C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).icon)
+                local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+                if not currency then
+                    currency.icon = 134400
+                end
+                leftTexture:SetTexture(currency.icon)
             else
                 leftTexture:SetTexture(C_Item.GetItemIconByID(itemData.id))
             end

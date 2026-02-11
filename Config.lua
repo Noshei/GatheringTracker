@@ -1839,7 +1839,12 @@ for expansion, expansionData in pairs(GT.ItemData) do
             else
                 local rarity
                 if expansion == "Currency" then
-                    rarity = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).quality or 1
+                    local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+                    if currency and currency.quality then
+                        rarity = currency.quality
+                    else
+                        rarity = 0
+                    end
                 else
                     rarity = C_Item.GetItemQualityByID(itemData.id) or 1
                 end
@@ -1871,7 +1876,12 @@ for expansion, expansionData in pairs(GT.ItemData) do
                         if itemData.id <= #GT.ItemData.Other.Other then
                             return itemData.icon
                         elseif expansion == "Currency" then
-                            return C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id).icon
+                            local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+                            if currency and currency.icon then
+                                return currency.icon
+                            else
+                                return 134400
+                            end
                         else
                             return C_Item.GetItemIconByID(itemData.id)
                         end

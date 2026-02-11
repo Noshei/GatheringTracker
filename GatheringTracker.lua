@@ -583,12 +583,18 @@ function GT:SetupItemRows()
                     itemsPerHour = GT:CalculateItemsPerHour(itemID)
                 end
 
+                local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+                if not currency then
+                    currency.icon = 134400
+                    currency.quality = 0
+                end
+
                 GT:InitiateFrameProcess(
                     itemID,
                     {
-                        iconId = C_CurrencyInfo.GetBasicCurrencyInfo(itemID).icon,
+                        iconId = currency.icon,
                         itemType = "Currency",
-                        iconRarity = C_CurrencyInfo.GetBasicCurrencyInfo(itemID).quality,
+                        iconRarity = currency.quality,
                         displayText = displayText,
                         itemsPerHour = itemsPerHour
                     }

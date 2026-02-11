@@ -190,6 +190,8 @@ function GT:DisplayVisibility()
     local delve = select(3, GetInstanceInfo()) == 208
 
     if GT.db.profile.General.combatHide and GT.combat then
+        GT.Debug("DisplayVisibility", 1, "combatHide",
+            GT.db.profile.General.combatHide, group, GT.combat)
         return false
     end
 
