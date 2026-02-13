@@ -373,11 +373,11 @@ function GT:AnchorButtons()
         local offsetMulti = 0
         if GT.db.profile.General.multiColumn and GT.db.profile.General.numRows <= #GT.Display.Order then
             offsetMulti = GT.db.profile.General.numRows
-        else
+        elseif GT.Display.Order then
             offsetMulti = #GT.Display.Order
         end
         local offsetHeight = 0
-        if #GT.Display.Order > 0 then
+        if GT.Display.Order and #GT.Display.Order > 0 then
             offsetHeight = GT.Display.Frames[GT.Display.Order[1]]:GetHeight()
         end
         local offsetTotal = offsetMulti * offsetHeight
