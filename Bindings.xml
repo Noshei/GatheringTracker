@@ -1,23 +1,23 @@
 <Bindings>
-    <Binding name="Toggle Gathering Tracker" category="Gathering Tracker">
-        GatheringTracker:ToggleGatheringTracker()
-    </Binding>
-    <Binding name="Toggle Display" description="Hide/Show the UI, UI will always be shown on login or reload" category="Gathering Tracker">
-        GatheringTracker:ToggleDisplay()
-    </Binding>
-    <Binding name="Clear Filters" category="Gathering Tracker">
-        GatheringTracker:ClearFilters()
-    </Binding>
-    <Binding name="Start Session" category="Gathering Tracker">
-        GatheringTracker:StartSession()
-    </Binding>
-    <Binding name="Reset Session" category="Gathering Tracker">
-        GatheringTracker:ResetSession()
-    </Binding>
-    <Binding name="Pause Session" category="Gathering Tracker">
-        GatheringTracker:PauseSession()
-    </Binding>
-    <Binding name="Toggle Hide Session Display" description="Toggles the Hide Session Display Option" category="Gathering Tracker">
-        GatheringTracker:ToggleSessionDisplay()
-    </Binding>
+   <Binding name="Toggle Gathering Tracker" category="Gathering Tracker">
+      GatheringTracker:ToggleGatheringTracker()
+   </Binding>
+   <Binding name="Toggle Display" description="Hide/Show the UI, UI will always be shown on login or reload" category="Gathering Tracker">
+      GatheringTracker:ToggleDisplay()
+   </Binding>
+   <Binding name="Clear Filters" category="Gathering Tracker">
+      GatheringTracker:ClearFilters()
+   </Binding>
+   <Binding name="Start Session" category="Gathering Tracker">
+      GatheringTracker:StartSession()
+   </Binding>
+   <Binding name="Reset Session" category="Gathering Tracker">
+      GatheringTracker:ResetSession()
+   </Binding>
+   <Binding name="Pause Session" category="Gathering Tracker">
+      GatheringTracker:PauseSession()
+   </Binding>
+   <Binding name="Toggle Hide Session Display" description="Toggles the Hide Session Display Option" category="Gathering Tracker">
+      GatheringTracker:ToggleSessionDisplay()
+   </Binding>
 </Bindings>
