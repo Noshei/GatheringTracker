@@ -583,7 +583,7 @@ function GT:SetupItemRows()
                itemsPerHour = GT:CalculateItemsPerHour(itemID)
             end
 
-            local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemData.id)
+            local currency = C_CurrencyInfo.GetBasicCurrencyInfo(itemID)
             if not currency then
                currency.icon = 134400
                currency.quality = 0
