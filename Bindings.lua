@@ -47,6 +47,9 @@ function GT:ClearFilters()
    for id, value in pairs(GT.db.profile.CustomFiltersTable) do
       GT.db.profile.CustomFiltersTable[id] = false
    end
+   for id, value in pairs(GT.db.profile.currencyFilters) do
+      GT.db.profile.currencyFilters[id] = nil
+   end
 
    GT:RebuildIDTables()
    GT:ClearDisplay()
