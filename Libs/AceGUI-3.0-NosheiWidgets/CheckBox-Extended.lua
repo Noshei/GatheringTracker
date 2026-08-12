@@ -81,9 +81,9 @@ local function CheckBox_OnMouseUp(frame)
       self:ToggleChecked()
 
       if self.checked then
-         PlaySound(856)    -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
-      else                 -- for both nil and false (tristate)
-         PlaySound(857)    -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
+         PlaySound(856) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
+      else              -- for both nil and false (tristate)
+         PlaySound(857) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
       end
 
       self:Fire("OnValueChanged", self.checked)
@@ -136,7 +136,7 @@ local methods = {
       if disabled then
          self.frame:Disable()
          self.text:SetTextColor(0.5, 0.5, 0.5)
-         SetDesaturation(self.check, true)
+         self.check:SetDesaturation(1)
          if self.desc then
             self.desc:SetTextColor(0.5, 0.5, 0.5)
          end
@@ -144,9 +144,9 @@ local methods = {
          self.frame:Enable()
          self.text:SetTextColor(1, 1, 1)
          if self.tristate and self.checked == nil then
-            SetDesaturation(self.check, true)
+            self.check:SetDesaturation(1)
          else
-            SetDesaturation(self.check, false)
+            self.check:SetDesaturation(0)
          end
          if self.desc then
             self.desc:SetTextColor(1, 1, 1)
@@ -158,15 +158,15 @@ local methods = {
       local check = self.check
       self.checked = value
       if value then
-         SetDesaturation(check, false)
+         check:SetDesaturation(0)
          check:Show()
       else
          --Nil is the unknown tristate value
          if self.tristate and value == nil then
-            SetDesaturation(check, true)
+            check:SetDesaturation(1)
             check:Show()
          else
-            SetDesaturation(check, false)
+            check:SetDesaturation(0)
             check:Hide()
          end
       end
@@ -190,12 +190,12 @@ local methods = {
       local size
       if type == "radio" then
          size = 16
-         checkbg:SetTexture(130843)    -- Interface\\Buttons\\UI-RadioButton
+         checkbg:SetTexture(130843) -- Interface\\Buttons\\UI-RadioButton
          checkbg:SetTexCoord(0, 0.25, 0, 1)
-         check:SetTexture(130843)      -- Interface\\Buttons\\UI-RadioButton
+         check:SetTexture(130843)   -- Interface\\Buttons\\UI-RadioButton
          check:SetTexCoord(0.25, 0.5, 0, 1)
          check:SetBlendMode("ADD")
-         highlight:SetTexture(130843)    -- Interface\\Buttons\\UI-RadioButton
+         highlight:SetTexture(130843) -- Interface\\Buttons\\UI-RadioButton
          highlight:SetTexCoord(0.5, 0.75, 0, 1)
       else
          size = 24
