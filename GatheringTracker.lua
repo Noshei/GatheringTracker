@@ -39,6 +39,11 @@ if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) 
    GT.gameVersion = "season"
 end
 
+-- Temp for Forever Beta until Project ID is fixed
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and (select(4, GetBuildInfo()) < 20000) then
+   GT.gameVersion = "forever"
+end
+
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version
 
 function GT:OnEnable()
