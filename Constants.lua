@@ -37,6 +37,7 @@ local expansionsOrder = {
    "DF",
    "TWW",
    "Midnight",
+   "Forever",
    "SoD",
    "Currency",
    "Other",
@@ -91,7 +92,8 @@ for index, category in ipairs(GT.categoriesOrder) do
    GT.categories[category] = index
 end
 
-GT.ItemDataFlat = { -- Classic
+GT.ItemDataFlat = {
+   -- Classic
    { id = 2447, name = "Peacebloom", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Herb" },
    { id = 765, name = "Silverleaf", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Herb" },
    { id = 2449, name = "Earthroot", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Herb" },
@@ -346,39 +348,40 @@ GT.ItemDataFlat = { -- Classic
    { id = 43106, name = "Ruby Pigment", order = 11, retail = true, mop = true, cata = true, wrath = true, expansion = "Classic", category = "Pigment" },
    { id = 43107, name = "Sapphire Pigment", order = 12, retail = true, mop = true, cata = true, wrath = true, expansion = "Classic", category = "Pigment" },
    { id = 245586, name = "Ironwood Lumber", order = 1, retail = true, expansion = "Classic", category = "Lumber" },
-   { id = 203914, name = "Zandalar Bargaining Token", order = 2, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19706, name = "Bloodscalp Coin", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19701, name = "Gurubashi Coin", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19700, name = "Hakkari Coin", order = 5, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19699, name = "Razzashi Coin", order = 6, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19704, name = "Sandfury Coin", order = 7, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19705, name = "Skullsplitter Coin", order = 8, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19702, name = "Vilebranch Coin", order = 9, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19703, name = "Witherbark Coin", order = 10, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 19698, name = "Zulian Coin", order = 11, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203765, name = "Blue Hakkari Bijou", order = 12, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203766, name = "Bronze Hakkari Bijou", order = 13, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203767, name = "Gold Hakkari Bijou", order = 14, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203768, name = "Green Hakkari Bijou", order = 15, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203769, name = "Orange Hakkari Bijou", order = 16, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203770, name = "Purple Hakkari Bijou", order = 17, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203771, name = "Red Hakkari Bijou", order = 18, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203772, name = "Silver Hakkari Bijou", order = 19, retail = true, expansion = "Classic", category = "Zul'Gurub" },
-   { id = 203773, name = "Yellow Hakkari Bijou", order = 20, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203914, name = "Zandalar Bargaining Token", order = 1, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19706, name = "Bloodscalp Coin", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19701, name = "Gurubashi Coin", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19700, name = "Hakkari Coin", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19699, name = "Razzashi Coin", order = 5, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19704, name = "Sandfury Coin", order = 6, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19705, name = "Skullsplitter Coin", order = 7, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19702, name = "Vilebranch Coin", order = 8, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19703, name = "Witherbark Coin", order = 9, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 19698, name = "Zulian Coin", order = 10, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203765, name = "Blue Hakkari Bijou", order = 11, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203766, name = "Bronze Hakkari Bijou", order = 12, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203767, name = "Gold Hakkari Bijou", order = 13, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203768, name = "Green Hakkari Bijou", order = 14, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203769, name = "Orange Hakkari Bijou", order = 15, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203770, name = "Purple Hakkari Bijou", order = 16, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203771, name = "Red Hakkari Bijou", order = 17, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203772, name = "Silver Hakkari Bijou", order = 18, retail = true, expansion = "Classic", category = "Zul'Gurub" },
+   { id = 203773, name = "Yellow Hakkari Bijou", order = 19, retail = true, expansion = "Classic", category = "Zul'Gurub" },
    { id = 5498, name = "Small Lustrous Pearl", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 7971, name = "Black Pearl", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 13926, name = "Golden Pearl", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 12804, name = "Powerful Mojo", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 12811, name = "Righteous Orb", order = 5, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 12809, name = "Guardian Stone", order = 6, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 9262, name = "Black Vitriol", order = 7, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 7191, name = "Fused Wiring", order = 8, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 5637, name = "Large Fang", order = 10, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 5635, name = "Sharp Claw", order = 11, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 4402, name = "Small Flame Sac", order = 9, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 5637, name = "Large Fang", order = 9, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 5635, name = "Sharp Claw", order = 10, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+   { id = 4402, name = "Small Flame Sac", order = 11, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 1475, name = "Small Venom Sac", order = 12, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 1288, name = "Large Venom Sac", order = 13, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
    { id = 19441, name = "Huge Venom Sac", order = 14, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 12804, name = "Powerful Mojo", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 13926, name = "Golden Pearl", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 12811, name = "Righteous Orb", order = 5, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
-   { id = 12809, name = "Guardian Stone", order = 6, retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Classic", category = "Other" },
+
    -- BC
    { id = 22710, name = "Bloodthistle", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Herb" },
    { id = 22785, name = "Felweed", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Herb" },
@@ -393,7 +396,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 22794, name = "Fel Lotus", order = 11, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Herb" },
    { id = 23425, name = "Adamantite Ore", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Ore" },
    { id = 23427, name = "Eternium Ore", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Ore" },
-   { id = 23424, name = "Fel Iron Ore", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Ore" },
+   { id = 23424, name = "Fel Iron Ore", order = 3, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Ore" },
    { id = 23426, name = "Khorium Ore", order = 4, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Ore" },
    { id = 21877, name = "Netherweave Cloth", order = 1, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Cloth" },
    { id = 21881, name = "Netherweb Spider Silk", order = 2, retail = true, mop = true, cata = true, wrath = true, bc = true, expansion = "BC", category = "Cloth" },
@@ -478,6 +481,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 39342, name = "Nether Pigment", order = 1, retail = true, mop = true, cata = true, wrath = true, expansion = "BC", category = "Pigment" },
    { id = 43108, name = "Ebon Pigment", order = 2, retail = true, mop = true, cata = true, wrath = true, expansion = "BC", category = "Pigment" },
    { id = 242691, name = "Olemba Lumber", order = 1, retail = true, expansion = "BC", category = "Lumber" },
+
    -- Wrath
    { id = 36901, name = "Goldclover", order = 1, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Herb" },
    { id = 39970, name = "Fire Leaf", order = 2, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Herb" },
@@ -570,6 +574,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 39343, name = "Azure Pigment", order = 1, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Pigment" },
    { id = 43109, name = "Icy Pigment", order = 2, retail = true, mop = true, cata = true, wrath = true, expansion = "Wrath", category = "Pigment" },
    { id = 251762, name = "Coldwind Lumber", order = 1, retail = true, expansion = "Wrath", category = "Lumber" },
+
    -- Cata
    { id = 52983, name = "Cinderbloom", order = 1, retail = true, mop = true, cata = true, expansion = "Cata", category = "Herb" },
    { id = 52985, name = "Azsharas Veil", order = 2, retail = true, mop = true, cata = true, expansion = "Cata", category = "Herb" },
@@ -644,6 +649,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 61979, name = "Ashen Pigment", order = 1, retail = true, mop = true, cata = true, expansion = "Cata", category = "Pigment" },
    { id = 61980, name = "Burning Embers", order = 2, retail = true, mop = true, cata = true, expansion = "Cata", category = "Pigment" },
    { id = 251764, name = "Ashwood Lumber", order = 1, retail = true, expansion = "Cata", category = "Lumber" },
+
    -- MoP
    { id = 72234, name = "Green Tea Leaf", order = 1, retail = true, mop = true, expansion = "MoP", category = "Herb" },
    { id = 72237, name = "Rain Poppy", order = 2, retail = true, mop = true, expansion = "MoP", category = "Herb" },
@@ -707,6 +713,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 79251, name = "Shadow Pigment", order = 1, retail = true, mop = true, expansion = "MoP", category = "Pigment" },
    { id = 79253, name = "Misty Pigment", order = 2, retail = true, mop = true, expansion = "MoP", category = "Pigment" },
    { id = 251763, name = "Bamboo Lumber", order = 1, retail = true, expansion = "MoP", category = "Lumber" },
+
    -- WoD
    { id = 109124, name = "Frostweed", order = 1, retail = true, expansion = "WoD", category = "Herb" },
    { id = 109127, name = "Starflower", order = 2, retail = true, expansion = "WoD", category = "Herb" },
@@ -747,6 +754,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 113588, name = "Temporal Crystal", order = 5, retail = true, expansion = "WoD", category = "Enchanting" },
    { id = 114931, name = "Cerulean Pigment", order = 1, retail = true, expansion = "WoD", category = "Pigment" },
    { id = 251766, name = "Shadowmoon Lumber", order = 1, retail = true, expansion = "WoD", category = "Lumber" },
+
    -- Legion
    { id = 124101, name = "Aethril", order = 1, retail = true, expansion = "Legion", category = "Herb" },
    { id = 151565, name = "Astral Glory", order = 2, retail = true, expansion = "Legion", category = "Herb" },
@@ -808,6 +816,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 129032, name = "Roseate Pigment", order = 2, retail = true, expansion = "Legion", category = "Pigment" },
    { id = 129034, name = "Sallow Pigment", order = 3, retail = true, expansion = "Legion", category = "Pigment" },
    { id = 251767, name = "Fel Touched Lumber", order = 1, retail = true, expansion = "Legion", category = "Lumber" },
+
    -- BFA
    { id = 152507, name = "Akundas Bite", order = 1, retail = true, expansion = "BFA", category = "Herb" },
    { id = 152505, name = "Riverbud", order = 2, retail = true, expansion = "BFA", category = "Herb" },
@@ -891,6 +900,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 168662, name = "Maroon Pigment", order = 3, retail = true, expansion = "BFA", category = "Pigment" },
    { id = 153669, name = "Viridescent Pigment", order = 4, retail = true, expansion = "BFA", category = "Pigment" },
    { id = 251768, name = "Darkpine Lumber", order = 1, retail = true, expansion = "BFA", category = "Lumber" },
+
    -- SL
    { id = 169701, name = "Death Blossom", order = 1, retail = true, expansion = "SL", category = "Herb" },
    { id = 168589, name = "Marrowroot", order = 2, retail = true, expansion = "SL", category = "Herb" },
@@ -939,7 +949,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 173036, name = "Spinefin Piranha", order = 5, retail = true, expansion = "SL", category = "Fish" },
    { id = 173037, name = "Elysian Thade", order = 6, retail = true, expansion = "SL", category = "Fish" },
    { id = 187704, name = "Protoflesh", order = 7, retail = true, expansion = "SL", category = "Fish" },
-   { id = 187702, name = "Precursor Placoderm", order = 7, retail = true, expansion = "SL", category = "Fish" },
+   { id = 187702, name = "Precursor Placoderm", order = 8, retail = true, expansion = "SL", category = "Fish" },
    { id = 173170, name = "Essence of Rebirth", order = 1, retail = true, expansion = "SL", category = "Elemental" },
    { id = 173172, name = "Essence of Servitude", order = 2, retail = true, expansion = "SL", category = "Elemental" },
    { id = 173171, name = "Essence of Torment", order = 3, retail = true, expansion = "SL", category = "Elemental" },
@@ -975,6 +985,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 189154, name = "Vespoid Lattice", order = 17, retail = true, expansion = "SL", category = "Synthesis" },
    { id = 189155, name = "Viperid Lattice", order = 18, retail = true, expansion = "SL", category = "Synthesis" },
    { id = 189156, name = "Vombata Lattice", order = 19, retail = true, expansion = "SL", category = "Synthesis" },
+
    -- DF
    { id = 191460, name = "Hochenblume", order = 1, quality = 1, retail = true, expansion = "DF", category = "Herb" },
    { id = 191461, name = "Hochenblume", order = 2, quality = 2, retail = true, expansion = "DF", category = "Herb" },
@@ -1134,7 +1145,8 @@ GT.ItemDataFlat = { -- Classic
    { id = 193053, name = "Duck Feather", order = 3, retail = true, expansion = "DF", category = "Other" },
    { id = 204460, name = "Zaralek Glowspores", order = 4, retail = true, expansion = "DF", category = "Other" },
    { id = 208212, name = "Dreaming Essence", order = 5, retail = true, expansion = "DF", category = "Other" },
-   { id = 207702, name = "Wartorn Scrap", order = 7, retail = true, expansion = "DF", category = "Other" },
+   { id = 207702, name = "Wartorn Scrap", order = 6, retail = true, expansion = "DF", category = "Other" },
+
    -- TWW
    { id = 210796, name = "Mycobloom", order = 1, quality = 1, retail = true, expansion = "TWW", category = "Herb" },
    { id = 210797, name = "Mycobloom", order = 2, quality = 2, retail = true, expansion = "TWW", category = "Herb" },
@@ -1399,6 +1411,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 210814, name = "Artisans Acuity", order = 1, retail = true, expansion = "TWW", category = "Other" },
    { id = 221754, name = "Ringing Deeps Ingot", order = 2, retail = true, expansion = "TWW", category = "Other" },
    { id = 221756, name = "Vial of Kaheti Oils", order = 3, retail = true, expansion = "TWW", category = "Other" },
+
    -- Midnight
    { id = 236761, name = "Tranquility Bloom", order = 1, quality = 1, retail = true, expansion = "Midnight", category = "Herb" },
    { id = 236767, name = "Tranquility Bloom", order = 2, quality = 2, retail = true, expansion = "Midnight", category = "Herb" },
@@ -1749,6 +1762,32 @@ GT.ItemDataFlat = { -- Classic
    { id = 245345, name = "Fused Vitality", order = 4, retail = true, expansion = "Midnight", category = "Other" },
    { id = 232875, name = "Spark of Radiance", order = 5, retail = true, expansion = "Midnight", category = "Other" },
 
+   -- Forever
+   { id = 249399, name = "Frilled Lichen", order = 1, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 249424, name = "Rosecap", order = 2, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 249274, name = "Stranglevine", order = 3, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 248821, name = "Demonsage", order = 4, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 248823, name = "Marefoil", order = 5, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 248822, name = "Death Lotus", order = 6, forever = true, expansion = "Forever", category = "Herb" },
+   { id = -1, name = "Seeds", order = 7, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 268415, name = "Commonplace Herb Seeds", order = 8, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 268416, name = "Uncommon Herb Seeds", order = 9, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 268417, name = "Unusual Herb Seeds", order = 10, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 268418, name = "Scarce Herb Seeds", order = 11, forever = true, expansion = "Forever", category = "Herb" },
+   { id = 249391, name = "Pyrite", order = 1, forever = true, expansion = "Forever", category = "Ore" },
+   { id = 249425, name = "Bauxite", order = 2, forever = true, expansion = "Forever", category = "Ore" },
+   { id = 249426, name = "Pitchblende", order = 3, forever = true, expansion = "Forever", category = "Ore" },
+   { id = 248815, name = "Heavy Thorium Ore", order = 4, forever = true, expansion = "Forever", category = "Ore" },
+   { id = 249428, name = "Pristine Hide", order = 1, forever = true, expansion = "Forever", category = "Leather" },
+   { id = 249427, name = "Pristine Leather", order = 2, forever = true, expansion = "Forever", category = "Leather" },
+   { id = 248824, name = "Fel Hide", order = 3, forever = true, expansion = "Forever", category = "Leather" },
+   { id = 248825, name = "Fel Leather", order = 4, forever = true, expansion = "Forever", category = "Leather" },
+   { id = 249429, name = "Pristine Scale", order = 5, forever = true, expansion = "Forever", category = "Leather" },
+   { id = 251524, name = "Whimsyfin", order = 1, forever = true, expansion = "Forever", category = "Fish" },
+   { id = 248819, name = "Fel Crystal", order = 1, forever = true, expansion = "Forever", category = "Gem" },
+   { id = 248820, name = "Torbernite", order = 2, forever = true, expansion = "Forever", category = "Gem" },
+   { id = 274030, name = "Malleable Essence Of Nature", order = 1, forever = true, expansion = "Forever", category = "Enchanting" },
+
    -- Currency
    -- Dungeon and Raid
    { id = 1166, name = "Timewarped Badge", order = 1, retail = true, expansion = "Currency", category = "Dungeon and Raid" },
@@ -1886,7 +1925,6 @@ GT.ItemDataFlat = { -- Classic
    { id = 3265, name = "Artisan Skinners Moxie", order = 11, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3266, name = "Artisan Tailors Moxie", order = 12, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3379, name = "Brimming Arcana", order = 13, retail = true, expansion = "Currency", category = "Midnight" },
-   { id = 3310, name = "Coffer Key Shards", order = 24, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3373, name = "Jeju Pearls", order = 14, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3385, name = "Luminous Dust", order = 15, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3392, name = "Remnant of Anguish", order = 16, retail = true, expansion = "Currency", category = "Midnight" },
@@ -1897,6 +1935,7 @@ GT.ItemDataFlat = { -- Classic
    { id = -1, name = "Season 1", order = 21, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3383, name = "Adventurer Dawncrest", order = 22, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3343, name = "Champion Dawncrest", order = 23, retail = true, expansion = "Currency", category = "Midnight" },
+   { id = 3310, name = "Coffer Key Shards", order = 24, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3345, name = "Hero Dawncrest", order = 25, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3347, name = "Myth Dawncrest", order = 26, retail = true, expansion = "Currency", category = "Midnight" },
    { id = 3212, name = "Radiant Spark Dust", order = 27, retail = true, expansion = "Currency", category = "Midnight" },
@@ -1924,6 +1963,7 @@ GT.ItemDataFlat = { -- Classic
    { id = 219487, name = "Starshell", order = 15, season = true, expansion = "SoD", category = "Phase 3" },
    { id = -1, name = "Other", order = 16, season = true, expansion = "SoD", category = "Phase 3" },
    { id = 221021, name = "Nightmare Seed", order = 17, season = true, expansion = "SoD", category = "Phase 3" },
+
    -- Other
    { id = 1, name = "Current Gold", order = 1, icon = "Interface\\Addons\\GatheringTracker\\Media\\Ability_Racial_PackHobgoblin", desc = "Displays the current Gold on the character, rounded to the nearest whole number.", retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Other", category = "Other" },
    { id = 2, name = "Open Bag Space", order = 2, icon = "Interface\\Addons\\GatheringTracker\\Media\\Garrison_Building_Storehouse", desc = "Displays the number of open bag space.", retail = true, mop = true, cata = true, wrath = true, bc = true, era = true, forever = true, season = true, expansion = "Other", category = "Other" },

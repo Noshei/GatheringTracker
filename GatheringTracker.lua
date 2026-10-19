@@ -32,16 +32,12 @@ local gameVersions = {
    [WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5] = "bc",
    [WOW_PROJECT_WRATH_CLASSIC or 11] = "wrath",
    [WOW_PROJECT_CATACLYSM_CLASSIC or 14] = "cata",
+   [WOW_PROJECT_CAMELOT or 18] = "forever",
    [WOW_PROJECT_MISTS_CLASSIC or 19] = "mop"
 }
 GT.gameVersion = gameVersions[WOW_PROJECT_ID] or "retail"
 if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC and (C_Seasons.GetActiveSeason() == 2) then
    GT.gameVersion = "season"
-end
-
--- Temp for Forever Beta until Project ID is fixed
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and (select(4, GetBuildInfo()) < 20000) then
-   GT.gameVersion = "forever"
 end
 
 BINDING_HEADER_GATHERINGTRACKER = GT.metaData.name .. " v" .. GT.metaData.version
@@ -768,7 +764,7 @@ end
 
 function GT:RefreshPerHourDisplay(wait)
    GT.Debug("Refresh Per Hour Display", 1, wait)
-   if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHourthen then
+   if not GT.db.profile.General.itemsPerHour and not GT.db.profile.General.goldPerHour then
       return
    end
    if not GT.Timer.Running then

@@ -148,7 +148,8 @@
    "CanGroupWithAccount",
    "BNet_GetClientEmbeddedAtlas",
    "FRIENDS_LIST_PLAYING",
-   "SPELL_FAILED_TARGETS_DEAD"
+   "SPELL_FAILED_TARGETS_DEAD",
+   "WOW_PROJECT_CAMELOT"
 ],
 "Lua.diagnostics.disable": [
     "assign-type-mismatch",

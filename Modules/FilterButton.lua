@@ -183,11 +183,6 @@ local function CreateItemCheckBox(frame, itemData)
       local R, G, B = C_Item.GetItemQualityColor(rarity)
       local qualityHex = GT:RGBtoHex(R or 1, G or 1, B or 1, 1)
       local name = "|c" .. qualityHex .. "|Hitem:" .. itemData.id .. "::::::::::::::::::|h" .. itemData.name
-      if itemData.id == 242610 then
-         GT.test = name
-      elseif itemData.id == 242726 then
-         GT.test2 = name
-      end
 
       if itemData.quality then
          if itemData.expansion == "Midnight" then
