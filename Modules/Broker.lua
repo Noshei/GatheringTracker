@@ -7,6 +7,7 @@ local totalsID = 9999999998
 local broker
 local columnNames = { "count", "sessionCount", "totalItemCount", "pricePerItem", "priceTotalItem", "itemsPerHour", "goldPerHour" }
 local measure
+local savedTooltipFonts = setmetatable({}, { __mode = "k" })
 local space = "\194\160"
 
 local function GetColorCode(color)
@@ -36,6 +37,39 @@ local function GetRowName(id)
    return C_Item.GetItemInfo(id) or tostring(id)
 end
 
+local function RestoreTooltipFonts(tooltip)
+   local fonts = savedTooltipFonts[tooltip]
+   for line, font in pairs(fonts) do
+      line:SetFont(unpack(font))
+   end
+   wipe(fonts)
+end
+
+local function SetTooltipRowFont(tooltip, font)
+   local name = tooltip.GetName and tooltip:GetName()
+   if not name or not tooltip.HookScript then
+      return
+   end
+   local fonts = savedTooltipFonts[tooltip]
+   if not fonts then
+      fonts = {}
+      savedTooltipFonts[tooltip] = fonts
+      tooltip:HookScript("OnHide", RestoreTooltipFonts)
+      if tooltip.HasScript and tooltip:HasScript("OnTooltipCleared") then
+         tooltip:HookScript("OnTooltipCleared", RestoreTooltipFonts)
+      end
+   end
+   local index = tooltip:NumLines()
+   for _, side in ipairs({ "Left", "Right" }) do
+      local line = _G[name .. "Text" .. side .. index]
+      if line then
+         local originalFont, size, flags = line:GetFont()
+         fonts[line] = fonts[line] or { originalFont, size, flags }
+         line:SetFont(font, size, flags)
+      end
+   end
+end
+
 local function AddTooltipRows(tooltip)
    local rows, widths = {}, {}
    local general = GT.db.profile.General
@@ -45,13 +79,29 @@ local function AddTooltipRows(tooltip)
       measure = UIParent:CreateFontString(nil, "OVERLAY", "GameTooltipText")
       measure:Hide()
    end
+   local defaultFont, fontSize, fontFlags = GameTooltipText:GetFont()
+   local tooltipName = tooltip.GetName and tooltip.HookScript and tooltip:GetName()
+   local valueLine = tooltipName and _G[tooltipName .. "TextRight1"]
+   if valueLine then
+      defaultFont, fontSize, fontFlags = valueLine:GetFont()
+   end
    local function AddRow(id, name)
       local frame = GT.Display.Frames[id]
       local icon = frame.icon:GetTexture()
       if icon and icon ~= 0 then
          name = ("|T%s:16:16|t %s"):format(icon, name)
       end
-      local row = { name = name, cells = {}, color = id == totalsID and totalColor or itemColor }
+      local font = tooltipName and frame.text[1]:GetFont() or defaultFont
+      measure:SetFont(font, fontSize, fontFlags)
+      measure:SetText(space)
+      local spaceWidth = measure:GetUnboundedStringWidth()
+      local row = {
+         name = name,
+         cells = {},
+         color = id == totalsID and totalColor or itemColor,
+         font = font,
+         spaceWidth = spaceWidth > 0 and spaceWidth or 4,
+      }
       for index, column in ipairs(frame.text) do
          local value = column:GetText()
          if value and value ~= "" then
@@ -77,22 +127,18 @@ local function AddTooltipRows(tooltip)
       end
    end
 
-   measure:SetText(space)
-   local spaceWidth = measure:GetUnboundedStringWidth()
-   if spaceWidth <= 0 then
-      spaceWidth = 4
-   end
    for _, row in ipairs(rows) do
       local values = {}
       for _, key in ipairs(columnNames) do
          if widths[key] then
             local cell = row.cells[key]
-            local padding = math.floor((widths[key] - (cell and cell.width or 0)) / spaceWidth + 0.5)
+            local padding = math.floor((widths[key] - (cell and cell.width or 0)) / row.spaceWidth + 0.5)
             table.insert(values, space:rep(padding) .. (cell and cell.value or ""))
          end
       end
       tooltip:AddDoubleLine(row.color .. row.name .. "|r",
          row.color .. table.concat(values, space:rep(3)) .. "|r", 1, 1, 1, 1, 1, 1)
+      SetTooltipRowFont(tooltip, row.font)
    end
    if #rows > 0 then
       tooltip:AddLine(" ")
@@ -101,10 +147,11 @@ end
 
 function GT:UpdateBrokerText()
    if broker then
+      local general = GT.db.profile.General
       local totals = GT.Display.Frames[totalsID]
-      local text = totals and GetRowText(totals) or ""
+      local text = general.displayBrokerText and totals and GetRowText(totals) or ""
       if text ~= "" then
-         text = GetColorCode(GT.db.profile.General.totalColor) .. text .. "|r"
+         text = GetColorCode(general.totalColor) .. text .. "|r"
       end
       broker.text = text
    end
