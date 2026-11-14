@@ -347,7 +347,10 @@ end
 function GT:FormatMoney(copper, isCurrentGold)
    local denomination = GT:SupportsMoneyDenominations() and GT.db.profile.General.lowestDisplayedDenomination
 
-   if denomination ~= 2 and denomination ~= 3 then
+   local showCopper = denomination == 3
+   local showSilver = denomination == 2 or showCopper
+
+   if not showSilver then
       if isCurrentGold then
          return math.floor(copper / 10000 + 0.5)
       end
@@ -362,10 +365,11 @@ function GT:FormatMoney(copper, isCurrentGold)
    if gold > 0 then
       table.insert(parts, gold .. "g")
    end
+   -- Both Silver and Copper modes show nonzero silver.
    if silver > 0 then
       table.insert(parts, silver .. "s")
    end
-   if denomination == 3 and remainder > 0 then
+   if showCopper and remainder > 0 then
       table.insert(parts, remainder .. "c")
    end
    if #parts == 0 then
