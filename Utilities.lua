@@ -339,6 +339,42 @@ function GT:CheckColumnSize(index, frame, itemID)
    end
 end
 
+function GT:SupportsMoneyDenominations()
+   return GT.gameVersion == "era" or GT.gameVersion == "forever"
+end
+
+---Formats a copper amount for a display row.
+function GT:FormatMoney(copper, isCurrentGold)
+   local denomination = GT:SupportsMoneyDenominations() and GT.db.profile.General.lowestDisplayedDenomination
+
+   if denomination ~= 2 and denomination ~= 3 then
+      if isCurrentGold then
+         return math.floor(copper / 10000 + 0.5)
+      end
+      return math.ceil(copper / 10000 - 0.5) .. "g"
+   end
+
+   local gold = math.floor(copper / 10000)
+   local silver = math.floor(copper / 100) % 100
+   local remainder = math.floor(copper) % 100
+   local parts = {}
+
+   if gold > 0 then
+      table.insert(parts, gold .. "g")
+   end
+   if silver > 0 then
+      table.insert(parts, silver .. "s")
+   end
+   if denomination == 3 and remainder > 0 then
+      table.insert(parts, remainder .. "c")
+   end
+   if #parts == 0 then
+      return denomination == 2 and "0s" or "0c"
+   end
+   return table.concat(parts, " ")
+end
+
+---Returns the item's auction price in copper.
 function GT:GetItemPrice(itemID)
    if not GT.priceSources then
       return
@@ -350,15 +386,15 @@ function GT:GetItemPrice(itemID)
    local price = nil
 
    if GT.priceSources["RECrystallize"] and GT.db.profile.General.tsmPrice == 10 then
-      price = (RECrystallize_PriceCheckItemID(itemID) or 0) / 10000
+      price = RECrystallize_PriceCheckItemID(itemID) or 0
    end
    if GT.priceSources["Auctionator"] and GT.db.profile.General.tsmPrice == 20 then
-      price = (Auctionator.API.v1.GetAuctionPriceByItemID("GatheringTracker", itemID) or 0) / 10000
+      price = Auctionator.API.v1.GetAuctionPriceByItemID("GatheringTracker", itemID) or 0
    end
    if GT.priceSources["TradeSkillMaster"] and price == nil then
-      price = (TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0) / 10000
+      price = TSM_API.GetCustomPriceValue(GT.TSM, "i:" .. itemID) or 0
    end
-   return price
+   return price or 0
 end
 
 function GT:AnchorButtons()

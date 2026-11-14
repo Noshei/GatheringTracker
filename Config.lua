@@ -43,6 +43,7 @@ GT.defaults = {
          includeBank = false,
          includeWarband = false,
          tsmPrice = 0,
+         lowestDisplayedDenomination = 1,
          ignoreAmount = 0,
          perItemPrice = false,
          debugOption = 0,
@@ -512,6 +513,21 @@ local generalOptions = {
                   end
                end,
                order = 201
+            },
+            lowestDisplayedDenomination = {
+               type = "select",
+               dialogControl = "NW_Dropdown",
+               name = "Lowest Displayed Denomination",
+               desc = "Choose the smallest coin shown for item prices, totals, gold per hour, and Current Gold.",
+               width = 1.70,
+               values = { "Gold", "Silver", "Copper" },
+               hidden = function() return not GT:SupportsMoneyDenominations() end,
+               get = function() return GT.db.profile.General.lowestDisplayedDenomination end,
+               set = function(_, key)
+                  GT.db.profile.General.lowestDisplayedDenomination = key
+                  GT:RebuildDisplay("Lowest Displayed Denomination Changed")
+               end,
+               order = 201.5
             },
             perItemPrice = {
                type = "toggle",
@@ -1947,8 +1963,11 @@ for expansion, expansionData in pairs(GT.ItemData) do
                width = 1.2,
                order = itemData.order
             }
-            if itemData.desc then
-               filterOptions.args[expansion].args[category].args[tostring(itemData.id)].desc = itemData.desc
+            local option = filterOptions.args[expansion].args[category].args[tostring(itemData.id)]
+            if itemData.id == GT.ItemData.Other.Other[1].id and GT:SupportsMoneyDenominations() then
+               option.desc = "Displays the character's current money using the Lowest Displayed Denomination setting."
+            elseif itemData.desc then
+               option.desc = itemData.desc
             end
          end
       end
