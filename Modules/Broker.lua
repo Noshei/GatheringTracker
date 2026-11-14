@@ -10,12 +10,7 @@ local measure
 local space = "\194\160"
 
 local function GetColorCode(color)
-   return ("|c%02x%02x%02x%02x"):format(
-      math.floor((color[4] or 1) * 255 + 0.5),
-      math.floor(color[1] * 255 + 0.5),
-      math.floor(color[2] * 255 + 0.5),
-      math.floor(color[3] * 255 + 0.5)
-   )
+   return "|c" .. GT:RGBtoHex(color[1], color[2], color[3], color[4] or 1)
 end
 
 local function GetRowText(frame)
