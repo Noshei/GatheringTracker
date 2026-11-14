@@ -149,7 +149,7 @@ function GT:UpdateBrokerText()
    if broker then
       local general = GT.db.profile.General
       local totals = GT.Display.Frames[totalsID]
-      local text = general.displayBrokerText and totals and GetRowText(totals) or ""
+      local text = totals and GetRowText(totals) or ""
       if text ~= "" then
          text = GetColorCode(general.totalColor) .. text .. "|r"
       end
