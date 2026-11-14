@@ -64,7 +64,6 @@ GT.defaults = {
          itemTooltip = false,
          alertsEnable = false,
          totalsRow = true,
-         displayBrokerText = true,
          shortTimer = false,
          sessionButtons = true,
          buttonTheme = 1,
@@ -450,19 +449,6 @@ local generalOptions = {
                   GT:RebuildDisplay("Item Tooltip Option Changed")
                end,
                order = 322
-            },
-            displayBrokerText = {
-               type = "toggle",
-               dialogControl = "NW_CheckBox",
-               name = "Display Broker Text",
-               desc = "Show the Totals row as text in data broker displays.",
-               width = 1.70,
-               get = function() return GT.db.profile.General.displayBrokerText end,
-               set = function(_, key)
-                  GT.db.profile.General.displayBrokerText = key
-                  GT:UpdateBrokerText()
-               end,
-               order = 323
             },
          },
       },
