@@ -349,6 +349,9 @@ function GT:RemoveDiaplayRow(itemID)
    local order = GT:TableFind(GT.Display.Order, itemID)
    table.remove(GT.Display.Order, order)
    GT.Display.Frames[itemID] = nil
+   if itemID == 9999999998 then
+      GT:UpdateBrokerText()
+   end
 end
 
 function GT:SetAnchor(frame)
@@ -760,6 +763,7 @@ function GT:SetupTotalsRow()
             goldPerHour = goldPerHour
          }
       )
+      GT:UpdateBrokerText()
       -- Alert thresholds are saved in gold. Preserve the totals alert's whole-gold comparison.
       GT.AlertSystem:Alerts(2, playerTotals, math.ceil(priceTotal / 10000 - 0.5))
    elseif GT.Display.Frames[9999999998] then
@@ -814,6 +818,7 @@ function GT:RefreshPerHourDisplay(wait)
          if itemFrame.goldPerHour and GT.db.profile.General.goldPerHour then
             GT:UpdateGoldPerHour(itemFrame, goldPerHour, itemID)
          end
+         GT:UpdateBrokerText()
       end
    end
 

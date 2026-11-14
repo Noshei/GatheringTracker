@@ -1047,6 +1047,7 @@ local generalOptions = {
                         end
                      end
                   end
+                  GT:UpdateBrokerText()
                end,
                disabled = function()
                   if GT.db.profile.General.totalsRow then
