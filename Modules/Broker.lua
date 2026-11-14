@@ -68,14 +68,18 @@ local function AddTooltipRows(tooltip)
       table.insert(rows, row)
    end
 
-   if GT.Display.Frames[totalsID] then
-      AddRow(totalsID, "Totals")
-   end
    for _, id in ipairs(GT.Display.Order or {}) do
       if id < totalsID then
          AddRow(id, GetRowName(id))
       end
    end
+   if GT.Display.Frames[totalsID] then
+      AddRow(totalsID, "Totals")
+   end
+   if #rows == 0 then
+      return
+   end
+   tooltip:AddLine(" ")
 
    measure:SetText(space)
    local spaceWidth = measure:GetUnboundedStringWidth()
@@ -93,9 +97,6 @@ local function AddTooltipRows(tooltip)
       end
       tooltip:AddDoubleLine(row.color .. row.name .. "|r",
          row.color .. table.concat(values, space:rep(3)) .. "|r", 1, 1, 1, 1, 1, 1)
-   end
-   if #rows > 0 then
-      tooltip:AddLine(" ")
    end
 end
 
@@ -132,11 +133,11 @@ function GT:InitializeBroker()
       OnTooltipShow = function(tooltip)
          tooltip:AddLine(GT.metaData.name .. " |cffff6f00v" .. GT.metaData.version .. "|r")
          tooltip:AddLine(" ")
-         AddTooltipRows(tooltip)
          tooltip:AddLine("|cff8080ffLeft-Click|r to open the Filter Menu")
          tooltip:AddLine("|cff8080ffShift + Left-Click|r to reset Session")
          tooltip:AddLine("|cff8080ffRight-Click|r to open the addon options")
          tooltip:AddLine("|cff8080ffShift + Right-Click|r to reset Alert Triggers")
+         AddTooltipRows(tooltip)
       end,
    })
 
