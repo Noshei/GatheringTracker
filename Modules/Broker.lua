@@ -9,6 +9,15 @@ local columnNames = { "count", "sessionCount", "totalItemCount", "pricePerItem",
 local measure
 local space = "\194\160"
 
+local function GetColorCode(color)
+   return ("|c%02x%02x%02x%02x"):format(
+      math.floor((color[4] or 1) * 255 + 0.5),
+      math.floor(color[1] * 255 + 0.5),
+      math.floor(color[2] * 255 + 0.5),
+      math.floor(color[3] * 255 + 0.5)
+   )
+end
+
 local function GetRowText(frame)
    local values = {}
    for _, column in ipairs(frame.text) do
@@ -34,6 +43,9 @@ end
 
 local function AddTooltipRows(tooltip)
    local rows, widths = {}, {}
+   local general = GT.db.profile.General
+   local totalColor = GetColorCode(general.totalColor)
+   local itemColor = GetColorCode(general.textColor)
    if not measure then
       measure = UIParent:CreateFontString(nil, "OVERLAY", "GameTooltipText")
       measure:Hide()
@@ -44,7 +56,7 @@ local function AddTooltipRows(tooltip)
       if icon and icon ~= 0 then
          name = ("|T%s:16:16|t %s"):format(icon, name)
       end
-      local row = { name = name, cells = {} }
+      local row = { name = name, cells = {}, color = id == totalsID and totalColor or itemColor }
       for index, column in ipairs(frame.text) do
          local value = column:GetText()
          if value and value ~= "" then
@@ -84,7 +96,8 @@ local function AddTooltipRows(tooltip)
             table.insert(values, space:rep(padding) .. (cell and cell.value or ""))
          end
       end
-      tooltip:AddDoubleLine(row.name, table.concat(values, space:rep(3)), 1, 1, 1, 1, 1, 1)
+      tooltip:AddDoubleLine(row.color .. row.name .. "|r",
+         row.color .. table.concat(values, space:rep(3)) .. "|r", 1, 1, 1, 1, 1, 1)
    end
    if #rows > 0 then
       tooltip:AddLine(" ")
@@ -94,7 +107,11 @@ end
 function GT:UpdateBrokerText()
    if broker then
       local totals = GT.Display.Frames[totalsID]
-      broker.text = totals and GetRowText(totals) or GT.metaData.name
+      local text = totals and GetRowText(totals) or ""
+      if text ~= "" then
+         text = GetColorCode(GT.db.profile.General.totalColor) .. text .. "|r"
+      end
+      broker.text = text
    end
 end
 
@@ -103,7 +120,7 @@ function GT:InitializeBroker()
    -- Create LibDataBroker data object
    broker = ldb:NewDataObject(GT.metaData.name, {
       type = "data source",
-      text = GT.metaData.name,
+      text = "",
       icon = "Interface\\Addons\\GatheringTracker\\Media\\GT_Icon",
       OnClick = function(frame, button)
          if button == "LeftButton" and IsShiftKeyDown() then
