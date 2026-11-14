@@ -43,7 +43,7 @@ GT.defaults = {
          includeBank = false,
          includeWarband = false,
          tsmPrice = 0,
-         lowestDisplayedDenomination = 1,
+         lowestDisplayedValue = 1,
          ignoreAmount = 0,
          perItemPrice = false,
          debugOption = 0,
@@ -605,18 +605,18 @@ local generalOptions = {
                end,
                order = 206
             },
-            lowestDisplayedDenomination = {
+            lowestDisplayedValue = {
                type = "select",
                dialogControl = "NW_Dropdown",
-               name = "Lowest Displayed Denomination",
+               name = "Lowest Displayed Value",
                desc = "Choose the smallest coin shown for item prices, totals, gold per hour, and Current Gold.",
                width = 1.70,
                values = { "Gold", "Silver", "Copper" },
-               hidden = function() return not GT:SupportsMoneyDenominations() end,
-               get = function() return GT.db.profile.General.lowestDisplayedDenomination end,
+               hidden = function() return not GT:SupportsMoneyValues() end,
+               get = function() return GT.db.profile.General.lowestDisplayedValue end,
                set = function(_, key)
-                  GT.db.profile.General.lowestDisplayedDenomination = key
-                  GT:RebuildDisplay("Lowest Displayed Denomination Changed")
+                  GT.db.profile.General.lowestDisplayedValue = key
+                  GT:RebuildDisplay("Lowest Displayed Value Changed")
                end,
                order = 207
             },

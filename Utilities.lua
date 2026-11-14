@@ -75,27 +75,27 @@ function GT.Debug(text, level, ...)
 
    if text and level <= GT.db.profile.General.debugOption then
       GT.DebugCount = GT.DebugCount + 1
-      local color = "89FF9A"   --#89FF9A
+      local color = "89FF9A" --#89FF9A
       if level == 2 then
-         color = "FFD270"      --#FFD270
+         color = "FFD270"    --#FFD270
       elseif level == 3 then
-         color = "FF8080"      --#FF8080
+         color = "FF8080"    --#FF8080
       elseif level == 4 then
-         color = "E300DB"      --#E300DB
+         color = "E300DB"    --#E300DB
       elseif level == 5 then
-         color = "3990FA"      --#3990FA
+         color = "3990FA"    --#3990FA
       elseif level == 6 then
-         color = "D9041D"      --#D9041D
+         color = "D9041D"    --#D9041D
       end
       ChatFrame1:AddMessage(
-         "|cffff6f00"           --#ff6f00
+         "|cffff6f00"        --#ff6f00
          .. GT.metaData.name
-         .. ":|r |cffff0000"    --#ff0000
+         .. ":|r |cffff0000" --#ff0000
          .. date("%X")
-         .. "|r |cff00a0a3"     --#00a0a3
+         .. "|r |cff00a0a3"  --#00a0a3
          .. tostring(GT.DebugCount)
          .. ": |r "
-         .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...))    --#00ff00
+         .. strjoin(" |cff00ff00:|r ", "|cff" .. color .. text .. "|r", tostringall(...)) --#00ff00
       )
    end
 end
@@ -137,7 +137,7 @@ function GT:wait(delay, func, ...)
 
    --create the callback function so that we can pass along arguements
    timer.callback = function()
-      if GT.waitTable[timer] then   --check if the wait table exists, if it doesn't then this timer was cancelled.
+      if GT.waitTable[timer] then --check if the wait table exists, if it doesn't then this timer was cancelled.
          GT.Debug("Wait Function Complete", 1, timer.delay, timer.func, GT.waitTable[timer])
          --remove wait table entry since the timer is complete
          GT.waitTable[timer] = nil
@@ -339,13 +339,13 @@ function GT:CheckColumnSize(index, frame, itemID)
    end
 end
 
-function GT:SupportsMoneyDenominations()
+function GT:SupportsMoneyValues()
    return GT.gameVersion == "era" or GT.gameVersion == "forever"
 end
 
 ---Formats a copper amount for a display row.
 function GT:FormatMoney(copper, isCurrentGold)
-   local denomination = GT:SupportsMoneyDenominations() and GT.db.profile.General.lowestDisplayedDenomination
+   local denomination = GT:SupportsMoneyValues() and GT.db.profile.General.lowestDisplayedValue
 
    local showCopper = denomination == 3
    local showSilver = denomination == 2 or showCopper
