@@ -307,7 +307,7 @@ end
 function GT:DisplayFramePricePer(frame, id, pricePerItem)
    local text = ""
    if type(pricePerItem) == "number" then
-      text = "{" .. math.ceil(pricePerItem - 0.5) .. "g}"
+      text = "{" .. GT:FormatMoney(pricePerItem) .. "}"
    else
       text = ""
    end
@@ -319,7 +319,7 @@ end
 function GT:DisplayFramePriceTotal(frame, id, priceTotalItem)
    local text = ""
    if type(priceTotalItem) == "number" then
-      text = "(" .. math.ceil(priceTotalItem - 0.5) .. "g)"
+      text = "(" .. GT:FormatMoney(priceTotalItem) .. ")"
    else
       text = ""
    end
@@ -349,7 +349,7 @@ function GT:DisplayFrameGoldPerHour(frame, id, goldPerHour)
    end
    local text = ""
    if type(goldPerHour) == "number" then
-      text = math.ceil(goldPerHour - 0.5) .. "g/h"
+      text = GT:FormatMoney(goldPerHour) .. "/h"
    else
       text = ""
    end

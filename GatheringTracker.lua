@@ -485,7 +485,7 @@ function GT:UpdateDisplayFrame(id, itemData)
    if itemData.pricePerItem and GT.db.profile.General.perItemPrice then
       local text = ""
       if type(itemData.pricePerItem) == "number" then
-         text = "{" .. math.ceil(itemData.pricePerItem - 0.5) .. "g}"
+         text = "{" .. GT:FormatMoney(itemData.pricePerItem) .. "}"
       else
          text = ""
       end
@@ -497,7 +497,7 @@ function GT:UpdateDisplayFrame(id, itemData)
 
    if itemData.priceTotalItem and GT.db.profile.General.tsmPrice > 0 then
       if frame.priceTotalItem then
-         frame.text[frame.priceTotalItem]:SetText("(" .. math.ceil(itemData.priceTotalItem - 0.5) .. "g)")
+         frame.text[frame.priceTotalItem]:SetText("(" .. GT:FormatMoney(itemData.priceTotalItem) .. ")")
          GT:CheckColumnSize(frame.priceTotalItem, frame.text[frame.priceTotalItem], id)
       end
    end
@@ -527,7 +527,7 @@ function GT:UpdateGoldPerHour(frame, goldPerHour, id)
       return
    end
 
-   frame.text[frame.goldPerHour]:SetText(math.ceil(goldPerHour - 0.5) .. "g/h")
+   frame.text[frame.goldPerHour]:SetText(GT:FormatMoney(goldPerHour) .. "/h")
    GT:CheckColumnSize(frame.goldPerHour, frame.text[frame.goldPerHour], id)
 end
 
@@ -561,11 +561,15 @@ function GT:SetupItemRows()
    for itemID, itemData in pairs(GT.InventoryData) do
       GT.Debug("Setup Item Row", 6, itemID)
       if itemID <= #GT.ItemData.Other.Other then
+         local displayText = itemData.count
+         if itemID == GT.ItemData.Other.Other[1].id then
+            displayText = GT:FormatMoney(itemData.count, true)
+         end
          GT:InitiateFrameProcess(
             itemID,
             {
                iconId = GT.ItemData.Other.Other[itemID].icon,
-               displayText = itemData.count
+               displayText = displayText
             }
          )
       elseif itemData.itemType and itemData.itemType == "Currency" then
@@ -645,7 +649,7 @@ function GT:SetupItemRows()
                }
             )
 
-            GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem)
+            GT.AlertSystem:Alerts(itemID, displayText, priceTotalItem / 10000)
          elseif GT.Display.Frames[itemID] then
             GT:RemoveDiaplayRow(itemID)
          end
@@ -756,7 +760,8 @@ function GT:SetupTotalsRow()
             goldPerHour = goldPerHour
          }
       )
-      GT.AlertSystem:Alerts(2, playerTotals, priceTotal)
+      -- Alert thresholds are saved in gold. Preserve the totals alert's whole-gold comparison.
+      GT.AlertSystem:Alerts(2, playerTotals, math.ceil(priceTotal / 10000 - 0.5))
    elseif GT.Display.Frames[9999999998] then
       GT:RemoveDiaplayRow(9999999998)
    end
@@ -854,7 +859,7 @@ function GT:ProcessData(event)
    for index, data in ipairs(GT.IDs) do
       local itemCount = 0
       if data.id == GT.ItemData.Other.Other[1].id then
-         itemCount = math.floor((GetMoney() / 10000) + 0.5)
+         itemCount = GetMoney()
       elseif data.id == GT.ItemData.Other.Other[2].id then
          for bagIndex = 0, 4 do
             itemCount = itemCount + C_Container.GetContainerNumFreeSlots(bagIndex)
@@ -927,7 +932,7 @@ end
 ---@param calcSenderValue boolean If true calculates value of all filtered items from sender
 ---@param useSessionData boolean If true only uses session data for calculations
 ---@return integer total Total count of items for sender
----@return integer value Total gold value of items for sender
+---@return number value Total value of items in copper
 function GT:CalculatePlayerTotal(calcSenderValue, useSessionData)
    GT.Debug("CalculatePlayerTotal", 1, calcSenderValue, useSessionData)
 
@@ -948,5 +953,5 @@ function GT:CalculatePlayerTotal(calcSenderValue, useSessionData)
          end
       end
    end
-   return total, math.ceil(value - 0.5) --rounds up to whole number
+   return total, value
 end
